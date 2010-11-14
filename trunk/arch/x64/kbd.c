@@ -122,6 +122,7 @@ unsigned char kbd_get_char(void)
 
     while (1) 
         {
+        sched_yield();
 
         /* Check for keyboard data. */
         
@@ -299,6 +300,7 @@ static char * kbd_read_line (int count)
                     }
                 }
             }
+        sched_yield();
         }
 
     kbd_input_buffer[len] = 0;

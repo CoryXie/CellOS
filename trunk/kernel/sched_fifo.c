@@ -425,7 +425,7 @@ bool sched_fifo_preemption_check
     if (sched_runq->runq.runnable == 0)
         preempt = FALSE;
     else
-        preempt = (sched_runq->best_priority >= 
+        preempt = (sched_runq->best_priority > 
                     sched_param->sched_priority);
         
     /* Unlock the runq */

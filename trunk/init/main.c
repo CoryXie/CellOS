@@ -4,7 +4,7 @@
 
 void cpu_heart_beat (int cpu)
     {
-    uint8_t *vidmem = (uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
+    volatile uint8_t *vidmem = (volatile uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
     int      count = 0;
 
     /* Let's do a heart beat show!*/
@@ -17,7 +17,7 @@ void cpu_heart_beat (int cpu)
         if (count > 26) 
             count = 0;
         
-        reschedule();
+        sched_yield();
         }
     }
 

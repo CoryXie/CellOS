@@ -132,7 +132,7 @@ void reschedule_new_stack(void)
 
     if (kurrent == NULL)
         {
-        printk("No more\n");
+        //printk("No more\n");
         kurrent = cur;
         }
     
