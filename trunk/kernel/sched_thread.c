@@ -164,6 +164,7 @@ void sched_thread_global_show(void)
         }    
     }
 
+/* The SCHED_LOCK is called in reschedule */
 void sched_thread_common_entry
     (
     void *param

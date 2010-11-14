@@ -5,7 +5,7 @@ long cpu_intr_flags[CONFIG_NR_CPUS];
 
 uint64_t timer_ticks = 0;
 
-spinlock_t reschedule_lock;
+pthread_spinlock_t reschedule_lock;
 
 sched_thread_t * kthread_current[CONFIG_NR_CPUS];
 
@@ -39,7 +39,7 @@ extern sched_cpu_t* current_cpus[];
 
 void sched_core_init(void)
     {
-    spinlock_init(&reschedule_lock);
+    pthread_spin_init(&reschedule_lock, FALSE);
     
     sched_cpu_init();
         
@@ -671,10 +671,6 @@ int sched_rr_get_interval
  
 int sched_yield(void)
     {
-	volatile ipl_t ipl;
-    
-	ipl = interrupts_disable();
-
     SCHED_LOCK();
 
     kurrent->state = STATE_READY;
@@ -684,8 +680,6 @@ int sched_yield(void)
 
     SCHED_UNLOCK();
         
-    interrupts_restore(ipl);
-
     reschedule();
     
     return OK;

@@ -18,10 +18,10 @@ extern sched_thread_t * kthread_current[];
 extern list_t   kthread_list[];
 extern uint64_t timer_ticks;
 extern long     cpu_intr_flags[];
-extern spinlock_t reschedule_lock;
+extern pthread_spinlock_t reschedule_lock;
 
-#define SCHED_LOCK()    spinlock_lock(&reschedule_lock)
-#define SCHED_UNLOCK()  spinlock_unlock(&reschedule_lock)
+#define SCHED_LOCK()    pthread_spin_lock(&reschedule_lock)
+#define SCHED_UNLOCK()  pthread_spin_unlock(&reschedule_lock)
 
 #define kurrent kthread_current[this_cpu()]
 #define kurrent_cpu kurrent->sched_cpu 
