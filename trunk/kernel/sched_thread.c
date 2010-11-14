@@ -185,6 +185,8 @@ void sched_thread_common_entry
     interrupts_restore(kurrent->saved_context.ipl);
     
     kurrent->entry((void *)(kurrent->param));  
+
+    kurrent->state = STATE_COMPLETED;
     }
 
 /*
@@ -393,6 +395,7 @@ int pthread_create
     new_thread->sched_policy_id = attrP->policy;
         
 	context_save(&new_thread->saved_context);
+    
 	context_update(&new_thread->saved_context, 
                 sched_thread_common_entry, 
                 new_thread->stack_base,
@@ -422,10 +425,8 @@ int pthread_create
 
     new_thread->sched_runq = sched_runq;
 
-    printk("Created thread %s with context:\n", new_thread->name);
+    printk("Created thread %s\n", new_thread->name);
     
-    sched_context_dump(&new_thread->saved_context);
-
     if (attrP->autorun)
         {
         new_thread->state = STATE_READY;

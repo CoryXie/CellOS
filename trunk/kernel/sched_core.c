@@ -245,6 +245,9 @@ void sched_tick
     )
     {
     timer_ticks++;
+
+    if ((timer_ticks % 5000) == 0)
+        sched_thread_global_show();
     
     reschedule();
     }
