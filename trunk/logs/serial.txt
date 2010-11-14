@@ -1,0 +1,77 @@
+
+================================
+||==Welcome to CELLOS 64 bit==||
+================================
+mmap: 0x0000000000000000 - 0x000000000009f800 (638Kb) FREE
+mmap: 0x000000000009f800 - 0x00000000000a0000 (2Kb) RESERVED
+mmap: 0x00000000000dc000 - 0x00000000000e4000 (32Kb) RESERVED
+mmap: 0x00000000000e8000 - 0x0000000000100000 (96Kb) RESERVED
+mmap: 0x0000000000100000 - 0x000000000fef0000 (260032Kb) FREE
+mmap: 0x000000000fef0000 - 0x000000000feff000 (60Kb) ACPI_RECLAIM
+mmap: 0x000000000feff000 - 0x000000000ff00000 (4Kb) ACPI_NVS
+mmap: 0x000000000ff00000 - 0x0000000010000000 (1024Kb) FREE
+mmap: 0x00000000e0000000 - 0x00000000f0000000 (262144Kb) RESERVED
+mmap: 0x00000000fec00000 - 0x00000000fec10000 (64Kb) RESERVED
+mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
+mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
+Free physical area range [0x0000000000100000 - 0x000000000fef0000]
+base_pml4=256 base_pdpt=0
+lowest_addr=0x000000000011e000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x0000000000123000-0x000000000fef0000
+x64_paging_map: page tables using 20 KB
+first_pdpt=0xffffffff8011e000, first_pdir=0xffffffff8011f000, num_pdpt = 1
+current_pdpt = 0xffffffff8011e000
+pdpt #0 0x000000000011f003 -> 0xffffffff8011f000
+pdpt #1 0x0000000000120003 -> 0xffffffff80120000
+pdpt #2 0x0000000000121003 -> 0xffffffff80121000
+pdpt #3 0x0000000000122003 -> 0xffffffff80122000
+just set 0x000000000011e003 0xffffffff8011e000
+end address 0x0000000100000000
+num_pdirs=4
+num_pdpt=1
+new CR3 0x0000000000114000
+page_alloc_init(): pages_available=64464 lowest_addr=0x0000000000320000
+page_alloc_init(): done!
+mem_pool 0xffff800000320000, mem_pool_size 0x0000000001000000 done
+Intel Specific Features:
+Type 0 - Original OEM
+Family 6 - Pentium Pro
+Model 15 - Unknown CPU model
+Brand: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
+Stepping: 6 Reserved: 0
+acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
+RSDT is at 0xfef0850
+header=0xffff80000fef0850
+length=38
+Found MP Floating Pointer Structure @0xffffffff800f69b0
+smp_init: MP Specification rev. 1.4
+smp_parse_config: LAPIC @0x00000000fee00000
+smp_parse_config:found cpu-0 enabled.
+smp_init: cpu 0, lapic_id = 0, BSP
+Created thread INIT_CPU0 with context:
+Context ipl 0x0000000000200282, pc 0xffffffff8010b46d, sp 0xffff800000324f20, rbp 0x0000000000000000, rbx 0xffff800000323f20, r12 0xffffffff8011d0c0,r13 0xffffffff8010cbd9,r14 0x0000000000000000,r15 0x0000000000000000
+Created thread RTC with context:
+Context ipl 0x0000000000200282, pc 0xffffffff8010b46d, sp 0xffff8000003278d0, rbp 0x0000000000000000, rbx 0xffff8000003268d0, r12 0xffffffff8011d098,r13 0xffffffff801053a4,r14 0x0000000000000000,r15 0x0000000000000000
+RTC registered
+Created thread KBD with context:
+Context ipl 0x0000000000200286, pc 0xffffffff8010b46d, sp 0xffff800000328f30, rbp 0x0000000000000000, rbx 0xffff800000327f30, r12 0xffffffff80118080,r13 0xffffffff80104e1e,r14 0x0000000000000000,r15 0x0000000000000000
+KBD registered
+CPU does not support x2APIC
+lapic_init() base 0x00000000fee00900
+This is BSP
+LAPIC: version 0x11, 5 LVTs
+LAPIC_SPURIOUS 0x00000000000003ff
+lapic_get_freq curr 0x00000000fffea7df
+lapic_freq 18918471945
+lapic_init done for cpu-0!
+KSH:000> 
+KSH: Please enter a command!
+KSH:001> 
+KSH: Please enter a command!
+KSH:002> 
+KSH: Please enter a command!
+KSH:003> i
+NAME(INIT_CPU0)-ID(0)-CPU(0)-STATE(READY)-POLICY(1)
+NAME(RTC)-ID(0)-CPU(0)-STATE(READY)-POLICY(1)
+NAME(KBD)-ID(0)-CPU(0)-STATE(RUNNING)-POLICY(1)
+KSH:004> 
