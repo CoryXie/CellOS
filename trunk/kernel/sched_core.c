@@ -9,7 +9,8 @@ pthread_spinlock_t reschedule_lock;
 
 sched_thread_t * kthread_current[CONFIG_NR_CPUS];
 
-extern void *sched_idle_thread (void *notused);
+extern void *sched_bsp_idle_thread (void *notused);
+extern void *sched_ap_idle_thread (void *notused);
 
 int do_kthreads (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     {
@@ -62,11 +63,21 @@ void sched_init(void)
     pthread_attr_setname_np(&thread_attr, name);
     
     pthread_attr_setautorun_np(&thread_attr, FALSE);
-    
-    pthread_create(&kurrent,
-                   &thread_attr,
-                   sched_idle_thread,
-                   NULL);
+
+    if (this_cpu() == 0)
+        {
+        pthread_create(&kurrent,
+                       &thread_attr,
+                       sched_bsp_idle_thread,
+                       NULL);
+        }
+    else
+        {
+        pthread_create(&kurrent,
+                       &thread_attr,
+                       sched_ap_idle_thread,
+                       NULL);
+        }
     
     sched_thread_remove_suspended(kurrent);
     

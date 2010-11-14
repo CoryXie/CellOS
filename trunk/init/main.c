@@ -22,7 +22,7 @@ void cpu_heart_beat (int cpu)
     }
 
 
-void *sched_idle_thread (void *notused)
+void *sched_bsp_idle_thread (void *notused)
     {
     interrupts_disable();
     
@@ -30,19 +30,30 @@ void *sched_idle_thread (void *notused)
     
     keyboard_init();
 
-#if CONFIG_SCHED_USE_APIC
     lapic_init();
-#else
-    pit_timer_init(CONFIG_HZ);
-#endif
 
     interrupts_enable();
 
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
 #endif
+
     thread_create_test();
-    cpu_heart_beat(0);
+
+    cpu_heart_beat(this_cpu());
+    }
+
+void *sched_ap_idle_thread (void *notused)
+    {
+    interrupts_disable();
+    
+    lapic_init();
+
+    interrupts_enable();
+
+    thread_create_test();
+    
+    cpu_heart_beat(this_cpu());
     }
 
 void main 

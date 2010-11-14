@@ -347,14 +347,11 @@ void smp_ap_ready (void)
         goto again;
 
 create_ap_task:
-        printk("AP cpu-%d creating tasks\n", this_cpu());
-        thread_create_test();
-#if CONFIG_SCHED_USE_APIC
-        lapic_init();
-#else
-        pit_timer_init(CONFIG_HZ);
-#endif
-    cpu_heart_beat(this_cpu());
+    sched_init();
+
+    reschedule();
+    
+    /* No reached */ 
     }
 
 void smp_ap_entry_point(void)
