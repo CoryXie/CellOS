@@ -41,7 +41,7 @@ void *sched_idle_thread (void *notused)
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
 #endif
-    //thread_create_test();
+    thread_create_test();
     cpu_heart_beat(0);
     }
 

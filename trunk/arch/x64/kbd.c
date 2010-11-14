@@ -122,8 +122,6 @@ unsigned char kbd_get_char(void)
 
     while (1) 
         {
-        sched_yield();
-
         /* Check for keyboard data. */
         
         code = ioport_in8(0x64);
@@ -139,6 +137,9 @@ unsigned char kbd_get_char(void)
         
         if ((code & (1 << 0)) == 0) 
             {
+            
+            sched_yield();
+            
             continue;
             }
 
@@ -160,6 +161,8 @@ unsigned char kbd_get_char(void)
                 {
                 alt = 0;
                 }
+            
+            sched_yield();
             
             continue;
             }
@@ -201,6 +204,8 @@ unsigned char kbd_get_char(void)
                 return ret;
                 }
             }
+        
+        sched_yield();
         }
     }
 
