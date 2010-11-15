@@ -51,7 +51,6 @@ struct sigevent;
  * clock_settime() and which cannot have negative clock jumps. The maximum
  * possible clock jump shall be implementation-defined.
  *
- *
  * CLOCK_PROCESS_CPUTIME_ID
  *
  * The identifier of the CPU-time clock associated with the process making
@@ -67,10 +66,10 @@ struct sigevent;
  * clock() or timer*() function call.
  */
 
-#define CLOCK_MONOTONIC             0x01
-#define CLOCK_PROCESS_CPUTIME_ID    0x02
-#define CLOCK_REALTIME              0x03
-#define CLOCK_THREAD_CPUTIME_ID     0x04
+#define CLOCK_REALTIME              0x01
+#define CLOCK_MONOTONIC             0x02
+#define CLOCK_THREAD_CPUTIME_ID     0x03
+#define CLOCK_PROCESS_CPUTIME_ID    0x04
 
 /*
  * TIMER_ABSTIME
@@ -96,6 +95,13 @@ extern int getdate_err;
 /* Maximum length of a string returned by asctime(), and ctime() */
 
 #define MAX_TIMESTR		70
+
+/*
+ * The tv_nsec member is only valid if greater than or equal to zero, 
+ * and less than the number of nanoseconds in a second (1 000 million).
+ * (1000000000 = 0x3B9ACA00, so it is in 32 bit range.)
+ */
+#define NSECS_PER_SEC 1000000000
 
 /* The <time.h> header shall declare the timespec structure */
 typedef struct timespec

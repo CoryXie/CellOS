@@ -20,7 +20,6 @@ typedef struct ktimer
 	void *          arg;		/* function argument */
     }ktimer_t;
 
-#define NSECS_PER_SEC 1000000000
 #define TWOSECONDS (NSECS_PER_SEC * 2)
 #define ABSTIME_INFINITY 0x7fffFfffFfffFfffLL
 

@@ -25,11 +25,6 @@ typedef unsigned short 		ushort;
 typedef unsigned int 		uint;
 typedef unsigned char		unchar;
 
-struct os_clock;
-
-/* Used for clock ID type in the clock and timer functions. */
-typedef struct os_clock *   clockid_t; 
-
 /* 
  * id_t 
  *
@@ -52,6 +47,9 @@ typedef id_t    key_t;  /* Used for XSI interprocess communication.*/
 
 typedef id_t    timer_t;/* Used for timer ID returned by timer_create().*/
                         /* Also used to identify a trace stream attributes object.*/
+                        
+/* Used for clock ID type in the clock and timer functions. */
+typedef id_t   clockid_t; 
 
 typedef int32_t	            cnt_t;
 

@@ -114,7 +114,7 @@ RATIONALE
  *   the CLOCK_MONOTONIC clock, in nanoseconds, is represented by
  *   {_POSIX_CLOCKRES_MIN}.
  */
-#define _POSIX_CLOCKRES_MIN             0x20000000
+#define _POSIX_CLOCKRES_MIN                20000
 
 /*
  * Minimum Values
