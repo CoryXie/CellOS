@@ -169,7 +169,7 @@ _x64_isr_stub:
 
     	EXC_PROLOGUE
     
-	#cld
+	cld
 
 	# Stop stack traces here
 	xorq %rbp, %rbp

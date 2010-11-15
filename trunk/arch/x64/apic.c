@@ -153,7 +153,7 @@ void lapic_spurious_handler
     )
     {
     lapic_eoi(); /* spurious interrupt does not need EOI but... */
-    printk("lapic_spurious_handler\n");
+    printk("lapic_spurious_handler on cpu-%d\n", this_cpu());
     }
 
 void lapic_ipi_handler
@@ -162,7 +162,7 @@ void lapic_ipi_handler
     )
     {
     lapic_eoi();
-    printk("lapic_ipi_handler\n");
+    printk("lapic_ipi_handler on cpu-%d\n", this_cpu());
     }
 
  void lapic_reschedule_handler
@@ -171,7 +171,8 @@ void lapic_ipi_handler
     )
     {
     lapic_eoi();
-    /* printk("lapic_reschedule_handler\n"); */
+    printk("lapic_reschedule_handler on cpu-%d\n", this_cpu());
+    reschedule();
     }
 
  /* PIT handler for bus frequency calculation. */
@@ -227,7 +228,7 @@ void lapic_ipi_handler
 
     asm("cli");
 
-    irq_unregister(INTR_IRQ0);
+    /* irq_unregister(INTR_IRQ0); */
 
     printk("lapic_get_freq curr %p\n", curr);
 

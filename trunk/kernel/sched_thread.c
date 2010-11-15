@@ -13,6 +13,7 @@ static spinlock_t sched_thread_suspended_list_lock;
 static list_t sched_thread_global_list;
 static spinlock_t sched_thread_global_list_lock;
 static int sched_thread_concurrency = 0;
+static id_t   sched_thread_id_next = 0;
 
 #define SCHED_THREAD_ZOMBIE_LOCK()    \
     spinlock_lock(&sched_thread_zombie_list_lock)
@@ -93,6 +94,7 @@ status_t sched_thread_add_global
     )
     {
     SCHED_THREAD_ALL_LOCK();
+    thread->id = sched_thread_id_next++;
     list_append(&sched_thread_global_list, &thread->global_list_node);
     SCHED_THREAD_ALL_UNLOCK();
     return OK;
@@ -141,17 +143,22 @@ void sched_thread_show
     pthread_t thread
     )
     {
-    printk("NAME(%s)-ID(%d)-CPU(%d)-STATE(%s)-POLICY(%d)\n",
+    printk("NAME(%s)-CPU(%d)-STATE(%s)-ID(%d):\nPOLICY(%d)-SP(%p)-STACK(%p-->%p)\n",
            thread->name,
-           thread->id,
            thread->cpu_idx,
            sched_thread_state_name(thread->state),
-           thread->sched_policy_id);
+           thread->id,
+           thread->sched_policy_id,
+           thread->saved_context.sp,
+           thread->stack_base,
+           thread->stack_top);
     }
 
 void sched_thread_global_show(void)
     {
     pthread_t thread;
+    
+    SCHED_LOCK();
     
     LIST_FOREACH(&sched_thread_global_list, iter)
         {
@@ -161,7 +168,9 @@ void sched_thread_global_show(void)
             {
             sched_thread_show(thread);
             }
-        }    
+        }  
+    
+    SCHED_UNLOCK();
     }
 
 /* The SCHED_LOCK is called in reschedule */
@@ -390,6 +399,7 @@ int pthread_create
     
 	new_thread->stack_base = stack_addr;
 	new_thread->stack_size = stack_size;
+	new_thread->stack_top = (char *)stack_addr + stack_size;
     new_thread->entry = start_routine;
     new_thread->param = arg;
     new_thread->sched_policy_id = attrP->policy;

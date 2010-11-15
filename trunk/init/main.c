@@ -7,7 +7,9 @@ void cpu_heart_beat (int cpu)
     volatile uint8_t *vidmem = (volatile uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
     int      count = 0;
 
-    /* Let's do a heart beat show!*/
+    lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
+
+    /* Let's do a heart beat show! */
 
     count = 0;
     while (TRUE)

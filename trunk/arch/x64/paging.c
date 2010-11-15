@@ -288,6 +288,8 @@ void x64_page_fault
 
     dump_stack(frame);
 
+    sched_thread_global_show();
+
     for(;;);
 
     }

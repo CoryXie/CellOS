@@ -543,6 +543,7 @@ void thread_create_test(void)
     uint64_t * params1 = kmalloc(16);
     uint64_t * params2 = kmalloc(16);
     pthread_attr_t thread_attr;
+    char name[NAME_MAX];
     
 #ifdef KMUTEX_TEST 
       {
@@ -559,8 +560,10 @@ void thread_create_test(void)
     params1[1] = 0;
 
     pthread_attr_init(&thread_attr);
+
+    snprintf(name, NAME_MAX, "cpu%d-task1", this_cpu());
     
-    pthread_attr_setname_np(&thread_attr, "task1");
+    pthread_attr_setname_np(&thread_attr, name);
     
     pthread_create(&task1,
                    &thread_attr,
@@ -569,8 +572,10 @@ void thread_create_test(void)
 
     params2[0] = 0x55aa55aa55aa55aa;
     params2[1] = 2;
+    
+    snprintf(name, NAME_MAX, "cpu%d-task2", this_cpu());
 
-    pthread_attr_setname_np(&thread_attr, "task2");
+    pthread_attr_setname_np(&thread_attr, name);
 
     pthread_create(&task2,
                    &thread_attr,

@@ -216,15 +216,24 @@ void x64_exception_handler
     
     if (irq_handlers[frame->int_no].handler == NULL)
         {
-        printk("irq: unhandled IRQ on cpu-%d #%i, error %p\n",
-            this_cpu(),frame->int_no, frame->error);
+        printk("irq: unhandled IRQ on cpu-%d #%i, error %p on thread %s\n",
+            this_cpu(),frame->int_no, frame->error,
+            kurrent ? kurrent->name : "NULL");
         
         x64_idt_reserved_exception(stack_frame);    
 
         dump_stack(frame);
         
         if (frame->int_no == 13)
+            {
+            int sel =  ((frame->error & 0xFFFF) >> 3);
+            int EXT = frame->error & 0x1;
+            int IDT = (frame->error & 0x2) >> 1;
+            int TI = (frame->error & 0x4) >> 2;
+            printk("SEL %d EXT %d IDT %d TI %d\n", sel, EXT, IDT, TI);
+            sched_thread_global_show();
             while(1);
+            }
         }
     else
         {

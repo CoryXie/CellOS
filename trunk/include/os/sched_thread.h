@@ -91,6 +91,9 @@ typedef struct sched_thread
     /* The thread stack space size */
     size_t          stack_size;     
 
+    /* The thread stack space top address */
+    unsigned char * stack_top;     
+
     /* Pending resume it */
     unsigned int    resume_pending; 
 

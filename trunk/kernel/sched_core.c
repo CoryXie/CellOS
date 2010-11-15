@@ -14,9 +14,7 @@ extern void *sched_ap_idle_thread (void *notused);
 
 int do_kthreads (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     {
-    
     sched_thread_global_show();
-
     return 0;
     }
 
@@ -148,7 +146,8 @@ void reschedule_new_stack(void)
         }
     
 	kurrent->state = STATE_RUNNING;
-
+    kurrent->cpu_idx = this_cpu();
+    
     //printk("Now running %s\n", kurrent->name);
     
     //sched_context_dump(&kurrent->saved_context);
@@ -246,7 +245,7 @@ void sched_tick
     {
     timer_ticks++;
 
-    if ((timer_ticks % 5000) == 0)
+    if ((timer_ticks % 100000) == 0)
         sched_thread_global_show();
     
     reschedule();
