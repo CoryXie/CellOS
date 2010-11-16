@@ -256,7 +256,7 @@ void lapic_dump(void)
         }
     }
 
- bool lapic_init(void)
+ status_t lapic_init(void)
     {
     cpu_addr_t base;
     uint32_t reg32;
@@ -264,7 +264,8 @@ void lapic_dump(void)
     if (!has_apic())
         {
         printk("NO LAPIC\n");
-        return false;
+        
+        return ERROR;
         }
 
     if (has_x2apic())
@@ -296,11 +297,9 @@ void lapic_dump(void)
 
     base = read_msr(MSR_IA32_APICBASE);
 
-    printk("lapic_init() base %p\n", base);
-
     base |= MSR_IA32_APICBASE_ENABLE;
 
-    write_msr(MSR_IA32_APICBASE,base);
+    write_msr(MSR_IA32_APICBASE, base);
 
     /* If bit 11 is 0, the LAPIC is disabled */
 
@@ -308,7 +307,7 @@ void lapic_dump(void)
         {
         printk("LAPIC disabled\n");
         
-        return false;
+        return ERROR;
         }
 
     if (base & MSR_IA32_APICBASE_BSP)
@@ -332,19 +331,20 @@ void lapic_dump(void)
         /* Map it into the kernel space */
 
         x64_lapic_reg_base = KERNEL_VIRT_MAP_BASE + base;
-
-        printk("lapic_init() x64_lapic_reg_base %p\n", x64_lapic_reg_base);
         }
 
     irq_register(INTR_LAPIC_TIMER, 
                 "LAPIC_TIMER", 
                 (addr_t)lapic_timer_irq_handler);
+    
     irq_register(INTR_LAPIC_SPURIOUS, 
                 "LAPIC_SPURIOUS", 
                 (addr_t)lapic_spurious_handler);
+    
     irq_register(INTR_LAPIC_IPI, 
                 "LAPIC_IPI", 
                 (addr_t)lapic_ipi_handler);
+    
     irq_register(INTR_LAPIC_RESCHEDULE, 
                 "LAPIC_RESCHEDULE", 
                 (addr_t)lapic_reschedule_handler);
@@ -361,6 +361,7 @@ void lapic_dump(void)
     printk("LAPIC: version 0x%x, %d LVTs\n", vers, maxlvt);
 
     lapic_write(LAPIC_TASKPRI, 0);
+    
     lapic_write(LAPIC_EOI, 0);
 
     if (maxlvt >= 4)
@@ -376,8 +377,8 @@ void lapic_dump(void)
      */
 
     lapic_write(LAPIC_SPURIOUS, INTR_LAPIC_SPURIOUS |
-                              LAPIC_SPURIOUS_LAPIC_ENABLED |
-                              LAPIC_SPURIOUS_FOCUS_DISABLED);
+                                LAPIC_SPURIOUS_LAPIC_ENABLED |
+                                LAPIC_SPURIOUS_FOCUS_DISABLED);
 
     lapic_write(LAPIC_TIMER_DIV_CONFIG, LAPIC_TDIV_8);
 
@@ -388,8 +389,10 @@ void lapic_dump(void)
     /* Send an Init Level De-Assert to synchronise arbitration ID's. */
 
     lapic_write(LAPIC_ICR_HIGH, 0);
+    
     lapic_write(LAPIC_ICR_LOW, LAPIC_DEST_ALLINC | LAPIC_DM_INIT |
                LAPIC_INT_LEVELTRIG);
+    
     while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY) ;
 
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
@@ -408,12 +411,10 @@ void lapic_dump(void)
     lapic_write(LAPIC_TASKPRI, 0);
     lapic_write(LAPIC_EOI, 0);
 
-    //lapic_dump();
-
     printk("lapic_init done for cpu-%d!\n", this_cpu());
 
     if (this_cpu() == 0)
         bsp_apic_init_done = 1;
 
-    return true;
+    return OK;
     }

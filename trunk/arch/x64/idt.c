@@ -230,7 +230,9 @@ void x64_exception_handler
             int EXT = frame->error & 0x1;
             int IDT = (frame->error & 0x2) >> 1;
             int TI = (frame->error & 0x4) >> 2;
-            printk("SEL %d EXT %d IDT %d TI %d\n", sel, EXT, IDT, TI);
+            printk("SEL 0x%X EXT %d IDT %d TI %d\n", sel, EXT, IDT, TI);
+            sched_context_dump(&kurrent->saved_context);
+
             sched_thread_global_show();
             while(1);
             }

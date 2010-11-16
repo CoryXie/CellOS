@@ -151,7 +151,7 @@
 #define IMCR_IOAPIC_OFF                 0x00    /* IMCR IOAPIC route disable */
 
 #ifndef __ASM__
-bool lapic_init(void);
+status_t lapic_init(void);
 uint8_t lapic_id(void);
 void lapic_ipi(uint32_t dest, uint32_t type, uint8_t vec);
 void lapic_write(uint32_t offset, uint32_t value);

@@ -19,7 +19,7 @@ void cpu_heart_beat (int cpu)
         if (count > 26) 
             count = 0;
         
-        sched_yield();
+        //sched_yield();
         }
     }
 
@@ -40,7 +40,7 @@ void *sched_bsp_idle_thread (void *notused)
     acpica_sub_system_init ();
 #endif
 
-    thread_create_test();
+    //thread_create_test();
 
     cpu_heart_beat(this_cpu());
     }
@@ -53,7 +53,7 @@ void *sched_ap_idle_thread (void *notused)
 
     interrupts_enable();
 
-    thread_create_test();
+    //thread_create_test();
     
     cpu_heart_beat(this_cpu());
     }

@@ -1,3 +1,5 @@
+#include <arch/x86/x64/context.h>
+
 .align 16,0x90
 
 .extern x64_exception_handler
@@ -38,20 +40,6 @@
  * The rest require dummy error codes.
  */
 
-#define IREGISTER_SPACE	0x58
-
-#define IOFFSET_RAX	0x0
-#define IOFFSET_RCX	0x8
-#define IOFFSET_RDX	0x10
-#define IOFFSET_RSI	0x18
-#define IOFFSET_RDI	0x20
-#define IOFFSET_R8	0x28
-#define IOFFSET_R9	0x30
-#define IOFFSET_R10	0x38
-#define IOFFSET_R11	0x40
-#define IOFFSET_RBP	0x48
-#define IOFFSET_INTNO	0x50
-
  /*
   * This macro creates a stub for an ISR which does NOT pass it's own 
   * error code (adds a dummy errcode byte)
@@ -66,7 +54,7 @@
 _x64_isr\isr_num:
 	pushq	$0 /* a dummy errno */
 	subq $(IREGISTER_SPACE), %rsp
-	movq $(\isr_num), IOFFSET_INTNO(%rsp)
+	movq $(\isr_num), ISTATE_OFFSET_INTNO(%rsp)
     	jmp _x64_isr_stub
 .endm
 
@@ -81,34 +69,49 @@ _x64_isr\isr_num:
 
 _x64_isr\isr_num:
 	subq $IREGISTER_SPACE, %rsp
-	movq $(\isr_num), IOFFSET_INTNO(%rsp)
+	movq $(\isr_num), ISTATE_OFFSET_INTNO(%rsp)
     	jmp _x64_isr_stub
 .endm
 
 .macro EXC_PROLOGUE
-	movq %rax, IOFFSET_RAX(%rsp)
-	movq %rcx, IOFFSET_RCX(%rsp)
-	movq %rdx, IOFFSET_RDX(%rsp)
-	movq %rsi, IOFFSET_RSI(%rsp)
-	movq %rdi, IOFFSET_RDI(%rsp)
-	movq %r8,  IOFFSET_R8(%rsp)
-	movq %r9,  IOFFSET_R9(%rsp)
-	movq %r10, IOFFSET_R10(%rsp)
-	movq %r11, IOFFSET_R11(%rsp)
-	movq %rbp, IOFFSET_RBP(%rsp)
+	movq %rax, ISTATE_OFFSET_RAX(%rsp)
+	movq %rbx, ISTATE_OFFSET_RBX(%rsp)
+	movq %rcx, ISTATE_OFFSET_RCX(%rsp)
+	movq %rdx, ISTATE_OFFSET_RDX(%rsp)
+	movq %rsi, ISTATE_OFFSET_RSI(%rsp)
+	movq %rdi, ISTATE_OFFSET_RDI(%rsp)
+	movq %rbp, ISTATE_OFFSET_RBP(%rsp)
+	movq %r8, ISTATE_OFFSET_R8(%rsp)
+	movq %r9, ISTATE_OFFSET_R9(%rsp)
+	movq %r10, ISTATE_OFFSET_R10(%rsp)
+	movq %r11, ISTATE_OFFSET_R11(%rsp)
+	movq %r12, ISTATE_OFFSET_R12(%rsp)
+	movq %r13, ISTATE_OFFSET_R13(%rsp)
+	movq %r14, ISTATE_OFFSET_R14(%rsp)
+	movq %r15, ISTATE_OFFSET_R15(%rsp)
+
+	movq %rbp, ISTATE_OFFSET_RBP_FRAME(%rsp)
+	movq ISTATE_OFFSET_RIP(%rsp), %rax
+	movq %rax, ISTATE_OFFSET_RIP_FRAME(%rsp)
+	leaq ISTATE_OFFSET_RBP_FRAME(%rsp), %rbp
 .endm
 
 .macro EXC_EPILOGUE
-	movq IOFFSET_RAX(%rsp), %rax
-	movq IOFFSET_RCX(%rsp), %rcx
-	movq IOFFSET_RDX(%rsp), %rdx
-	movq IOFFSET_RSI(%rsp), %rsi
-	movq IOFFSET_RDI(%rsp), %rdi
-	movq IOFFSET_R8(%rsp),  %r8
-	movq IOFFSET_R9(%rsp),  %r9
-	movq IOFFSET_R10(%rsp), %r10
-	movq IOFFSET_R11(%rsp), %r11
-	movq IOFFSET_RBP(%rsp), %rbp
+	movq ISTATE_OFFSET_RAX(%rsp), %rax
+	movq ISTATE_OFFSET_RBX(%rsp), %rbx
+	movq ISTATE_OFFSET_RCX(%rsp), %rcx
+	movq ISTATE_OFFSET_RDX(%rsp), %rdx
+	movq ISTATE_OFFSET_RSI(%rsp), %rsi
+	movq ISTATE_OFFSET_RDI(%rsp), %rdi
+	movq ISTATE_OFFSET_RBP(%rsp), %rbp
+	movq ISTATE_OFFSET_R8(%rsp), %r8
+	movq ISTATE_OFFSET_R9(%rsp), %r9
+	movq ISTATE_OFFSET_R10(%rsp), %r10
+	movq ISTATE_OFFSET_R11(%rsp), %r11
+	movq ISTATE_OFFSET_R12(%rsp), %r12
+	movq ISTATE_OFFSET_R13(%rsp), %r13
+	movq ISTATE_OFFSET_R14(%rsp), %r14
+	movq ISTATE_OFFSET_R15(%rsp), %r15
 .endm
 
 ISR_NOERRCODE 0
@@ -169,14 +172,11 @@ _x64_isr_stub:
 
     	EXC_PROLOGUE
     
-	cld
-
-	# Stop stack traces here
-	xorq %rbp, %rbp
-
 	# %rdi - pointer to stack frame as 1st parameter    
 	movq %rsp, %rdi   	
 
+	cld
+	
     	call x64_exception_handler
 
     	EXC_EPILOGUE
@@ -190,28 +190,6 @@ _x64_isr_stub:
 _x64_isr_reserved:    
 	pushq	$0 /* a dummy errno */
 	subq $(IREGISTER_SPACE), %rsp
-	movq $48, IOFFSET_INTNO(%rsp)
+	movq $48, ISTATE_OFFSET_INTNO(%rsp)
     	jmp _x64_isr_stub
 
-.globl switch_context
-
-switch_context:
-	pushq	%rbp
-	pushq	%rdi
-	pushq	%rsi
-	pushq	%rcx
-	pushq	%r8
-	pushq	%r9
-	pushq	%r10
-	pushq	%r11
-	movq	%rsp,(%rsi)             /* *save_sp = rsp */
-	movq	(%rdi),%rsp             /* rsp = *new_sp */
-	popq	%r11
-	popq	%r10
-	popq	%r9
-	popq	%r8
-	popq	%rcx
-	popq	%rsi
-	popq	%rdi
-	popq	%rbp
-	ret    
