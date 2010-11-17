@@ -3,7 +3,7 @@
 #include <os.h>
 long cpu_intr_flags[CONFIG_NR_CPUS];
 
-uint64_t timer_ticks = 0;
+uint64_t timer_ticks[CONFIG_NR_CPUS];
 
 pthread_spinlock_t reschedule_lock;
 
@@ -34,6 +34,21 @@ CELL_OS_CMD(
     "if the cpu arguments are not specified, then list for all cpus."
     );
 
+int do_ticks (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {
+    for (int i = 0; i < smp_total_cpu_count(); i++)
+        printk("cpu%d - %lld\n", i, timer_ticks[i]);
+    
+    return 0;
+    }
+
+CELL_OS_CMD(
+    ticks,    CONFIG_NR_CPUS + 1,        1,    do_ticks,
+    "get already running ticks",
+    "[cpu...]\n"
+    "get the current ticks that has passed"
+    );
+
 extern sched_cpu_t* current_cpus[];
 
 void sched_core_init(void)
@@ -54,6 +69,8 @@ void sched_init(void)
     char name[NAME_MAX];
     pthread_attr_t thread_attr;
 
+    timer_ticks[this_cpu()] = 0;
+    
     snprintf(name, NAME_MAX, "INIT_CPU%d", this_cpu());
     
     pthread_attr_init(&thread_attr);
@@ -250,9 +267,9 @@ void sched_tick
     stack_frame_t *frame
     )
     {
-    timer_ticks++;
+    timer_ticks[this_cpu()]++;
 
-    if ((timer_ticks % 100000) == 0)
+    if ((timer_ticks[this_cpu()] % 100000) == 0)
         sched_thread_global_show();
     
     reschedule();
