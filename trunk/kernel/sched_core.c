@@ -144,6 +144,13 @@ void reschedule_new_stack(void)
         //printk("No more\n");
         kurrent = cur;
         }
+    else
+        {
+        if (cur->state == STATE_READY)
+            cur->sched_policy->thread_enqueue(cur->sched_runq,
+                                              cur, TRUE);
+
+        }
     
 	kurrent->state = STATE_RUNNING;
     kurrent->cpu_idx = this_cpu();
@@ -683,17 +690,12 @@ int sched_rr_get_interval
  */
  
 int sched_yield(void)
-    {
+    {    
     SCHED_LOCK();
-
+    
     kurrent->state = STATE_READY;
 
-    kurrent->sched_policy->thread_enqueue(kurrent->sched_runq,
-                                          kurrent, TRUE);
-
     SCHED_UNLOCK();
-        
-    reschedule();
     
     return OK;
     }

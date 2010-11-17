@@ -116,7 +116,7 @@ typedef struct sched_thread
     struct sched_thread_cleanup free_me;
 
     /* Used for serialised access to public thread state */
-    pthread_mutex_t thread_lock;
+    pthread_spinlock_t thread_lock;
     
     /* Used for async-cancel safety */
     pthread_mutex_t cancel_lock; 

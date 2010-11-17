@@ -13,13 +13,13 @@
 
 #define CONFIG_SMP                          1
 
-#define CONFIG_NR_CPUS                      2
+#define CONFIG_NR_CPUS                      8
 
 #define CONFIG_HZ                           1000
 
 #define CONFIG_SCHED_USE_APIC               1
 
-#define CONFIG_SYS_CBSIZE           1024
+#define CONFIG_SYS_CBSIZE                   1024
 
 #define CONFIG_SYS_MAXARGS                  16
 

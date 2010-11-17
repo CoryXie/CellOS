@@ -403,6 +403,8 @@ int pthread_create
     new_thread->entry = start_routine;
     new_thread->param = arg;
     new_thread->sched_policy_id = attrP->policy;
+    
+    pthread_spin_init(&new_thread->thread_lock, FALSE);
         
 	context_save(&new_thread->saved_context);
     
