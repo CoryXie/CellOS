@@ -16,7 +16,7 @@
 
 extern sched_thread_t * kthread_current[];
 extern list_t   kthread_list[];
-extern uint64_t timer_ticks;
+extern uint64_t timer_ticks[];
 extern long     cpu_intr_flags[];
 extern pthread_spinlock_t reschedule_lock;
 
