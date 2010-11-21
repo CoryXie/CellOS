@@ -8,12 +8,14 @@
 typedef struct spinlock_t
     {
     unsigned int counter;
+    ipl_t flags;
     } spinlock_t;
 
 /* Initialises a statically-declared spinlock. */
 #define SPINLOCK_INITIALISER(_name)     \
     {                                   \
     .counter = 0,                       \
+    .flags = 0                          \
     }
 
 /* Statically declares a new spinlock. */
@@ -31,6 +33,7 @@ typedef struct spinlock_t
 static inline void spinlock_init (spinlock_t *lock)
     {
     lock->counter = 0;
+    lock->flags = 0;
     }
 
 /*
@@ -708,8 +711,8 @@ static inline int ticket_lockable(ticketlock *t)
 	return (u.s.ticket == u.s.users);
     }
 
-#define spinlock_lock basic_spinlock_lock
-#define spinlock_unlock basic_spinlock_unlock
+#define spinlock_lock ticket_spinlock_lock
+#define spinlock_unlock ticket_spinlock_unlock
 #define spinlock_trylock  basic_spinlock_trylock
 
 typedef union rwticket rwticket;

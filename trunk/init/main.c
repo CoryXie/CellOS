@@ -7,8 +7,6 @@ void cpu_heart_beat (int cpu)
     volatile uint8_t *vidmem = (volatile uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
     int      count = 0;
 
-    lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
-
     /* Let's do a heart beat show! */
 
     count = 0;
@@ -34,13 +32,15 @@ void *sched_bsp_idle_thread (void *notused)
 
     lapic_init();
 
-    interrupts_enable();
-
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
 #endif
 
     thread_create_test();
+
+    interrupts_enable();
+
+    lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
 
     cpu_heart_beat(this_cpu());
     }
@@ -51,9 +51,9 @@ void *sched_ap_idle_thread (void *notused)
     
     lapic_init();
 
-    interrupts_enable();
-
     thread_create_test();
+
+    interrupts_enable();
     
     cpu_heart_beat(this_cpu());
     }

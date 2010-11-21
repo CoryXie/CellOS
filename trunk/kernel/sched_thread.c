@@ -125,10 +125,6 @@ char *sched_thread_state_name(int state)
             return "DELAY";
         case STATE_PENDING:
             return "PENDING";
-        case STATE_CANCEL_ARMED:
-            return "CANCEL_ARMED";
-        case STATE_CANCELING:
-            return "CANCELING";
         case STATE_COMPLETED:
             return "COMPLETED";
         case STATE_TERMINATED:
@@ -171,31 +167,6 @@ void sched_thread_global_show(void)
         }  
     
     SCHED_UNLOCK();
-    }
-
-/* The SCHED_LOCK is called in reschedule */
-void sched_thread_common_entry
-    (
-    void *param
-    )
-    {
-    /*
-     * When context_restore() for this thread is called,
-     * it restores starting here, this is the point for
-     * newly created thread to start running!
-     */
-     
-    kurrent->resume_cycle = rdtsc();
-
-    SCHED_UNLOCK();
-    
-    /* Restore the saved interrupt flags */
-    
-    interrupts_restore(kurrent->saved_context.ipl);
-    
-    kurrent->entry((void *)(kurrent->param));  
-
-    kurrent->state = STATE_COMPLETED;
     }
 
 /*
@@ -305,8 +276,8 @@ int pthread_create
     sched_policy = sched_policy_get_by_id(attrP->policy);
     if (!sched_policy)
         {
-        printk("No scheduling policy %d registered!\n", 
-            attrP->policy);
+        printk("No scheduling policy %d registered!\n", attrP->policy);
+        
   		return EAGAIN;
         }
 
@@ -317,6 +288,7 @@ int pthread_create
  	if (!new_thread) 
         {
         printk("No memory for a new thread structure\n");
+        
   		return EAGAIN;
   	    }
 
@@ -345,7 +317,9 @@ int pthread_create
  		if (!stack_addr) 
             {
             printk("No memory for thread stack area\n");
+            
 			kfree(new_thread);
+            
   			return EAGAIN;
   		    }
 		new_thread->stack_base_free = stack_addr;
@@ -384,6 +358,7 @@ int pthread_create
 	new_thread->magic = MAGIC_VALID;
 	new_thread->sig_pending = attrP->initial_signal;
 	new_thread->sig_blocked = 0;
+    new_thread->flags = attrP->intial_flags;
 
 	new_thread->abort = NULL;
 
@@ -416,30 +391,31 @@ int pthread_create
 	new_thread->saved_context.ipl = interrupts_read();
 
 	new_thread->preemption_disabled = 0;
-	new_thread->sched_cpu = current_cpus[this_cpu()];
+	new_thread->sched_cpu = kurrent_cpu;
 	new_thread->tsk = NULL;
 	new_thread->asp = NULL;
-    
     new_thread->cpu_idx = this_cpu();
     
     sched_thread_arch_init(new_thread);
-
-	new_thread->fpu_ready = FALSE;
-	new_thread->use_fpu = attrP->usefpu;
     
     if (sched_policy->attach_cpu_group(&new_thread->cpu_set) != OK)
         {
         printk("Could not attached thread to the cpu group\n");
+        
         return EPERM;
         }
 
+    //sched_runq = sched_policy->get_cpu_runq(new_thread->sched_cpu);
     sched_runq = sched_policy->get_sys_runq();
 
     new_thread->sched_runq = sched_runq;
 
+    sched_thread_add_global(new_thread);
+
     printk("Created thread %s\n", new_thread->name);
     
-    if (attrP->autorun)
+    if ((attrP->intial_flags & THREAD_AUTO_RUN) &&
+        !(attrP->intial_flags & THREAD_STANDALONE))
         {
         new_thread->state = STATE_READY;
         
@@ -451,8 +427,6 @@ int pthread_create
 
         sched_thread_add_suspended(new_thread);
         }
-
-    sched_thread_add_global(new_thread);
     
 	return OK;
     }

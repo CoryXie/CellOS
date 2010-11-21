@@ -9,6 +9,8 @@
 #include <arch/x86/common/kbd.h>
 #include <arch/x86/common/bitops.h>
 #include <arch/x86/x64/x64.h>
+#include <arch/x86/x64/ctrlregs.h>
+#include <arch/x86/x64/descriptor.h>
 #include <arch/x86/x64/vm.h>
 #include <arch/x86/x64/atomic.h>
 #include <arch/x86/x64/barrier.h>
@@ -22,6 +24,7 @@
 #include <arch/x86/x64/paging.h>
 #include <arch/x86/x64/context.h>
 #include <arch/x86/x64/msr.h>
+#include <arch/x86/x64/sched_arch.h>
 
 #endif /*__INCLUDE_ARCH_H */
 

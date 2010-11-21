@@ -14,27 +14,28 @@
 /* Thread States */
 typedef enum sched_thread_state
     {
-    STATE_READY = 1,        /* Ready - on a runq */
-    STATE_RUNNING = 2,      /* Running - standalone */
-    STATE_SUSPENDED = 3,    /* Controled not running - on a suspend waitq */
-    STATE_DELAY = 4,        /* Give up CPU time - on a delayed waitq */
-    STATE_PENDING = 5,      /* Wait on event - on a pending waitq */
-    STATE_CANCEL_ARMED = 6, /* Armed with cancel requests */
-    STATE_CANCELING = 7,    /* Canceling */
-    STATE_COMPLETED = 8,    /* Run to finish normally */
-    STATE_TERMINATED = 9    /* Forced to die reluctantly */
+    STATE_READY =       (1 << 0),  /* Ready - on a runq */
+    STATE_RUNNING =     (1 << 1),  /* Running - standalone */
+    STATE_SUSPENDED =   (1 << 2),  /* Controled not running - on a suspend waitq */
+    STATE_DELAY =       (1 << 3),  /* Give up CPU time - on a delayed waitq */
+    STATE_PENDING =     (1 << 4),  /* Wait on event - on a pending waitq */
+    STATE_COMPLETED =   (1 << 5),  /* Run to finish normally */
+    STATE_TERMINATED =  (1 << 6)   /* Forced to die reluctantly */
     }SCHED_THREAD_STATE;
 
 typedef enum sched_thread_flag
     {
-    THREAD_CANCEL_PENDING = 0, 
-    THREAD_CANCEL_TYPE = 1, 
-    THREAD_JOINABLE = 2, 
-    THREAD_FINISHED = 3, 
-    THREAD_TIMER_ARMED = 4, 
-    THREAD_WAIT_FOR_JOIN = 5, 
-    THREAD_OK_TO_FINISH_JOIN = 6,
-    THREAD_SIGNAL_INTERRUPTIBLE = 7
+    THREAD_AUTO_RUN =           (1 << 0), 
+    THREAD_STANDALONE =         (1 << 1), 
+    THREAD_JOINABLE =           (1 << 2), 
+    THREAD_FINISHED =           (1 << 3), 
+    THREAD_TIMER_ARMED =        (1 << 4), 
+    THREAD_USE_FPU =            (1 << 5), 
+    THREAD_FPU_READY =          (1 << 6), 
+    THREAD_UNPREEMPTABL =       (1 << 7),
+    THREAD_INTERRUPTIBLE =      (1 << 8),
+    THREAD_CANCEL_PENDING =     (1 << 9),
+    THREAD_WAIT_FOR_JOIN =      (1 << 10)
     }SCHED_THREAD_FLAG;
 
 struct sched_thread;
@@ -100,6 +101,8 @@ typedef struct sched_thread
     /* Thread flags */
     unsigned long   flags;    
 
+    unsigned long   runcount;  
+    
     /* Pending signals */
     sigset_t        sig_pending;
 
@@ -116,7 +119,7 @@ typedef struct sched_thread
     struct sched_thread_cleanup free_me;
 
     /* Used for serialised access to public thread state */
-    pthread_spinlock_t thread_lock;
+    spinlock_t thread_lock;
     
     /* Used for async-cancel safety */
     pthread_mutex_t cancel_lock; 
@@ -223,16 +226,13 @@ typedef struct sched_thread_attr
     /* Thread stack size */
 	size_t		stacksize;
 
-    /* Is this thread using FPU */
-	BOOL        usefpu;
-
     /* Thread detach state */
 	int32_t		detachstate;
 
     /* Initial singal state */
     sigset_t    initial_signal;
 
-    /* Initial singal state */
+    /* Autorun state */
     BOOL        autorun;
 
     /* Scheduling policy */
@@ -250,6 +250,9 @@ typedef struct sched_thread_attr
 
     /* Scheduling contention scope */
     int         contentionscope;
+
+    /* Bitmask flags */
+    unsigned long   intial_flags;
     
     /* Scheduling parameter structure size */
     uint32_t    sched_param_size;
@@ -284,6 +287,18 @@ int pthread_attr_setautorun_np
     (
     pthread_attr_t *attr, 
     int initial_state
+    );
+
+int pthread_attr_setflags_np
+    (
+    pthread_attr_t *attr, 
+    unsigned long flags
+    );
+
+int pthread_attr_getflags_np
+    (
+    pthread_attr_t *attr, 
+    unsigned long * flags
     );
 
 status_t sched_thread_init(void);

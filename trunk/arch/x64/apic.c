@@ -171,8 +171,8 @@ void lapic_ipi_handler
     )
     {
     lapic_eoi();
-    printk("lapic_reschedule_handler on cpu-%d\n", this_cpu());
-    reschedule();
+    //printk("lapic_reschedule_handler on cpu-%d\n", this_cpu());
+    //reschedule();
     }
 
  /* PIT handler for bus frequency calculation. */

@@ -40,8 +40,11 @@ void sched_cpu_init(void)
             }
         
 		spinlock_init(&cpus[i].lock);
-
+        
+        list_init(&cpus[i].cpu_group_list);
+        
         current_cpus[i] = &cpus[i];
+        current_cpus[i]->cpu_idx = i;
 	    }
     
     cpu_group_cout = 0;

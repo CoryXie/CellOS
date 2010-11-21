@@ -5,7 +5,7 @@ long cpu_intr_flags[CONFIG_NR_CPUS];
 
 uint64_t timer_ticks[CONFIG_NR_CPUS];
 
-pthread_spinlock_t reschedule_lock;
+spinlock_t reschedule_lock;
 
 sched_thread_t * kthread_current[CONFIG_NR_CPUS];
 
@@ -53,7 +53,7 @@ extern sched_cpu_t* current_cpus[];
 
 void sched_core_init(void)
     {
-    pthread_spin_init(&reschedule_lock, FALSE);
+    spinlock_init(&reschedule_lock);
     
     sched_cpu_init();
         
@@ -68,7 +68,8 @@ void sched_init(void)
     {
     char name[NAME_MAX];
     pthread_attr_t thread_attr;
-
+    ulong flags;
+    
     timer_ticks[this_cpu()] = 0;
     
     snprintf(name, NAME_MAX, "INIT_CPU%d", this_cpu());
@@ -78,6 +79,12 @@ void sched_init(void)
     pthread_attr_setname_np(&thread_attr, name);
     
     pthread_attr_setautorun_np(&thread_attr, FALSE);
+
+    pthread_attr_getflags_np(&thread_attr, &flags);
+
+    flags |= THREAD_STANDALONE | THREAD_UNPREEMPTABL;
+    
+    pthread_attr_setflags_np(&thread_attr, flags);
 
     if (this_cpu() == 0)
         {
@@ -98,13 +105,15 @@ void sched_init(void)
     
     kurrent->state = STATE_RUNNING;
 
-    kurrent_cpu->current = kurrent;
+    kurrent_cpu->prev_thread = kurrent_cpu->current = kurrent;
     
-    kurrent_cpu->idle = kurrent;
+    kurrent_cpu->idle_thread = kurrent;
 
     kurrent->saved_context.ipl &= ~(RFLAGS_IF);
+
+    SCHED_LOCK();
     
-	context_restore(&kurrent_cpu->idle->saved_context);
+	context_restore(&kurrent_cpu->idle_thread->saved_context);
     }
 
 void sched_context_dump (sched_context_t * contxt)
@@ -120,146 +129,136 @@ void sched_context_dump (sched_context_t * contxt)
         );
     }
 
-/* Scheduler stack switch wrapper
- *
- * Second part of the reschedule() function
- * using new stack. Handling the actual context
- * switch to a new thread.
- *
- * Assume kurrent->lock is held.
- */
- 
-void reschedule_new_stack(void)
+/* The SCHED_LOCK is called in reschedule */
+void sched_thread_common_entry
+    (
+    void *param
+    )
     {
-    pthread_t cur = kurrent;
+    sched_thread_arch_post_switch(kurrent);
+    
+    SCHED_UNLOCK();
 
-    //printk("schedule thread %s state %s\n", kurrent->name, sched_thread_state_name(kurrent->state));
+    interrupts_restore(kurrent->saved_context.ipl);
+    
+    kurrent->state = STATE_RUNNING;
+    kurrent->resume_cycle = rdtsc();
 
-    switch(cur->state)
+    if (kurrent != kurrent_cpu->prev_thread &&
+        !(kurrent_cpu->prev_thread->flags & THREAD_STANDALONE))
         {
-        case STATE_READY:
-            kurrent = NULL;
-            break;
-        case STATE_PENDING:
-            kurrent = NULL;
-            break;
-        case STATE_DELAY:
-            kurrent = NULL;
-            break;
-        case STATE_SUSPENDED:
-            kurrent = NULL;
-            break;
-        case STATE_COMPLETED:
-            kurrent = NULL;
-            break;
+        kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
+            kurrent_cpu->prev_thread->sched_runq,
+            kurrent_cpu->prev_thread, FALSE);
         }
-    
-    kurrent = sched_find_best_thread(kurrent);
 
-    if (kurrent == NULL)
-        {
-        //printk("No more\n");
-        kurrent = cur;
-        }
-    else
-        {
-        if (cur->state == STATE_READY)
-            cur->sched_policy->thread_enqueue(cur->sched_runq,
-                                              cur, TRUE);
+    kurrent->entry((void *)(kurrent->param));  
 
-        }
-    
-	kurrent->state = STATE_RUNNING;
-    kurrent->cpu_idx = this_cpu();
-    
-    //printk("Now running %s\n", kurrent->name);
-    
-    //sched_context_dump(&kurrent->saved_context);
-    
-	context_restore(&kurrent->saved_context);
-	/* not reached */
+    kurrent->state = STATE_COMPLETED;
     }
+
 /*
  * reschedule - scheduler core entry point
  */
  
 void reschedule(void)
     {
-	volatile ipl_t ipl;
+    ipl_t ipl;
+    sched_thread_t * new_thread;
     
-	ipl = interrupts_disable();
+    ipl = interrupts_disable();
 
     SCHED_LOCK();
-    
-	/* Update thread accounting */
-    
-	kurrent->cycles += rdtsc() - kurrent->resume_cycle;
+        
+    new_thread = sched_find_best_thread(NULL);
 
-    /* 
-     * Save the context of the current thread and once this
-     * call returns, the current thread is not considered as
-     * running. The context_save() will return 1 and the CPU
-     * continues running in the scheduler context.
-     */
-    
-	if (!context_save(&kurrent->saved_context)) 
+    if (new_thread == NULL)
         {
-		/*
-		 * When context_restore() for this thread is called,
-		 * it restores starting here, thus this is the point
-		 * where threads leave reschedule();
-		 */
-		 
-		kurrent->resume_cycle = rdtsc();
+        new_thread = kurrent_cpu->idle_thread;
 
-        SCHED_UNLOCK();
+        kurrent_cpu->idle = TRUE;
+        }
+    else
+        {
+        kurrent_cpu->idle = FALSE;
+        }
 
-        /* Restore the saved interrupt flags */
+    if (new_thread != kurrent)
+        {
+        kurrent_cpu->prev_thread = kurrent;
+        kurrent->state = STATE_READY;
+        kurrent->saved_context.ipl = ipl;
         
-		interrupts_restore(kurrent->saved_context.ipl);
+        kurrent = new_thread;
         
-		return;
-	    }
+        kurrent_cpu->current = kurrent;
+        kurrent->cpu_idx = kurrent_cpu->cpu_idx;
+        kurrent->sched_cpu = kurrent_cpu;
 
-    /* 
-     * After the above context_save(), the CPU continues 
-     * running in the scheudler context ... however, it's
-     * still using the stack space of the preempted thread
-     * since there is no stack switch by the context_save().
-     */
+        kurrent->runcount++;
+        
+#ifdef SCHED_DETAIL        
+        if ((kurrent->runcount % 10000) == 0)
+            printk("cpu%d - switching from %s to %s\n", 
+            this_cpu(), kurrent_cpu->prev_thread->name, kurrent->name);
+#endif  
+        /* 
+         * context_save() returns 1, which causes context_restore() to 
+         * run; context_restore() will have two possible directions:
+         *
+         * 1. If the new thread (kurrent) is the first time to run, it
+         * will return to sched_thread_common_entry();
+         *
+         * 2. If the new thread (kurrent) has already been run, which
+         * means it has previously been context_save()'d, then it will
+         * return just back to the point where context_save() give off
+         * control in the last context_save() call, and that is just
+         * where the 'if' statement sits. This time, context_restore()
+         * returns 0, and thus the 'if' statement judges to go the 
+         * remaining part of this function. 
+         *
+         * This is why context_save() is marked as 'returns_twice'.
+         * Since the context_restore() does not return to its normal
+         * rturn path but causes the cpu to go somewhere else, it is 
+         * marked as 'noreturn'.
+         *
+         * Another effect of context_restore() is that is switches the
+         * stack pointer; the code before context_save() is actually
+         * running with the stack space of 'kurrent_cpu->prev_thread',
+         * while the code after context_restore() runs with stack space
+         * of the new thread (kurrent). For this reason, it is critical
+         * to note that the local varibles after context_restore() are
+         * actually the "old local variables" of the new thread in its
+         * last run to "reschedule".
+         */
+        if (context_save(&kurrent_cpu->prev_thread->saved_context)) 
+            {
+            context_restore(&kurrent->saved_context);
+            }
 
-    /* Save the interrupt flags for the preempted thread */
-    
-	kurrent->saved_context.ipl = ipl;
+        kurrent->state = STATE_RUNNING;
+        kurrent->resume_cycle = rdtsc();
 
-    /* 
-     * The scheudler context is saved here, and then updated
-     * below to allow the scheduler to run in the stack space
-     * of the CPU scheduler, and thus the scheduler continues
-     * running from the reschedule_new_stack().
-     *
-     * This is critial for SMP schedulers. Consider a case that
-     * the current preempted thread is blocked on this CPU, but
-     * it could be rescheduled on another CPU just after it is
-     * blocked (put onto the waitq and found runnable by another
-     * CPU). At that moment, this CPU may be still using the
-     * stack space of that thread to schedule other threads on
-     * this CPU, but since the thread is put to run on another
-     * CPU, its stack space would be corrupted. So, before the
-     * preempted thread is put onto the waitq (blocked), we should
-     * switch the stack space of the CPU scheduler context.
-     */
-    
-	context_save(&kurrent_cpu->saved_context);
-    
-	context_update(&kurrent_cpu->saved_context, 
-                reschedule_new_stack,
-	            kurrent_cpu->stack, 
-	            CONFIG_KSTACK_SIZE);
+        if (!(kurrent_cpu->prev_thread->flags & THREAD_STANDALONE))
+            {
+            kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
+                kurrent_cpu->prev_thread->sched_runq,
+                kurrent_cpu->prev_thread, FALSE);
+            }
+        }
+    else
+        {
+#ifdef SCHED_DETAIL        
+        printk("cpu%d - No switching, staying %s\n",
+               this_cpu(), kurrent->name);
+#endif        
+        }
 
-	context_restore(&kurrent_cpu->saved_context);
+    sched_thread_arch_post_switch(kurrent);
     
-	/* not reached */
+    SCHED_UNLOCK();
+
+    interrupts_restore(kurrent->saved_context.ipl);
     }
 
 void sched_tick
@@ -271,8 +270,9 @@ void sched_tick
 
     if ((timer_ticks[this_cpu()] % 100000) == 0)
         sched_thread_global_show();
-    
-    reschedule();
+
+    if ((timer_ticks[this_cpu()] % 1000) == 0)
+        reschedule();
     }
 
 /*
@@ -387,7 +387,7 @@ int sched_getparam
     pid_t pid, 
     struct sched_param *param
     )
-    {
+    {    
     return OK;
     }
 
@@ -708,11 +708,7 @@ int sched_rr_get_interval
  
 int sched_yield(void)
     {    
-    SCHED_LOCK();
-    
-    kurrent->state = STATE_READY;
-
-    SCHED_UNLOCK();
+    reschedule();
     
     return OK;
     }

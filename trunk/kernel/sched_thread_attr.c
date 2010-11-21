@@ -73,9 +73,6 @@ int pthread_attr_init
 
     attrP->stacksize = CONFIG_KSTACK_SIZE;
 
-    /* No FPU by default */
-    attrP->usefpu = FALSE;
-
     /* Assume the user has to pthread_join() the thread after it terminates */
     attrP->detachstate = PTHREAD_CREATE_JOINABLE;
 
@@ -102,6 +99,8 @@ int pthread_attr_init
     attrP->magic = MAGIC_VALID;
 
     attrP->autorun = TRUE;
+
+    attrP->intial_flags = THREAD_AUTO_RUN;
 
     *attr = attrP;
     
@@ -467,24 +466,45 @@ int pthread_attr_setguardsize
   
   DESCRIPTION
   
-  The pthread_attr_getschedparam() and pthread_attr_setschedparam() functions, respectively, shall get and set the scheduling parameter attributes in the attr argument. The contents of the param structure are defined in the <sched.h> header. For the SCHED_FIFO and SCHED_RR policies, the only required member of param is sched_priority.
+  The pthread_attr_getschedparam() and pthread_attr_setschedparam() functions,
+  respectively, shall get and set the scheduling parameter attributes in the 
+  attr argument. The contents of the param structure are defined in the 
+  <sched.h> header. For the SCHED_FIFO and SCHED_RR policies, the only required
+  member of param is sched_priority.
   
-  [TSP]  For the SCHED_SPORADIC policy, the required members of the param structure are sched_priority, sched_ss_low_priority, sched_ss_repl_period, sched_ss_init_budget, and sched_ss_max_repl. The specified sched_ss_repl_period must be greater than or equal to the specified sched_ss_init_budget for the function to succeed; if it is not, then the function shall fail. The value of sched_ss_max_repl shall be within the inclusive range [1, {SS_REPL_MAX}] for the function to succeed; if not, the function shall fail. It is unspecified whether the sched_ss_repl_period and sched_ss_init_budget values are stored as provided by this function or are rounded to align with the resolution of the clock being used. 
+  For the SCHED_SPORADIC policy, the required members of the param structure 
+  are sched_priority, sched_ss_low_priority, sched_ss_repl_period, 
+  sched_ss_init_budget, and sched_ss_max_repl. The specified sched_ss_repl_period 
+  must be greater than or equal to the specified sched_ss_init_budget for the 
+  function to succeed; if it is not, then the function shall fail. The value of 
+  sched_ss_max_repl shall be within the inclusive range [1, {SS_REPL_MAX}] for 
+  the function to succeed; if not, the function shall fail. It is unspecified 
+  whether the sched_ss_repl_period and sched_ss_init_budget values are stored 
+  as provided by this function or are rounded to align with the resolution of 
+  the clock being used. 
   
-  The behavior is undefined if the value specified by the attr argument to pthread_attr_getschedparam() or pthread_attr_setschedparam() does not refer to an initialized thread attributes object.
+  The behavior is undefined if the value specified by the attr argument to 
+  pthread_attr_getschedparam() or pthread_attr_setschedparam() does not refer 
+  to an initialized thread attributes object.
   
   RETURN VALUE
   
-  If successful, the pthread_attr_getschedparam() and pthread_attr_setschedparam() functions shall return zero; otherwise, an error number shall be returned to indicate the error.
+  If successful, the pthread_attr_getschedparam() and pthread_attr_setschedparam() 
+  functions shall return zero; otherwise, an error number shall be returned to 
+  indicate the error.
   
   ERRORS
   
   The pthread_attr_setschedparam() function may fail if:
   
   [EINVAL]
+  
   The value of param is not valid.
+  
   [ENOTSUP]
+  
   An attempt was made to set the attribute to an unsupported value.
+  
   These functions shall not return an error code of [EINTR].
 */
 
@@ -496,7 +516,13 @@ int pthread_attr_getschedparam
     {
     pthread_attr_t attrP = *attr;
 
-    attrP->sched_param_size;
+    if (attrP->policy == SCHED_FIFO)
+        {
+        sched_fifo_param_t * fifo = 
+            (sched_fifo_param_t *)attrP->sched_param_area;
+
+        param->sched_priority = fifo->sched_priority;
+        }
     
     return OK;
     }
@@ -508,7 +534,15 @@ int pthread_attr_setschedparam
     )
     {
     pthread_attr_t attrP = *attr;
-    attrP->sched_param_size;
+    
+    if (attrP->policy == SCHED_FIFO)
+        {
+        sched_fifo_param_t * fifo = 
+            (sched_fifo_param_t *)attrP->sched_param_area;
+
+        fifo->sched_priority = param->sched_priority;
+        }
+    
     return OK;
     }
 
@@ -937,6 +971,38 @@ int pthread_attr_setautorun_np
         return EINVAL;
         
     attrP->autorun = initial_state;
+    
+    return OK;
+    }
+
+int pthread_attr_setflags_np
+    (
+    pthread_attr_t *attr, 
+    unsigned long flags
+    )
+    {
+    pthread_attr_t attrP = *attr;
+
+    if (attrP->magic != MAGIC_VALID)
+        return EINVAL;
+        
+    attrP->intial_flags = flags;
+    
+    return OK;
+    }
+
+int pthread_attr_getflags_np
+    (
+    pthread_attr_t *attr, 
+    unsigned long * flags
+    )
+    {
+    pthread_attr_t attrP = *attr;
+
+    if (attrP->magic != MAGIC_VALID)
+        return EINVAL;
+        
+    *flags = attrP->intial_flags;
     
     return OK;
     }

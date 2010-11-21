@@ -485,7 +485,7 @@ void * test_thread1(void *param)
     uint8_t *vidmem = (uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
     uint64_t *params = (uint64_t *)param;
     uint64_t count = 0;
-    int cpu = kurrent->cpu_idx;
+    uint64_t cpu;
     
     if (params == NULL)
         {
@@ -494,9 +494,11 @@ void * test_thread1(void *param)
         return NULL;
         }
     
+    cpu = params[1];
+
     while(1)
         {
-        vidmem[76 + cpu * 2] = '0' + count++;
+        vidmem[70 + cpu * 2] = '0' + count++;
 
         if (count > 9)
             count = 5;
@@ -513,14 +515,16 @@ void * test_thread2(void *param)
     uint8_t *vidmem = (uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
     uint64_t *params = (uint64_t *)param;
     uint64_t count = 0;
-    int cpu = kurrent->cpu_idx;
-    
+    uint64_t cpu;
+
     if (params == NULL)
         {
         printk("testing thread %s parameter is NULL\n",kurrent->name);
 
         return NULL;
         }
+    
+    cpu = params[1];
     
     while(1)
         {
@@ -557,7 +561,7 @@ void thread_create_test(void)
         return;
     
     params1[0] = 0x1234567890ABCDEF;
-    params1[1] = 0;
+    params1[1] = this_cpu();
 
     pthread_attr_init(&thread_attr);
 
@@ -571,7 +575,7 @@ void thread_create_test(void)
                    params1);
 
     params2[0] = 0x55aa55aa55aa55aa;
-    params2[1] = 2;
+    params2[1] = this_cpu();
     
     snprintf(name, NAME_MAX, "cpu%d-task2", this_cpu());
 

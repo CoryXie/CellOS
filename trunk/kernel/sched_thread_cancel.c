@@ -195,7 +195,7 @@ int pthread_setcanceltype(int type, int *oldtype)
 
 void pthread_testcancel(void)
     {
-    if (atomic_test_and_clear_bit(THREAD_CANCEL_PENDING, &pthread_self()->flags)) 
+    if (atomic_test_and_clear_bit(0, &pthread_self()->flags)) 
         {
         pthread_exit(PTHREAD_CANCELED);
         }

@@ -129,14 +129,20 @@ typedef struct sched_cpu
 	spinlock_t              lock;  
 
     /* Thread which owns the CPU */
+	struct sched_thread *   prev_thread;   
+
+    /* Thread which owns the CPU */
 	struct sched_thread *   current;   
 
     /* Thread which owns the FPU */
 	struct sched_thread *   fpuowner;
 
     /* Thread which runs when no other threads runs */
-	struct sched_thread *   idle;   
+	struct sched_thread *   idle_thread;   
 
+    /* Is the CPU idle */
+    BOOL                    idle;
+    
     /* Reschedule stack */
 	uint8_t *               stack; 
     
@@ -145,6 +151,9 @@ typedef struct sched_cpu
 
     /* CPU saved context */
 	sched_context_t saved_context;  
+
+    /* CPU ARCH */
+    sched_cpu_arch_t cpu_arch;
     }sched_cpu_t;
 
 typedef struct sched_cpu_group

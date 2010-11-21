@@ -127,8 +127,9 @@ struct sched_thread * sched_find_best_thread
                 if (check)
                     {
                     check->state = STATE_READY;
-                    
-                    check->sched_policy->thread_enqueue(check->sched_runq,
+
+                    if (!(check->flags & THREAD_STANDALONE))
+                        check->sched_policy->thread_enqueue(check->sched_runq,
                                                         check, TRUE);
                     }
                 return best_thread;

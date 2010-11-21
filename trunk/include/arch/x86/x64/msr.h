@@ -376,5 +376,19 @@
 #define MSR_VM_CR                       0xc0010114
 #define MSR_VM_HSAVE_PA                 0xc0010117
 
+#define EFER_MSR_NUM    0xc0000080
+#define AMD_SCE_FLAG    0
+#define AMD_LME_FLAG    8
+#define AMD_LMA_FLAG    10
+#define AMD_FFXSR_FLAG  14
+#define AMD_NXE_FLAG    11
+
+/* MSR registers */
+#define AMD_MSR_STAR    0xc0000081
+#define AMD_MSR_LSTAR   0xc0000082
+#define AMD_MSR_SFMASK  0xc0000084
+#define AMD_MSR_FS      0xc0000100
+#define AMD_MSR_GS      0xc0000101
+
 #endif /* _MSR_H */
 
