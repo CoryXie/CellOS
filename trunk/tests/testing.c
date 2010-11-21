@@ -573,15 +573,47 @@ void * test_thread2(void *param)
     return NULL;
     }
 
-pthread_t task1;
-pthread_t task2;
+void * test_thread3(void *param)
+    {
+    uint8_t *vidmem = (uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
+    uint64_t *params = (uint64_t *)param;
+    uint64_t count = 0;
+    uint64_t cpu;
+    uint64_t count2 = 0;
+    
+    if (params == NULL)
+        {
+        printk("testing thread %s parameter is NULL\n",kurrent->name);
+
+        return NULL;
+        }
+    
+    cpu = params[1];
+    
+    while(1)
+        {
+        vidmem[64 + cpu * 2] = 'a' + count++;
+
+        if (count >= 26)
+            count = 0;
+
+        sched_yield();
+        }
+
+    return NULL;
+    }
 
 void thread_create_test(void)
     {
     uint64_t * params1 = kmalloc(16);
     uint64_t * params2 = kmalloc(16);
+    uint64_t * params3 = kmalloc(16);
     pthread_attr_t thread_attr;
     char name[NAME_MAX];
+    pthread_t task1;
+    pthread_t task2;
+    pthread_t task3;
+
     
 #ifdef KMUTEX_TEST 
       {
@@ -603,7 +635,6 @@ void thread_create_test(void)
     snprintf(name, NAME_MAX, "cpu%d-task1", this_cpu());
     
     pthread_attr_setname_np(&thread_attr, name);
-    
     pthread_create(&task1,
                    &thread_attr,
                    test_thread1,
@@ -615,10 +646,26 @@ void thread_create_test(void)
     snprintf(name, NAME_MAX, "cpu%d-task2", this_cpu());
 
     pthread_attr_setname_np(&thread_attr, name);
+    pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
+    pthread_attr_settimeslice_np(&thread_attr, 100);
 
     pthread_create(&task2,
                    &thread_attr,
                    test_thread2,
+                   params2);
+
+    params2[0] = 0x55aa55aa55bb55bb;
+    params2[1] = this_cpu();
+    
+    snprintf(name, NAME_MAX, "cpu%d-task3", this_cpu());
+
+    pthread_attr_setname_np(&thread_attr, name);
+    pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
+    pthread_attr_settimeslice_np(&thread_attr, 100);
+
+    pthread_create(&task3,
+                   &thread_attr,
+                   test_thread3,
                    params2);
     }
 

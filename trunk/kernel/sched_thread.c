@@ -290,6 +290,10 @@ int pthread_create
         
   		return EAGAIN;
         }
+    else
+        {
+        printk("Using scheduling policy %s!\n", sched_policy->name);
+        }
 
 	stack_size = attrP->stacksize;
 	stack_addr = attrP->stackaddr;
@@ -306,10 +310,7 @@ int pthread_create
 
     /* Copy the name */
     strncpy(new_thread->name, attrP->name, NAME_MAX);
-    
-    /* Set the scheduling policy */
-    new_thread->sched_policy = sched_policy;
-    
+        
     /* 
      * If the user doesn't specify already allocated stack space,
      * then we need to allocate the stack on our own! 
@@ -387,7 +388,15 @@ int pthread_create
 	new_thread->stack_top = (char *)stack_addr + stack_size;
     new_thread->entry = start_routine;
     new_thread->param = arg;
+
+    /* Set the scheduling policy */
+    new_thread->sched_policy = sched_policy;
     new_thread->sched_policy_id = attrP->policy;
+    if (new_thread->sched_policy_id == SCHED_RR)
+        {
+        new_thread->sched_time_slice = attrP->sched_time_slice;
+        new_thread->remain_time_slice = attrP->sched_time_slice;
+        }
     
     spinlock_init(&new_thread->thread_lock);
         

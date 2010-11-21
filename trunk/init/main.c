@@ -36,9 +36,9 @@ void *sched_bsp_idle_thread (void *notused)
     acpica_sub_system_init ();
 #endif
 
-    thread_create_test();
-
     interrupts_enable();
+
+    thread_create_test();
 
     lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
 
@@ -51,9 +51,9 @@ void *sched_ap_idle_thread (void *notused)
     
     lapic_init();
 
-    thread_create_test();
-
     interrupts_enable();
+
+    thread_create_test();
     
     cpu_heart_beat(this_cpu());
     }

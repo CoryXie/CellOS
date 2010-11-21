@@ -86,6 +86,9 @@ void sched_init(void)
     
     pthread_attr_setflags_np(&thread_attr, flags);
 
+    pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
+    pthread_attr_settimeslice_np(&thread_attr, 100);
+
     if (this_cpu() == 0)
         {
         pthread_create(&kurrent,
@@ -339,14 +342,24 @@ void sched_tick
     (
     stack_frame_t *frame
     )
-    {
+    {    
     timer_ticks[this_cpu()]++;
 
     if ((timer_ticks[this_cpu()] % 100000) == 0)
         sched_thread_global_show();
 
-    if ((timer_ticks[this_cpu()] % 1000) == 0)
-        reschedule();
+    if ((timer_ticks[this_cpu()] % 100) == 0)
+        {
+        BOOL sched = TRUE;
+        
+        if (kurrent->sched_policy->sched_clock_tick)
+            {
+            sched = kurrent->sched_policy->sched_clock_tick(kurrent);
+            }
+        
+        if (sched)
+            reschedule();
+        }
     }
 
 /*

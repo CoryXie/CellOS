@@ -15,6 +15,7 @@
 #include <os/sched_policy.h>
 #include <os/sched_runq.h>
 #include <os/sched_fifo.h>
+#include <os/sched_rr.h>
 #include <os/sched_thread.h>
 #include <os/sched_mutex.h>
 

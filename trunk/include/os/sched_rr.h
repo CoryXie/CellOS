@@ -8,4 +8,16 @@
 #include <sched.h>
 #include <os/sched_core.h>
 
+
+/* Per thread schedule parameter for this scheduling policy */
+typedef struct sched_rr_param
+    {
+    /* Current scheduling priority */
+	int     sched_priority;
+    }sched_rr_param_t;
+
+extern sched_policy_t   sched_policy_rr;
+
+status_t sched_policy_rr_init (void);
+
 #endif /* _OS_SCHED_RR_H */

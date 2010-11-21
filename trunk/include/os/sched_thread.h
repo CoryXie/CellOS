@@ -142,6 +142,12 @@ typedef struct sched_thread
     /* Wait timeout (mutex, semaphore, msgQ, ..., one at a time) */
     int             timeout;
 
+    /* Initial time slice */
+    int             sched_time_slice;  
+
+    /* Remianing time slice */
+    int             remain_time_slice;  
+
     /* List of all mutexes owned by thread */
     list_t          mutex_list; 
 
@@ -253,7 +259,13 @@ typedef struct sched_thread_attr
 
     /* Bitmask flags */
     unsigned long   intial_flags;
-    
+
+    /* Initial time slice */
+    int    sched_time_slice;  
+
+    /* Remianing time slice */
+    int    remain_time_slice;  
+
     /* Scheduling parameter structure size */
     uint32_t    sched_param_size;
     
@@ -299,6 +311,18 @@ int pthread_attr_getflags_np
     (
     pthread_attr_t *attr, 
     unsigned long * flags
+    );
+
+int pthread_attr_gettimeslice_np
+    (
+    const pthread_attr_t * attr,
+    int * timeslice
+    );
+
+int pthread_attr_settimeslice_np
+    (
+    pthread_attr_t *attr, 
+    int timeslice
     );
 
 status_t sched_thread_init(void);

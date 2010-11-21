@@ -4,7 +4,8 @@
 
 static sched_policy_t * sched_policy_array[] =
     {
-    &sched_policy_fifo
+    &sched_policy_fifo,
+    &sched_policy_rr
     };
 
 int sched_policy_count = NELEMENTS(sched_policy_array);
@@ -13,6 +14,7 @@ int sched_policy_count = NELEMENTS(sched_policy_array);
 status_t sched_policy_init(void)
     {
     sched_policy_fifo_init();
+    sched_policy_rr_init();
 
     return OK;
     

@@ -1007,3 +1007,35 @@ int pthread_attr_getflags_np
     return OK;
     }
 
+int pthread_attr_gettimeslice_np
+    (
+    const pthread_attr_t * attr,
+    int * timeslice
+    )
+    {
+    pthread_attr_t attrP = *attr;
+
+    if (attrP->magic != MAGIC_VALID)
+        return EINVAL;
+    
+    *timeslice = attrP->sched_time_slice;
+    
+    return OK;
+    }
+
+int pthread_attr_settimeslice_np
+    (
+    pthread_attr_t *attr, 
+    int timeslice
+    )
+    {
+    pthread_attr_t attrP = *attr;
+
+    if (attrP->magic != MAGIC_VALID)
+        return EINVAL;
+    
+    attrP->sched_time_slice = timeslice;
+    
+    return OK;
+    }
+

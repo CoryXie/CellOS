@@ -402,7 +402,7 @@ void sched_fifo_thread_rmqueue
  * Check if the specified thread can be preempted 
  * by the best thread on the runq 
  */
-bool sched_fifo_preemption_check
+BOOL sched_fifo_preemption_check
     (
     sched_runq_t *   runq,
     sched_thread_t * thread
@@ -414,7 +414,7 @@ bool sched_fifo_preemption_check
     
     sched_fifo_param_t * sched_param = FIFO_SCHED_PARAM(thread);
     sched_fifo_runq_t * sched_runq = FIFO_SCHED_RUNQ(runq);
-    bool preempt = FALSE;
+    BOOL preempt = FALSE;
     
     if (thread->sched_policy_id != sched_policy_fifo.id)
         return FALSE;

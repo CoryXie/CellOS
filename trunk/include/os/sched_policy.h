@@ -102,12 +102,14 @@ typedef struct sched_policy
         struct sched_thread *       thread         
         );        
 
+    /* Get the schedule parameter */
     status_t (*get_sched_param)
         (
         struct sched_thread *       thread, 
         sched_param_t *  param
         );
-
+    
+    /* Set the schedule parameter */
     status_t (*set_sched_param)
         (
         struct sched_thread *       thread, 
@@ -118,17 +120,16 @@ typedef struct sched_policy
      * Check if the specified thread can be preempted 
      * by the best thread on the runq 
      */
-    bool    (*preemption_check)
+    BOOL    (*preemption_check)
         (
         struct sched_runq *   runq,
         struct sched_thread * thread
         );
 
     /* Scheduling decisions at periodic clock tick */
-    void    (*sched_clock_tick)
+    BOOL    (*sched_clock_tick)
         (
-        struct sched_thread * thread,
-        bool             end_of_quantum
+        struct sched_thread * thread
         );
 
     /* Priority update */

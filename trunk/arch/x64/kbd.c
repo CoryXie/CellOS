@@ -417,7 +417,8 @@ void keyboard_init(void)
     pthread_attr_init(&thread_attr);
 
     pthread_attr_setname_np(&thread_attr, "KBD");
-    
+    pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
+    pthread_attr_settimeslice_np(&thread_attr, 100);
     pthread_create(&kbd_thread_ptr,
                    &thread_attr,
                    kbd_thread,

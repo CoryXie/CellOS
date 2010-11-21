@@ -89,6 +89,7 @@ OBJS += kernel/sched_core.o 	\
 		kernel/sched_cpu.o 		\
 		kernel/sched_policy.o 	\
 		kernel/sched_fifo.o 	\
+		kernel/sched_rr.o 		\
 		kernel/sched_runq.o		\
 		kernel/sched_mutex.o	\
 		kernel/sched_thread.o	\
