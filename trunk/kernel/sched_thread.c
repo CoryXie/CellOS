@@ -139,15 +139,25 @@ void sched_thread_show
     pthread_t thread
     )
     {
-    printk("NAME(%s)-CPU(%d)-STATE(%s)-ID(%d):\nPOLICY(%d)-SP(%p)-STACK(%p-->%p)\n",
+    ipl_t ipl;
+
+    ipl = interrupts_disable();
+
+    spinlock_lock(&thread->thread_lock);
+    
+    printk("ID(%d)-NAME(%s)-CPU(%d)-STATE(%s):\nPOLICY(%d)-SP(%p)-STACK(%p-->%p)\n",
+           thread->id,
            thread->name,
            thread->cpu_idx,
            sched_thread_state_name(thread->state),
-           thread->id,
            thread->sched_policy_id,
            thread->saved_context.sp,
            thread->stack_base,
            thread->stack_top);
+    
+    spinlock_unlock(&thread->thread_lock);
+
+    interrupts_restore(ipl);
     }
 
 void sched_thread_global_show(void)
@@ -379,7 +389,7 @@ int pthread_create
     new_thread->param = arg;
     new_thread->sched_policy_id = attrP->policy;
     
-    pthread_spin_init(&new_thread->thread_lock, FALSE);
+    spinlock_init(&new_thread->thread_lock);
         
 	context_save(&new_thread->saved_context);
     

@@ -12,9 +12,9 @@ void cpu_heart_beat (int cpu)
     count = 0;
     while (TRUE)
         {
-        vidmem[84 + (cpu * 2)] = 'A' + count++;
+        vidmem[86 + (cpu * 2)] = 'A' + count++;
         
-        if (count > 26) 
+        if (count >= 26) 
             count = 0;
         
         sched_yield();

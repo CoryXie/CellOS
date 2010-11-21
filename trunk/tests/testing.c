@@ -477,8 +477,12 @@ void atomic_test(void)
 
 #endif /* ATOMIC_TEST*/
 
-extern void dump_stack(struct stack_frame * stack);
+#undef KMUTEX_TEST
+
+#ifdef KMUTEX_TEST
 pthread_mutex_t test_mutex;
+int mutex_test_variable = 0;
+#endif
 
 void * test_thread1(void *param)
     {
@@ -486,6 +490,7 @@ void * test_thread1(void *param)
     uint64_t *params = (uint64_t *)param;
     uint64_t count = 0;
     uint64_t cpu;
+    uint64_t count2 = 0;
     
     if (params == NULL)
         {
@@ -500,9 +505,25 @@ void * test_thread1(void *param)
         {
         vidmem[70 + cpu * 2] = '0' + count++;
 
+#ifdef KMUTEX_TEST
+        printk("cpu%d-locking mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+        pthread_mutex_lock(&test_mutex);
+        printk("cpu%d-locked mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+        
+        mutex_test_variable++;
+        
+        count2 = 0;
+        
+        while (count2++ < 5000)
+            sched_yield();
+        
+        printk("cpu%d-release mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+        pthread_mutex_unlock(&test_mutex);
+        printk("cpu%d-released mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+#endif
         if (count > 9)
             count = 5;
-        
+
         sched_yield();
         }
 
@@ -516,7 +537,8 @@ void * test_thread2(void *param)
     uint64_t *params = (uint64_t *)param;
     uint64_t count = 0;
     uint64_t cpu;
-
+    uint64_t count2 = 0;
+    
     if (params == NULL)
         {
         printk("testing thread %s parameter is NULL\n",kurrent->name);
@@ -530,6 +552,18 @@ void * test_thread2(void *param)
         {
         vidmem[76 + 2 + cpu * 2] = '0' + count++;
 
+#ifdef KMUTEX_TEST
+        printk("cpu%d-locking mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+        pthread_mutex_lock(&test_mutex);
+        
+        count2 = 0;
+        
+        while (count2++ < 5000)
+            sched_yield();
+        
+        printk("cpu%d-locked mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+        pthread_mutex_unlock(&test_mutex);
+#endif
         if (count > 5)
             count = 0;
 
@@ -553,6 +587,7 @@ void thread_create_test(void)
       {
       pthread_mutexattr_t attr;
       pthread_mutexattr_init(&attr);
+      pthread_mutexattr_setname_np(&attr, "test_mutex");
       pthread_mutex_init(&test_mutex, &attr);
       }
 #endif

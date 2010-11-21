@@ -447,6 +447,27 @@ bool sched_fifo_thread_precedence_compare
     return sched_param1->sched_priority > sched_param2->sched_priority;
     }
 
+/* Priority update */
+void sched_fifo_change_priority
+    (
+    struct sched_thread *   thread,
+    int                     prio
+    )
+    {
+    return;
+    }
+
+/* Get thread current priority */
+int sched_fifo_get_priority
+    (
+    struct sched_thread *   thread
+    )
+    {
+    sched_fifo_param_t * sched_param1 = FIFO_SCHED_PARAM(thread);
+
+    return sched_param1->sched_priority;
+    }
+
 /* Initialize this scheduling policy */
 status_t sched_policy_fifo_init (void)
     {
@@ -482,10 +503,13 @@ status_t sched_policy_fifo_init (void)
 
     policy->preemption_check = sched_fifo_preemption_check;
 
-    policy->change_priority = NULL;
-
+    policy->change_priority = sched_fifo_change_priority;
+    policy->get_priority = sched_fifo_get_priority;
+    
     policy->runq_head_compare = NULL;
-
+    
+    policy->thread_precedence_compare = sched_fifo_thread_precedence_compare;
+    
     sched_fifo_runq_init(&sched_runq_fifo_system, 0, 
                          "FIFO_RUNQ_SYS");
 

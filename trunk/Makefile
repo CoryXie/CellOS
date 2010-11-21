@@ -165,5 +165,5 @@ asm:
 DATE=$(shell date +%F-%H-%M-%S)
 
 backup:
-	7z a ../backup/cell64-$(DATE).7z ../cell64 
+	7z a ../backup/cell64-$(DATE).7z ../cellos 
 

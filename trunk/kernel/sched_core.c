@@ -103,6 +103,8 @@ void sched_init(void)
     
     sched_thread_remove_suspended(kurrent);
     
+    spinlock_lock(&kurrent->thread_lock);
+
     kurrent->state = STATE_RUNNING;
 
     kurrent_cpu->prev_thread = kurrent_cpu->current = kurrent;
@@ -110,8 +112,6 @@ void sched_init(void)
     kurrent_cpu->idle_thread = kurrent;
 
     kurrent->saved_context.ipl &= ~(RFLAGS_IF);
-
-    SCHED_LOCK();
     
 	context_restore(&kurrent_cpu->idle_thread->saved_context);
     }
@@ -129,6 +129,8 @@ void sched_context_dump (sched_context_t * contxt)
         );
     }
 
+#undef SCHED_DETAIL        
+
 /* The SCHED_LOCK is called in reschedule */
 void sched_thread_common_entry
     (
@@ -136,20 +138,34 @@ void sched_thread_common_entry
     )
     {
     sched_thread_arch_post_switch(kurrent);
-    
-    SCHED_UNLOCK();
 
-    interrupts_restore(kurrent->saved_context.ipl);
-    
     kurrent->state = STATE_RUNNING;
     kurrent->resume_cycle = rdtsc();
 
-    if (kurrent != kurrent_cpu->prev_thread &&
-        !(kurrent_cpu->prev_thread->flags & THREAD_STANDALONE))
+#ifdef SCHED_DETAIL        
+            printk("cpu%d - release lock for %s\n", 
+            this_cpu(), kurrent->name);
+#endif  
+    
+    spinlock_unlock(&kurrent->thread_lock);
+
+    interrupts_restore(kurrent->saved_context.ipl);
+
+    if (kurrent != kurrent_cpu->prev_thread)
         {
-        kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
-            kurrent_cpu->prev_thread->sched_runq,
-            kurrent_cpu->prev_thread, FALSE);
+#ifdef SCHED_DETAIL        
+        printk("cpu%d - release lock for %s\n", 
+        this_cpu(), kurrent_cpu->prev_thread->name);
+#endif  
+        spinlock_unlock(&kurrent_cpu->prev_thread->thread_lock);
+                
+        if (!(kurrent_cpu->prev_thread->flags & THREAD_STANDALONE) &&
+            (kurrent_cpu->prev_thread->state == STATE_READY))
+            {
+            kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
+                kurrent_cpu->prev_thread->sched_runq,
+                kurrent_cpu->prev_thread, FALSE);
+            }
         }
 
     kurrent->entry((void *)(kurrent->param));  
@@ -165,12 +181,43 @@ void reschedule(void)
     {
     ipl_t ipl;
     sched_thread_t * new_thread;
+    sched_thread_t * check_thread = kurrent;
+    
+#ifdef SCHED_DETAIL        
+    printk("cpu%d - switching %s 1 state %s\n", 
+    this_cpu(), kurrent->name, sched_thread_state_name(kurrent->state));
+#endif  
     
     ipl = interrupts_disable();
 
-    SCHED_LOCK();
-        
-    new_thread = sched_find_best_thread(NULL);
+    spinlock_lock(&kurrent->thread_lock);
+
+#ifdef SCHED_DETAIL        
+    printk("cpu%d - switching %s 2 state %s\n", 
+    this_cpu(), kurrent->name, sched_thread_state_name(kurrent->state));
+#endif  
+
+    switch (kurrent->state)
+        {
+        case STATE_READY:
+            check_thread = NULL;
+            break;
+        case STATE_PENDING:
+            check_thread = NULL;
+            break;
+        case STATE_SUSPENDED:
+            check_thread = NULL;
+            break;
+        case STATE_RUNNING:
+            kurrent->state = STATE_READY;
+            break;
+        default:break;
+        }
+
+    if (check_thread && check_thread == kurrent_cpu->idle_thread)
+        check_thread = NULL;
+    
+    new_thread = sched_find_best_thread(check_thread);
 
     if (new_thread == NULL)
         {
@@ -186,7 +233,6 @@ void reschedule(void)
     if (new_thread != kurrent)
         {
         kurrent_cpu->prev_thread = kurrent;
-        kurrent->state = STATE_READY;
         kurrent->saved_context.ipl = ipl;
         
         kurrent = new_thread;
@@ -198,9 +244,8 @@ void reschedule(void)
         kurrent->runcount++;
         
 #ifdef SCHED_DETAIL        
-        if ((kurrent->runcount % 10000) == 0)
-            printk("cpu%d - switching from %s to %s\n", 
-            this_cpu(), kurrent_cpu->prev_thread->name, kurrent->name);
+        printk("cpu%d - switching from %s to %s\n", 
+        this_cpu(), kurrent_cpu->prev_thread->name, kurrent->name);
 #endif  
         /* 
          * context_save() returns 1, which causes context_restore() to 
@@ -222,7 +267,7 @@ void reschedule(void)
          * rturn path but causes the cpu to go somewhere else, it is 
          * marked as 'noreturn'.
          *
-         * Another effect of context_restore() is that is switches the
+         * Another effect of context_restore() is that it switches the
          * stack pointer; the code before context_save() is actually
          * running with the stack space of 'kurrent_cpu->prev_thread',
          * while the code after context_restore() runs with stack space
@@ -235,15 +280,41 @@ void reschedule(void)
             {
             context_restore(&kurrent->saved_context);
             }
+        
+        sched_thread_arch_post_switch(kurrent);
 
         kurrent->state = STATE_RUNNING;
         kurrent->resume_cycle = rdtsc();
 
+#ifdef SCHED_DETAIL        
+        printk("cpu%d - release lock for %s\n", 
+        this_cpu(), kurrent_cpu->prev_thread->name);
+#endif  
+
+        spinlock_unlock(&kurrent_cpu->prev_thread->thread_lock);
+        
         if (!(kurrent_cpu->prev_thread->flags & THREAD_STANDALONE))
             {
-            kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
-                kurrent_cpu->prev_thread->sched_runq,
-                kurrent_cpu->prev_thread, FALSE);
+#ifdef SCHED_DETAIL        
+            printk("cpu%d - previous thread %s state %s\n",
+                this_cpu(),  
+                kurrent_cpu->prev_thread->name,
+                sched_thread_state_name(kurrent_cpu->prev_thread->state));
+#endif  
+            if (kurrent_cpu->prev_thread->state == STATE_READY)
+                {
+                kurrent_cpu->prev_thread->sched_policy->thread_enqueue(
+                    kurrent_cpu->prev_thread->sched_runq,
+                    kurrent_cpu->prev_thread, FALSE);
+                }
+            else
+                {
+                printk("cpu%d - current thread %s lost previous thread %s state %s\n",
+                    this_cpu(), 
+                    kurrent->name,
+                    kurrent_cpu->prev_thread->name,
+                    sched_thread_state_name(kurrent_cpu->prev_thread->state));
+                }
             }
         }
     else
@@ -251,13 +322,16 @@ void reschedule(void)
 #ifdef SCHED_DETAIL        
         printk("cpu%d - No switching, staying %s\n",
                this_cpu(), kurrent->name);
-#endif        
+#endif   
+#ifdef SCHED_DETAIL        
+        printk("cpu%d - release lock for %s\n", 
+        this_cpu(), kurrent->name);
+#endif  
+        kurrent->state = STATE_RUNNING;
+
+        spinlock_unlock(&kurrent->thread_lock);
         }
-
-    sched_thread_arch_post_switch(kurrent);
     
-    SCHED_UNLOCK();
-
     interrupts_restore(kurrent->saved_context.ipl);
     }
 
@@ -707,7 +781,19 @@ int sched_rr_get_interval
  */
  
 int sched_yield(void)
-    {    
+    {  
+    ipl_t ipl;
+    
+    ipl = interrupts_disable();
+
+    spinlock_lock(&kurrent->thread_lock);
+
+    kurrent->state = STATE_READY;
+    
+    spinlock_unlock(&kurrent->thread_lock);
+
+    interrupts_restore(ipl);
+    
     reschedule();
     
     return OK;

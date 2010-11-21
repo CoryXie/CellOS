@@ -4,6 +4,8 @@
 #include <arch.h>
 #include <os.h>
 
+#define MUTEX_DETAL
+
 /*
   NAME
   
@@ -317,6 +319,14 @@ int pthread_mutex_lock
 
     if (mutexP->magic != MAGIC_VALID)
         return EINVAL;
+
+#ifdef MUTEX_DETAL
+    printk("cpu%d - thread %s want to lock mutex %s with protocol %d\n",
+        this_cpu(), 
+        kurrent->name,
+        mutexP->attr.name, mutexP->attr.protocol);
+#endif
+    
     
     if (mutexP->attr.protocol == PTHREAD_PRIO_PROTECT)
         {                 
@@ -330,9 +340,10 @@ int pthread_mutex_lock
      */
     if (atomic_cmpxchg(&mutexP->counter, 0, 1) != 0)
         {
+#ifdef MUTEX_DETAL
         printk("Mutex %s already taken by thread %s on cpu %d\n",
             mutexP->attr.name, mutexP->owner->name, mutexP->owner->cpu_idx);
-        
+#endif
         /* Check if the caller self_thread is already the owner of the mutexP */
         if (self_thread == mutexP->owner)
             {
@@ -688,6 +699,10 @@ int pthread_mutex_unlock
         
         if (wake_thread)
             {
+            #ifdef MUTEX_DETAL
+            printk("wakeup thread %s\n", wake_thread->name);
+            #endif
+            
             wake_thread->state = STATE_READY;
             
             wake_thread->sched_policy->thread_enqueue(wake_thread->sched_runq, 
@@ -1495,6 +1510,27 @@ int pthread_mutexattr_settype
         return EINVAL;
     
     attrP->type = type;
+    
+    return OK;
+    }
+
+int pthread_mutexattr_setname_np
+    (
+    pthread_mutexattr_t *attr, 
+    char *name
+    )
+    {
+    pthread_mutexattr_t attrP = *attr;
+
+    if (attrP->magic != MAGIC_VALID)
+        return EINVAL;
+    
+    if (!name) 
+        {
+        return EINVAL;
+        }
+    
+    strncpy(attrP->name, name, NAME_MAX);
     
     return OK;
     }

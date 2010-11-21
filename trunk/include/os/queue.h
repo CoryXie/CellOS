@@ -268,7 +268,7 @@ static inline void queue_remove (qelement_t * item, int lock)
     if (lock) 
         QUEUE_LOCK(head);
 
-    printk("queue_remove %p\n", item);
+    //printk("queue_remove %p\n", item);
     
     if (item->head)
         {
@@ -282,7 +282,7 @@ static inline void queue_remove (qelement_t * item, int lock)
     if (lock) 
         QUEUE_UNLOCK(head);
 
-    printk("queue_remove %p done\n", item);
+    //printk("queue_remove %p done\n", item);
     }
 
 #endif /* _QUEUE_H */

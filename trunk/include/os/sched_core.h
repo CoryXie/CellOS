@@ -21,8 +21,13 @@ extern uint64_t timer_ticks[];
 extern long     cpu_intr_flags[];
 extern spinlock_t reschedule_lock;
 
+#if 0
 #define SCHED_LOCK()    spinlock_lock(&reschedule_lock)
 #define SCHED_UNLOCK()  spinlock_unlock(&reschedule_lock)
+#else
+#define SCHED_LOCK()    
+#define SCHED_UNLOCK()  
+#endif
 
 #define kurrent kthread_current[this_cpu()]
 #define kurrent_cpu current_cpus[this_cpu()] 

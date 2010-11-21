@@ -76,4 +76,10 @@ typedef struct sched_mutex
 /* Default max recursive count */
 #define SCHED_MUTEX_MAX_RECURSIVES 32
 
+int pthread_mutexattr_setname_np
+    (
+    sched_mutex_attr_t **attr, 
+    char *name
+    );
+
 #endif /* _OS_SCHED_MUTEX_H */
