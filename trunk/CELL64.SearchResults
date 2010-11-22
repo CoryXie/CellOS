@@ -1,4 +1,0 @@
----- context_dump Matches (3 in 0 files) ----
-sched_core.c (kernel):void context_dump (sched_context_t * contxt)
-sched_core.c (kernel):    //context_dump(&kurrent->saved_context);
-sched_thread.c (kernel):    context_dump(&new_thread->saved_context);

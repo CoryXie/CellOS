@@ -1,2 +1,0 @@
-gcc   -ffreestanding -mcmodel=kernel -nostdlib -nostdinc -O0 -g  -Wall -fomit-frame-pointer -std=c99 -std=gnu99 -O -Iinclude -D__ASM__ -c -o arch/x86/x64/boot.o arch/x86/x64/boot.S
-gcc   -ffreestanding -mcmodel=kernel -nostdlib -nostdinc -O0 -g  -Wall -fomit-frame-pointer -std=c99 -std=gnu99 -O -Iinclude -D__ASM__ -c -o arch/x86/x64/boot.o arch/x86/x64/boot.S
