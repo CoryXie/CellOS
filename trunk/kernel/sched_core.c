@@ -146,8 +146,8 @@ void sched_thread_common_entry
     kurrent->resume_cycle = rdtsc();
 
 #ifdef SCHED_DETAIL        
-            printk("cpu%d - release lock for %s\n", 
-            this_cpu(), kurrent->name);
+    printk("cpu%d - release lock for %s\n", 
+    this_cpu(), kurrent->name);
 #endif  
     
     spinlock_unlock(&kurrent->thread_lock);
@@ -312,11 +312,13 @@ void reschedule(void)
                 }
             else
                 {
+#ifdef SCHED_DETAIL        
                 printk("cpu%d - current thread %s lost previous thread %s state %s\n",
                     this_cpu(), 
                     kurrent->name,
                     kurrent_cpu->prev_thread->name,
                     sched_thread_state_name(kurrent_cpu->prev_thread->state));
+#endif
                 }
             }
         }
@@ -338,6 +340,7 @@ void reschedule(void)
     interrupts_restore(kurrent->saved_context.ipl);
     }
 
+/* Clock tick handler which does peridic thread scheduling */
 void sched_tick
     (
     stack_frame_t *frame
@@ -345,8 +348,10 @@ void sched_tick
     {    
     timer_ticks[this_cpu()]++;
 
+#ifdef SCHED_DETAIL        
     if ((timer_ticks[this_cpu()] % 100000) == 0)
         sched_thread_global_show();
+#endif
 
     if ((timer_ticks[this_cpu()] % 100) == 0)
         {

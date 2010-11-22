@@ -477,7 +477,15 @@ void atomic_test(void)
 
 #endif /* ATOMIC_TEST*/
 
-#undef KMUTEX_TEST
+#define KMUTEX_TEST
+#undef KMUTEX_TEST_DETAIL
+
+/* When show details, yield more to see the progresss */
+#ifdef KMUTEX_TEST_DETAIL
+#define KMUTEX_TEST_YIELD_TIMES 40000 
+#else
+#define KMUTEX_TEST_YIELD_TIMES 500
+#endif
 
 #ifdef KMUTEX_TEST
 pthread_mutex_t test_mutex;
@@ -506,20 +514,36 @@ void * test_thread1(void *param)
         vidmem[70 + cpu * 2] = '0' + count++;
 
 #ifdef KMUTEX_TEST
-        printk("cpu%d-locking mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s locking mutex, mutex_test_variable = %d\n",
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
         pthread_mutex_lock(&test_mutex);
-        printk("cpu%d-locked mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
-        
+
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s locked mutex, mutex_test_variable = %d\n",
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif        
         mutex_test_variable++;
         
         count2 = 0;
         
-        while (count2++ < 5000)
+        while (count2++ < KMUTEX_TEST_YIELD_TIMES)
             sched_yield();
         
-        printk("cpu%d-release mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s release mutex, mutex_test_variable = %d\n", 
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
         pthread_mutex_unlock(&test_mutex);
-        printk("cpu%d-released mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s released mutex, mutex_test_variable = %d\n", 
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
 #endif
         if (count > 9)
             count = 5;
@@ -541,7 +565,7 @@ void * test_thread2(void *param)
     
     if (params == NULL)
         {
-        printk("testing thread %s parameter is NULL\n",kurrent->name);
+        printk("testing thread %s parameter is NULL\n", kurrent->name);
 
         return NULL;
         }
@@ -553,16 +577,36 @@ void * test_thread2(void *param)
         vidmem[76 + 2 + cpu * 2] = '0' + count++;
 
 #ifdef KMUTEX_TEST
-        printk("cpu%d-locking mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s locking mutex, mutex_test_variable = %d\n",
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
         pthread_mutex_lock(&test_mutex);
-        
+
+#ifdef KMUTEX_TEST_DETAIL        
+        printk("cpu%d- thread %s locked mutex, mutex_test_variable = %d\n",
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
         count2 = 0;
         
-        while (count2++ < 5000)
+        while (count2++ < KMUTEX_TEST_YIELD_TIMES)
             sched_yield();
-        
-        printk("cpu%d-locked mutex, mutex_test_variable = %d\n", this_cpu(), mutex_test_variable);
+
+#ifdef KMUTEX_TEST_DETAIL        
+        printk("cpu%d- thread %s release mutex, mutex_test_variable = %d\n", 
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
         pthread_mutex_unlock(&test_mutex);
+
+#ifdef KMUTEX_TEST_DETAIL
+        printk("cpu%d- thread %s release mutex, mutex_test_variable = %d\n", 
+            this_cpu(), kurrent->name, mutex_test_variable);
+#endif
+
 #endif
         if (count > 5)
             count = 0;

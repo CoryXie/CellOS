@@ -70,34 +70,34 @@ extern uint8_t smp_IMCRP;
 
 
 void lapic_write
-    (
-    uint32_t offset, 
+(
+    uint32_t offset,
     uint32_t value
-    )
+)
     {
     *(volatile uint32_t*) (x64_lapic_reg_base + offset) = value;
     }
 
 uint32_t lapic_read
-    (
+(
     uint32_t offset
-    )
+)
     {
     return *(volatile uint32_t*) (x64_lapic_reg_base + offset);
     }
 
 void lapic_ipi
-    (
-    uint32_t dest, 
-    uint32_t type, 
+(
+    uint32_t dest,
+    uint32_t type,
     uint8_t vec
-    )
+)
     {
     lapic_write(LAPIC_ICR_HIGH, dest << 24);
     lapic_write(LAPIC_ICR_LOW, (uint32_t)(0x4000 | type | vec));
     }
 
- uint8_t lapic_id(void)
+uint8_t lapic_id(void)
     {
     uint32_t reg32;
 
@@ -114,14 +114,14 @@ static inline void lapic_eoi(void)
 static void lapic_timer_enable_one_shot(void)
     {
     /* unmasked one-shot !*/
-    
+
     lapic_write(LAPIC_LVT_TIMER, INTR_LAPIC_TIMER);
     }
 
 static void lapic_timer_enable_periodic(void)
     {
     /* unmasked periodic !*/
-    
+
     lapic_write(LAPIC_LVT_TIMER, INTR_LAPIC_TIMER | LAPIC_LVT_TIMER_PERIODIC);
     }
 
@@ -134,13 +134,13 @@ static void lapic_timer_disable(void)
 static void lapic_timer_count_init(uint64_t us)
     {
     uint32_t count = (uint32_t)((lapic_freq * us) >> 32);
-    lapic_write(LAPIC_TIMER_INIT_COUNT, (count == 0 && us != 0) ? 1 : count);
+    lapic_write(LAPIC_TICR, (count == 0 && us != 0) ? 1 : count);
     }
 
 void lapic_timer_irq_handler
-    (
+(
     uint64_t stack_frame
-    )
+)
     {
     lapic_eoi();
 
@@ -148,53 +148,53 @@ void lapic_timer_irq_handler
     }
 
 void lapic_spurious_handler
-    (
+(
     uint64_t stack_frame
-    )
+)
     {
     lapic_eoi(); /* spurious interrupt does not need EOI but... */
     printk("lapic_spurious_handler on cpu-%d\n", this_cpu());
     }
 
 void lapic_ipi_handler
-    (
+(
     uint64_t stack_frame
-    )
+)
     {
     lapic_eoi();
     printk("lapic_ipi_handler on cpu-%d\n", this_cpu());
     }
 
- void lapic_reschedule_handler
-    (
+void lapic_reschedule_handler
+(
     uint64_t stack_frame
-    )
+)
     {
     lapic_eoi();
     //printk("lapic_reschedule_handler on cpu-%d\n", this_cpu());
     //reschedule();
     }
 
- /* PIT handler for bus frequency calculation. */
- static void lapic_pit_handler
-    (
+/* PIT handler for bus frequency calculation. */
+static void lapic_pit_handler
+(
     uint64_t stack_frame
-    )
+)
     {
     freq_tick_count++;
     }
 
- static uint64_t  lapic_get_freq(void)
+static uint64_t  lapic_get_freq(void)
     {
     uint64_t curr;
-    uint16_t base;
+    uint16_t div;
     uint32_t old;
 
     /* Set the PIT at 50Hz. */
-    base = 1193182L / 50;
+    div = 1193182L / 50;
     ioport_out8(0x43, 0x36);
-    ioport_out8(0x40, base & 0xFF);
-    ioport_out8(0x40, base >> 8);
+    ioport_out8(0x40, div & 0xFF);
+    ioport_out8(0x40, div >> 8);
 
     /* Set our temporary PIT handler. */
 
@@ -211,24 +211,22 @@ void lapic_ipi_handler
     /* Enable the LAPIC timer. */
 
     lapic_timer_enable_one_shot();
-    lapic_write(LAPIC_TIMER_INIT_COUNT, 0xFFFFFFFF);
+    lapic_write(LAPIC_TICR, 0xFFFFFFFF);
 
     /* Wait for the next tick to occur. */
 
     old = freq_tick_count;
-    while(freq_tick_count == old);
+    while (freq_tick_count == old);
 
     /* Stop the LAPIC timer and get the curr count. */
 
     lapic_timer_disable();
 
-    curr = (uint64_t)lapic_read(LAPIC_TIMER_CUR_COUNT);
+    curr = (uint64_t)lapic_read(LAPIC_TCCR);
 
     /* Stop the PIT. */
 
     asm("cli");
-
-    /* irq_unregister(INTR_IRQ0); */
 
     printk("lapic_get_freq curr %p\n", curr);
 
@@ -236,6 +234,7 @@ void lapic_ipi_handler
      * Frequency is the difference between initial and curr multiplied
      * by the PIT frequency.
      */
+    /* (1/50) = (1/f) * (0xFFFFFFFF - curr); ==> f = (0xFFFFFFFF - curr) * 50; */
 
     return (0xFFFFFFFF - curr) * 8 * 50;
     }
@@ -243,9 +242,9 @@ void lapic_ipi_handler
 void lapic_dump(void)
     {
     uint64_t reg32 = x64_lapic_reg_base;
-    
+
     int i = 0;
-    
+
     while (i < 1024)
         {
         printk("reg %p val %p\n", reg32, lapic_read(i));
@@ -256,7 +255,7 @@ void lapic_dump(void)
         }
     }
 
- status_t lapic_init(void)
+status_t lapic_init(void)
     {
     cpu_addr_t base;
     uint32_t reg32;
@@ -264,7 +263,7 @@ void lapic_dump(void)
     if (!has_apic())
         {
         printk("NO LAPIC\n");
-        
+
         return ERROR;
         }
 
@@ -291,7 +290,7 @@ void lapic_dump(void)
         printk("Switch to SYMMETRIC_IO mode\n");
 
         ioport_out8 (IMCR_ADRS, IMCR_REG_SEL);
-        
+
         ioport_out8 (IMCR_DATA, IMCR_IOAPIC_ON);
         }
 
@@ -306,7 +305,7 @@ void lapic_dump(void)
     if (!(base & MSR_IA32_APICBASE_ENABLE))
         {
         printk("LAPIC disabled\n");
-        
+
         return ERROR;
         }
 
@@ -333,21 +332,21 @@ void lapic_dump(void)
         x64_lapic_reg_base = KERNEL_VIRT_MAP_BASE + base;
         }
 
-    irq_register(INTR_LAPIC_TIMER, 
-                "LAPIC_TIMER", 
-                (addr_t)lapic_timer_irq_handler);
-    
-    irq_register(INTR_LAPIC_SPURIOUS, 
-                "LAPIC_SPURIOUS", 
-                (addr_t)lapic_spurious_handler);
-    
-    irq_register(INTR_LAPIC_IPI, 
-                "LAPIC_IPI", 
-                (addr_t)lapic_ipi_handler);
-    
-    irq_register(INTR_LAPIC_RESCHEDULE, 
-                "LAPIC_RESCHEDULE", 
-                (addr_t)lapic_reschedule_handler);
+    irq_register(INTR_LAPIC_TIMER,
+                 "LAPIC_TIMER",
+                 (addr_t)lapic_timer_irq_handler);
+
+    irq_register(INTR_LAPIC_SPURIOUS,
+                 "LAPIC_SPURIOUS",
+                 (addr_t)lapic_spurious_handler);
+
+    irq_register(INTR_LAPIC_IPI,
+                 "LAPIC_IPI",
+                 (addr_t)lapic_ipi_handler);
+
+    irq_register(INTR_LAPIC_RESCHEDULE,
+                 "LAPIC_RESCHEDULE",
+                 (addr_t)lapic_reschedule_handler);
 
     uint32_t lvr = lapic_read(LAPIC_LVR);
 
@@ -361,7 +360,7 @@ void lapic_dump(void)
     printk("LAPIC: version 0x%x, %d LVTs\n", vers, maxlvt);
 
     lapic_write(LAPIC_TASKPRI, 0);
-    
+
     lapic_write(LAPIC_EOI, 0);
 
     if (maxlvt >= 4)
@@ -371,16 +370,16 @@ void lapic_dump(void)
     lapic_write(LAPIC_ESR, 0);
 
     /*
-     * To initialise the BSP's local LAPIC, set the enable bit in the spurious
+     * To initialise the BSP's LAPIC, set the enable bit in the spurious
      * interrupt vector register and set the error interrupt vector in the
      * local vector table.
      */
 
     lapic_write(LAPIC_SPURIOUS, INTR_LAPIC_SPURIOUS |
-                                LAPIC_SPURIOUS_LAPIC_ENABLED |
-                                LAPIC_SPURIOUS_FOCUS_DISABLED);
+                LAPIC_SPURIOUS_LAPIC_ENABLED |
+                LAPIC_SPURIOUS_FOCUS_DISABLED);
 
-    lapic_write(LAPIC_TIMER_DIV_CONFIG, LAPIC_TDIV_8);
+    lapic_write(LAPIC_TDCR, LAPIC_TDIV_8);
 
     reg32 = lapic_read(LAPIC_SPURIOUS);
 
@@ -389,10 +388,10 @@ void lapic_dump(void)
     /* Send an Init Level De-Assert to synchronise arbitration ID's. */
 
     lapic_write(LAPIC_ICR_HIGH, 0);
-    
+
     lapic_write(LAPIC_ICR_LOW, LAPIC_DEST_ALLINC | LAPIC_DM_INIT |
-               LAPIC_INT_LEVELTRIG);
-    
+                LAPIC_INT_LEVELTRIG);
+
     while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY) ;
 
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
@@ -418,3 +417,4 @@ void lapic_dump(void)
 
     return OK;
     }
+

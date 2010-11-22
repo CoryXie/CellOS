@@ -44,7 +44,7 @@
 #define    LAPIC_ESR_RECVILL             0x00040
 #define    LAPIC_ESR_ILLREGA             0x00080
 #define    LAPIC_LVTCMCI                 0x2f0
-#define    LAPIC_ICR_LOW                     0x300
+#define    LAPIC_ICR_LOW                 0x300
 #define    LAPIC_DEST_SELF               0x40000
 #define    LAPIC_DEST_ALLINC             0x80000
 #define    LAPIC_DEST_ALLBUT             0xC0000
@@ -95,9 +95,9 @@
 #define    LAPIC_MODE_EXTINT             0x7
 #define    LAPIC_LVT1                    0x360
 #define    LAPIC_LVTERR                  0x370
-#define    LAPIC_TIMER_INIT_COUNT        0x380 /* Initial Count Register (read/write) */
-#define    LAPIC_TIMER_CUR_COUNT         0x390 /* Current Count Register (read-only) */
-#define    LAPIC_TIMER_DIV_CONFIG        0x3E0 /* Timer's 'Divide-Configuration' */
+#define    LAPIC_TICR                    0x380 /* Initial Count Register (read/write) */
+#define    LAPIC_TCCR                    0x390 /* Current Count Register (read-only) */
+#define    LAPIC_TDCR                    0x3E0 /* Timer's 'Divide-Configuration' */
 #define    LAPIC_SELF_IPI                0x3F0
 #define    LAPIC_TDIV_TMBASE             (1 << 2) /* Divider-Value field (bits 3, 1, and 0) */
 #define    LAPIC_TDIV_1                  0xB /* 111 = divide by 1 */

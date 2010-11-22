@@ -4,7 +4,7 @@
 #include <arch.h>
 #include <os.h>
 
-#define MUTEX_DETAL
+#undef MUTEX_DETAL
 
 /*
   NAME

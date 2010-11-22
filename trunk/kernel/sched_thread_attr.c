@@ -82,7 +82,7 @@ int pthread_attr_init
 
     /* Construct the sched_policy and sched_param */
     
-    attrP->policy = SCHED_FIFO;
+    attrP->policy = SCHED_RR;
     
     attrP->sched_param_size = sizeof(sched_fifo_param_t);
 

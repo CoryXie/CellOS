@@ -182,3 +182,91 @@ void pit_timer_set_reload
 
     interrupts_restore(ipl);
     }
+
+/* Calculate CPU frequency in HZ. */
+uint64_t calculate_cpu_frequency(void)
+    {
+    uint16_t shi, slo, ehi, elo, ticks;
+    uint64_t start, end, cycles;
+
+    /* First set the PIT to rate generator mode. */
+    ioport_out8(0x43, 0x34);
+    ioport_out8(0x40, 0xFF);
+    ioport_out8(0x40, 0xFF);
+
+    /* Wait for the cycle to begin. */
+    do
+        {
+        ioport_out8(0x43, 0x00);
+        slo = ioport_in8(0x40);
+        shi = ioport_in8(0x40);
+        }
+    while (shi != 0xFF);
+
+    /* Get the start TSC value. */
+    start = rdtsc();
+
+    /* Wait for the high byte to drop to 128. */
+    do
+        {
+        ioport_out8(0x43, 0x00);
+        elo = ioport_in8(0x40);
+        ehi = ioport_in8(0x40);
+        }
+    while (ehi > 0x80);
+
+    /* Get the end TSC value. */
+    end = rdtsc();
+
+    /* Calculate the differences between the values. */
+    cycles = end - start;
+    ticks = ((ehi << 8) | elo) - ((shi << 8) | slo);
+
+    /* Calculate frequency. */
+    return (cycles * PIT_8254_OSC_FREQ) / ticks;
+    }
+
+/* Calculate BUS (LAPIC) frequency in HZ. */
+uint64_t calculate_lapic_frequency(void)
+    {
+    uint16_t shi, slo, ehi, elo, pticks;
+    uint64_t end, lticks;
+
+    /* First set the PIT to rate generator mode. */
+    ioport_out8(0x43, 0x34);
+    ioport_out8(0x40, 0xFF);
+    ioport_out8(0x40, 0xFF);
+
+    /* Wait for the cycle to begin. */
+    do
+        {
+        ioport_out8(0x43, 0x00);
+        slo = ioport_in8(0x40);
+        shi = ioport_in8(0x40);
+        }
+    while (shi != 0xFF);
+
+    /* Kick off the LAPIC timer. */
+    lapic_write(LAPIC_TICR, 0xFFFFFFFF);
+
+    /* Wait for the high byte to drop to 128. */
+    do
+        {
+        ioport_out8(0x43, 0x00);
+        elo = ioport_in8(0x40);
+        ehi = ioport_in8(0x40);
+        }
+    while (ehi > 0x80);
+
+    /* Get the current timer value. */
+    end = lapic_read(LAPIC_TCCR);
+
+    /* Calculate the differences between the values. */
+    lticks = 0xFFFFFFFF - end;
+    pticks = ((ehi << 8) | elo) - ((shi << 8) | slo);
+
+    /* Calculate frequency. */
+    return (lticks * 4 * PIT_8254_OSC_FREQ) / pticks;
+    }
+
+
