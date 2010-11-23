@@ -254,7 +254,23 @@ uint64_t calculate_lapic_frequency(void)
     {
     uint16_t shi, slo, ehi, elo, pticks;
     uint64_t end, lticks;
+    uint32_t div;
+    
+    div = lapic_read(LAPIC_TDCR) & LAPIC_TDIV_MSK;
+    switch (div)
+        {
+        case LAPIC_TDIV_1: div = 1; break;
+        case LAPIC_TDIV_2: div = 2; break;
+        case LAPIC_TDIV_4: div = 4; break;
+        case LAPIC_TDIV_8: div = 8; break;
+        case LAPIC_TDIV_16: div = 16; break;
+        case LAPIC_TDIV_32: div = 32; break;
+        case LAPIC_TDIV_64: div = 64; break;
+        case LAPIC_TDIV_128: div = 128; break;
+        default: div = 1; break;
+        }
 
+    
     /* First set the PIT to rate generator mode. */
     ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
                               PIT_8254_MCR_OP_RATE_GEN |
@@ -308,15 +324,33 @@ uint64_t calculate_lapic_frequency(void)
      * 
      * (1/lapic_freq_actual) * lticks = (1/PIT_8254_OSC_FREQ) * pticks;
      *
-     * lapic_freq_actual = lapic_freq/div;
+     * lapic_freq_actual = lapic_freq_hz/div;
      *
      * ==>
      *
      * lapic_freq_actual = (lticks * PIT_8254_OSC_FREQ) / pticks;
      *
-     * lapic_freq = lapic_freq_actual * div;
+     * lapic_freq_hz = lapic_freq_actual * div;
      */
-    return (lticks * 4 * PIT_8254_OSC_FREQ) / pticks;
+    return (lticks * div * PIT_8254_OSC_FREQ) / pticks;
     }
 
+int do_freq (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {
+    ipl_t ipl = interrupts_disable();
+    
+    printk("CPU %lld HZ\n", calculate_cpu_frequency());
+    printk("BUS %lld HZ\n", calculate_lapic_frequency());
+
+    interrupts_restore(ipl);
+    return 0;
+    }
+
+CELL_OS_CMD(
+    freq,   1,        1,    do_freq,
+    "show kernel thread list information",
+    "[cpu...]\n"
+    "    - list the kernel thread information on the specified cpus;\n"
+    "if the cpu arguments are not specified, then list for all cpus."
+    );
 

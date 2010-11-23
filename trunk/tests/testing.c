@@ -477,7 +477,7 @@ void atomic_test(void)
 
 #endif /* ATOMIC_TEST*/
 
-#define KMUTEX_TEST
+#undef KMUTEX_TEST
 #undef KMUTEX_TEST_DETAIL
 
 /* When show details, yield more to see the progresss */
@@ -691,7 +691,7 @@ void thread_create_test(void)
 
     pthread_attr_setname_np(&thread_attr, name);
     pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
-    pthread_attr_settimeslice_np(&thread_attr, 100);
+    pthread_attr_settimeslice_np(&thread_attr, 10);
 
     pthread_create(&task2,
                    &thread_attr,
@@ -705,7 +705,7 @@ void thread_create_test(void)
 
     pthread_attr_setname_np(&thread_attr, name);
     pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
-    pthread_attr_settimeslice_np(&thread_attr, 100);
+    pthread_attr_settimeslice_np(&thread_attr, 10);
 
     pthread_create(&task3,
                    &thread_attr,

@@ -66,7 +66,7 @@
 #define    LAPIC_DM_STARTUP              0x00600
 #define    LAPIC_DM_EXTINT               0x00700
 #define    LAPIC_VECTOR_MASK             0x000FF
-#define    LAPIC_ICR_HIGH                    0x310
+#define    LAPIC_ICR_HIGH                0x310
 #define    GET_LAPIC_DEST_FIELD(x)       (((x) >> 24) & 0xFF)
 #define    SET_LAPIC_DEST_FIELD(x)       ((x) << 24)
 #define    LAPIC_LVT_TIMER               0x320 /* LVT Timer Register */
@@ -108,6 +108,7 @@
 #define    LAPIC_TDIV_32                 0x8 /* 100 = divide by 32 */
 #define    LAPIC_TDIV_64                 0x9 /* 101 = divide by 64 */
 #define    LAPIC_TDIV_128                0xA /* 110 = divide by 128 */
+#define    LAPIC_TDIV_MSK                0xB 
 #define    LAPIC_EFEAT                   0x400
 #define    LAPIC_ECTRL                   0x410
 #define    LAPIC_EILVTn(n)               (0x500 + 0x10 * n)

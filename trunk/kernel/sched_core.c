@@ -87,7 +87,7 @@ void sched_init(void)
     pthread_attr_setflags_np(&thread_attr, flags);
 
     pthread_attr_setschedpolicy(&thread_attr, SCHED_RR);
-    pthread_attr_settimeslice_np(&thread_attr, 100);
+    pthread_attr_settimeslice_np(&thread_attr, 10);
 
     if (this_cpu() == 0)
         {
@@ -345,17 +345,23 @@ void sched_tick
     (
     stack_frame_t *frame
     )
-    {    
+    { 
+    BOOL sched = TRUE;
+
     timer_ticks[this_cpu()]++;
 
 #ifdef SCHED_DETAIL        
-    if ((timer_ticks[this_cpu()] % 100000) == 0)
+    if ((timer_ticks[this_cpu()] % (CONFIG_HZ * 10)) == 0)
         sched_thread_global_show();
 #endif
 
-    if ((timer_ticks[this_cpu()] % 100) == 0)
+#ifdef SCHED_SELDOM
+    if ((timer_ticks[this_cpu()] % (CONFIG_HZ)) == 0)
+#endif        
         {
-        BOOL sched = TRUE;
+#ifdef SCHED_DETAIL        
+        printk("cpu%d - tick %d\n", this_cpu(), timer_ticks[this_cpu()]);
+#endif
         
         if (kurrent->sched_policy->sched_clock_tick)
             {

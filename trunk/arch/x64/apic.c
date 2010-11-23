@@ -60,11 +60,8 @@
  */
 
 uint64_t x64_lapic_reg_base = 0;
-uint64_t lapic_freq = 0;
+uint64_t lapic_freq_hz = 0;
 uint32_t bsp_apic_init_done = 0;
-
-/* Tick count used during CPU bus frequency calculation. */
-static volatile uint32_t freq_tick_count = 0;
 
 extern uint8_t smp_IMCRP;
 
@@ -131,16 +128,23 @@ static void lapic_timer_disable(void)
     lapic_write(LAPIC_LVT_TIMER, INTR_LAPIC_TIMER | LAPIC_LVT_MASKED);
     }
 
-static void lapic_timer_count_init(uint64_t us)
+static void lapic_timer_count_init(uint32_t HZ)
     {
-    uint32_t count = (uint32_t)((lapic_freq * us) >> 32);
-    lapic_write(LAPIC_TICR, (count == 0 && us != 0) ? 1 : count);
+    /* 
+     * 1/HZ = n * (div/lapic_freq_hz); 
+     * => n=(lapic_freq_hz)/(div * HZ))
+     */
+    
+    uint32_t count = (uint32_t)(lapic_freq_hz / (8 * HZ));
+
+
+    lapic_write(LAPIC_TICR, count);
     }
 
 void lapic_timer_irq_handler
-(
+    (
     uint64_t stack_frame
-)
+    )
     {
     lapic_eoi();
 
@@ -148,95 +152,31 @@ void lapic_timer_irq_handler
     }
 
 void lapic_spurious_handler
-(
+    (
     uint64_t stack_frame
-)
+    )
     {
     lapic_eoi(); /* spurious interrupt does not need EOI but... */
     printk("lapic_spurious_handler on cpu-%d\n", this_cpu());
     }
 
 void lapic_ipi_handler
-(
+    (
     uint64_t stack_frame
-)
+    )
     {
     lapic_eoi();
     printk("lapic_ipi_handler on cpu-%d\n", this_cpu());
     }
 
 void lapic_reschedule_handler
-(
+    (
     uint64_t stack_frame
-)
+    )
     {
     lapic_eoi();
     //printk("lapic_reschedule_handler on cpu-%d\n", this_cpu());
     //reschedule();
-    }
-
-/* PIT handler for bus frequency calculation. */
-static void lapic_pit_handler
-(
-    uint64_t stack_frame
-)
-    {
-    freq_tick_count++;
-    }
-
-static uint64_t  lapic_get_freq(void)
-    {
-    uint64_t curr;
-    uint16_t div;
-    uint32_t old;
-
-    /* Set the PIT at 50Hz. */
-    div = 1193182L / 50;
-    ioport_out8(0x43, 0x36);
-    ioport_out8(0x40, div & 0xFF);
-    ioport_out8(0x40, div >> 8);
-
-    /* Set our temporary PIT handler. */
-
-    irq_register(INTR_IRQ0, "pit", (addr_t)lapic_pit_handler);
-
-    /* Enable interrupts and wait for the start of the next timer tick */
-
-    old = freq_tick_count;
-
-    asm("sti");
-
-    while (freq_tick_count == old);
-
-    /* Enable the LAPIC timer. */
-
-    lapic_timer_enable_one_shot();
-    lapic_write(LAPIC_TICR, 0xFFFFFFFF);
-
-    /* Wait for the next tick to occur. */
-
-    old = freq_tick_count;
-    while (freq_tick_count == old);
-
-    /* Stop the LAPIC timer and get the curr count. */
-
-    lapic_timer_disable();
-
-    curr = (uint64_t)lapic_read(LAPIC_TCCR);
-
-    /* Stop the PIT. */
-
-    asm("cli");
-
-    printk("lapic_get_freq curr %p\n", curr);
-
-    /*
-     * Frequency is the difference between initial and curr multiplied
-     * by the PIT frequency.
-     */
-    /* (1/50) = (1/f) * (0xFFFFFFFF - curr); ==> f = (0xFFFFFFFF - curr) * 50; */
-
-    return (0xFFFFFFFF - curr) * 8 * 50;
     }
 
 void lapic_dump(void)
@@ -383,8 +323,6 @@ status_t lapic_init(void)
 
     reg32 = lapic_read(LAPIC_SPURIOUS);
 
-    printk("LAPIC_SPURIOUS %p\n", reg32);
-
     /* Send an Init Level De-Assert to synchronise arbitration ID's. */
 
     lapic_write(LAPIC_ICR_HIGH, 0);
@@ -392,16 +330,20 @@ status_t lapic_init(void)
     lapic_write(LAPIC_ICR_LOW, LAPIC_DEST_ALLINC | LAPIC_DM_INIT |
                 LAPIC_INT_LEVELTRIG);
 
-    while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY) ;
+    while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY);
 
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
 
     if (this_cpu() == 0)
-        lapic_freq = ((lapic_get_freq() / 8) << 32) / 1000000;
+        {  
+        printk("cpu%d - calculate lapic frequency...", this_cpu());
+        
+        lapic_freq_hz = calculate_lapic_frequency();
 
-    printk("lapic_freq %lld\n", lapic_freq);
+        printk("done! lapic_freq_hz %lld\n", lapic_freq_hz);
+        }
 
-    lapic_timer_count_init(1000000/CONFIG_HZ);
+    lapic_timer_count_init(CONFIG_HZ);
 
     lapic_timer_enable_periodic();
 

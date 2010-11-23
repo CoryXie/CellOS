@@ -106,9 +106,6 @@ void main
     smp_init();
 
     paging_late_init();
-
-    printk("CPU %lld HZ\n", calculate_cpu_frequency());
-    printk("BUS %lld HZ\n", calculate_lapic_frequency());
     
     sched_core_init();
 

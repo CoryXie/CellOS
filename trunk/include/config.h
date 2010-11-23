@@ -15,7 +15,7 @@
 
 #define CONFIG_NR_CPUS                      8
 
-#define CONFIG_HZ                           1000
+#define CONFIG_HZ                           100
 
 #define CONFIG_SCHED_USE_APIC               1
 
