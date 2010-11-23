@@ -190,16 +190,24 @@ uint64_t calculate_cpu_frequency(void)
     uint64_t start, end, cycles;
 
     /* First set the PIT to rate generator mode. */
-    ioport_out8(0x43, 0x34);
-    ioport_out8(0x40, 0xFF);
-    ioport_out8(0x40, 0xFF);
+    ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                              PIT_8254_MCR_OP_RATE_GEN |
+                              PIT_8254_MCR_AC_LOHI |
+                              PIT_8254_MCR_SL_CH0);
+    
+    /* Send the frequency divisor. */
+    ioport_out8(PIT_8254_CHAN0, 0xFF);
+    ioport_out8(PIT_8254_CHAN0, 0xFF);
 
     /* Wait for the cycle to begin. */
     do
         {
-        ioport_out8(0x43, 0x00);
-        slo = ioport_in8(0x40);
-        shi = ioport_in8(0x40);
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LATCH |
+                                  PIT_8254_MCR_SL_CH0);
+        slo = ioport_in8(PIT_8254_CHAN0);
+        shi = ioport_in8(PIT_8254_CHAN0);
         }
     while (shi != 0xFF);
 
@@ -209,9 +217,12 @@ uint64_t calculate_cpu_frequency(void)
     /* Wait for the high byte to drop to 128. */
     do
         {
-        ioport_out8(0x43, 0x00);
-        elo = ioport_in8(0x40);
-        ehi = ioport_in8(0x40);
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LATCH |
+                                  PIT_8254_MCR_SL_CH0);
+        elo = ioport_in8(PIT_8254_CHAN0);
+        ehi = ioport_in8(PIT_8254_CHAN0);
         }
     while (ehi > 0x80);
 
@@ -222,7 +233,19 @@ uint64_t calculate_cpu_frequency(void)
     cycles = end - start;
     ticks = ((ehi << 8) | elo) - ((shi << 8) | slo);
 
-    /* Calculate frequency. */
+    /*
+     * Calculate frequency. 
+     *
+     * Based on the simple theory that the two clocks were 
+     * running through the same period of time, thus the 
+     * following equation applies:
+     * 
+     * (1/cpu_freq) * cycles = (1/PIT_8254_OSC_FREQ) * ticks
+     *
+     * ==>
+     *
+     * cpu_freq = (cycles * PIT_8254_OSC_FREQ) / ticks;
+     */
     return (cycles * PIT_8254_OSC_FREQ) / ticks;
     }
 
@@ -233,16 +256,24 @@ uint64_t calculate_lapic_frequency(void)
     uint64_t end, lticks;
 
     /* First set the PIT to rate generator mode. */
-    ioport_out8(0x43, 0x34);
-    ioport_out8(0x40, 0xFF);
-    ioport_out8(0x40, 0xFF);
+    ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                              PIT_8254_MCR_OP_RATE_GEN |
+                              PIT_8254_MCR_AC_LOHI |
+                              PIT_8254_MCR_SL_CH0);
+    
+    /* Send the frequency divisor. */
+    ioport_out8(PIT_8254_CHAN0, 0xFF);
+    ioport_out8(PIT_8254_CHAN0, 0xFF);
 
     /* Wait for the cycle to begin. */
     do
         {
-        ioport_out8(0x43, 0x00);
-        slo = ioport_in8(0x40);
-        shi = ioport_in8(0x40);
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LATCH |
+                                  PIT_8254_MCR_SL_CH0);
+        slo = ioport_in8(PIT_8254_CHAN0);
+        shi = ioport_in8(PIT_8254_CHAN0);
         }
     while (shi != 0xFF);
 
@@ -252,9 +283,12 @@ uint64_t calculate_lapic_frequency(void)
     /* Wait for the high byte to drop to 128. */
     do
         {
-        ioport_out8(0x43, 0x00);
-        elo = ioport_in8(0x40);
-        ehi = ioport_in8(0x40);
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LATCH |
+                                  PIT_8254_MCR_SL_CH0);
+        elo = ioport_in8(PIT_8254_CHAN0);
+        ehi = ioport_in8(PIT_8254_CHAN0);
         }
     while (ehi > 0x80);
 
@@ -265,7 +299,23 @@ uint64_t calculate_lapic_frequency(void)
     lticks = 0xFFFFFFFF - end;
     pticks = ((ehi << 8) | elo) - ((shi << 8) | slo);
 
-    /* Calculate frequency. */
+    /*
+     * Calculate frequency. 
+     *
+     * Based on the simple theory that the two clocks were 
+     * running through the same period of time, thus the 
+     * following equation applies:
+     * 
+     * (1/lapic_freq_actual) * lticks = (1/PIT_8254_OSC_FREQ) * pticks;
+     *
+     * lapic_freq_actual = lapic_freq/div;
+     *
+     * ==>
+     *
+     * lapic_freq_actual = (lticks * PIT_8254_OSC_FREQ) / pticks;
+     *
+     * lapic_freq = lapic_freq_actual * div;
+     */
     return (lticks * 4 * PIT_8254_OSC_FREQ) / pticks;
     }
 
