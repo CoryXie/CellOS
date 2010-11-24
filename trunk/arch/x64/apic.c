@@ -272,22 +272,6 @@ status_t lapic_init(void)
         x64_lapic_reg_base = KERNEL_VIRT_MAP_BASE + base;
         }
 
-    irq_register(INTR_LAPIC_TIMER,
-                 "LAPIC_TIMER",
-                 (addr_t)lapic_timer_irq_handler);
-
-    irq_register(INTR_LAPIC_SPURIOUS,
-                 "LAPIC_SPURIOUS",
-                 (addr_t)lapic_spurious_handler);
-
-    irq_register(INTR_LAPIC_IPI,
-                 "LAPIC_IPI",
-                 (addr_t)lapic_ipi_handler);
-
-    irq_register(INTR_LAPIC_RESCHEDULE,
-                 "LAPIC_RESCHEDULE",
-                 (addr_t)lapic_reschedule_handler);
-
     uint32_t lvr = lapic_read(LAPIC_LVR);
 
     /* Version - The version numbers of the local LAPIC */
@@ -321,8 +305,6 @@ status_t lapic_init(void)
 
     lapic_write(LAPIC_TDCR, LAPIC_TDIV_8);
 
-    reg32 = lapic_read(LAPIC_SPURIOUS);
-
     /* Send an Init Level De-Assert to synchronise arbitration ID's. */
 
     lapic_write(LAPIC_ICR_HIGH, 0);
@@ -330,7 +312,8 @@ status_t lapic_init(void)
     lapic_write(LAPIC_ICR_LOW, LAPIC_DEST_ALLINC | LAPIC_DM_INIT |
                 LAPIC_INT_LEVELTRIG);
 
-    while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY);
+    while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY)
+        printk(".");
 
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
 
@@ -341,6 +324,22 @@ status_t lapic_init(void)
         lapic_freq_hz = calculate_lapic_frequency();
 
         printk("done! lapic_freq_hz %lld\n", lapic_freq_hz);
+
+        irq_register(INTR_LAPIC_TIMER,
+                     "LAPIC_TIMER",
+                     (addr_t)lapic_timer_irq_handler);
+        
+        irq_register(INTR_LAPIC_SPURIOUS,
+                     "LAPIC_SPURIOUS",
+                     (addr_t)lapic_spurious_handler);
+        
+        irq_register(INTR_LAPIC_IPI,
+                     "LAPIC_IPI",
+                     (addr_t)lapic_ipi_handler);
+        
+        irq_register(INTR_LAPIC_RESCHEDULE,
+                     "LAPIC_RESCHEDULE",
+                     (addr_t)lapic_reschedule_handler);
         }
 
     lapic_timer_count_init(CONFIG_HZ);
@@ -349,7 +348,12 @@ status_t lapic_init(void)
 
     disable_pit_intr();
 
-    lapic_write(LAPIC_TASKPRI, 0);
+    /* Allow all interrupts */
+    lapic_write(LAPIC_TASKPRI, lapic_read(LAPIC_TASKPRI) & 0xFFFFFF00);
+
+    /* In the x2APIC mode, the write of a zero value to EOI register
+     * is enforced to indicate current interrupt service has completed 
+     */
     lapic_write(LAPIC_EOI, 0);
 
     printk("lapic_init done for cpu-%d!\n", this_cpu());

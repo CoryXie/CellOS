@@ -36,9 +36,9 @@ void *sched_bsp_idle_thread (void *notused)
     acpica_sub_system_init ();
 #endif
 
-    interrupts_enable();
-
     thread_create_test();
+
+    interrupts_enable();
 
     lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
 
@@ -58,11 +58,7 @@ void *sched_ap_idle_thread (void *notused)
     cpu_heart_beat(this_cpu());
     }
 
-void main 
-    (
-    uint32_t mboot_magic, 
-    uint32_t mboot_info
-    )
+void main (uint32_t mboot_magic, uint32_t mboot_info)
     {
     multiboot_memmap_t *first_free;
     uint64_t *new_stack;

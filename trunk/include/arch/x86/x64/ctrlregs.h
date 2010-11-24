@@ -3,6 +3,126 @@
 #ifndef _ARCH_X86_X64_CTRLREGS_H
 #define _ARCH_X86_X64_CTRLREGS_H
 
+#define RFLAGS_CF       (1 << 0) /* CF Carry Flag (bit 0) */
+#define RFLAGS_ALWAYS1  (1 << 1) /* Fixed flags */
+#define RFLAGS_PF       (1 << 2) /* PF Parity flag (bit 2)*/
+#define RFLAGS_AF       (1 << 4) /* AF Adjust flag (bit 4) */
+#define RFLAGS_ZF       (1 << 6) /* ZF Zero flag (bit 6) */
+#define RFLAGS_SF       (1 << 7) /* SF Sign flag (bit 7) */
+#define RFLAGS_TF       (1 << 8) /* TF Trap (bit 8) */
+#define RFLAGS_IF       (1 << 9) /* IF Interrupt enable (bit 9) */
+#define RFLAGS_DF       (1 << 10) /* DF Direction flag (bit 10) */
+#define RFLAGS_OF       (1 << 11) /* OF Overflow flag (bit 11) */
+#define RFLAGS_IOPL0    (0 << 12) /* I/O privilege flags */
+#define RFLAGS_IOPL1    (1 << 12) /* (bits 12 and 13) */
+#define RFLAGS_IOPL2    (2 << 12)
+#define RFLAGS_IOPL3    (3 << 12)
+#define RFLAGS_IOPL_MSK (3 << 12)  /* IOPL I/O privilege level field  */
+#define RFLAGS_NT       (1 << 14)  /* NT Nested task (bit 14) */
+#define RFLAGS_RF       (1 << 16)  /* RF Resume (bit 16) */
+#define RFLAGS_VM86     (1 << 17)  /* VM Virtual-8086 mode (bit 17) */
+#define RFLAGS_AC       (1 << 18)  /* AC Alignment check (bit 18) */
+#define RFLAGS_VIF      (1 << 19)  /* VIF Virtual Interrupt (bit 19) */
+#define RFLAGS_VIP      (1 << 20)  /* VIP Virtual interrupt pending (bit 20) */
+#define RFLAGS_ID       (1 << 21)  /* ID Identification (bit 21) */
+
+#define USER_RFLAGS     (RFLAGS_ALWAYS1 | RFLAGS_IF)
+
+/** interrupts_enable - enable interrupts
+ *
+ * Enable interrupts and return previous value of rFLAGS.
+ *
+ * @return Old rFLAGS (interrupt priority level).
+ */
+
+static inline ipl_t interrupts_enable(void)
+    {
+    ipl_t v;
+
+    asm volatile (
+        "pushfq\n"
+        "popq %[v]\n"
+        "sti\n"
+        : [v] "=r" (v)
+        );
+
+    return v;
+    }
+
+/** interrupts_disable - disable interrupts
+ *
+ * Disable interrupts and return previous value of rFLAGS.
+ *
+ * @return Old rFLAGS (interrupt priority level).
+ */
+
+static inline ipl_t interrupts_disable(void)
+    {
+    ipl_t v;
+
+    asm volatile (
+        "pushfq\n"
+        "popq %[v]\n"
+        "cli\n"
+        : [v] "=r" (v)
+        );
+    return v;
+    }
+
+/** interrupts_restore - restore rFLAGS (interrupt priority level)
+ *
+ * Restore EFLAGS.
+ *
+ * @param ipl Saved interrupt priority level.
+ */
+
+static inline void interrupts_restore(ipl_t ipl)
+    {
+    asm volatile (
+        "pushq %[ipl]\n"
+        "popfq\n"
+        :: [ipl] "r" (ipl)
+        );
+    }
+
+/** interrupts_read - return interrupt priority level
+  *
+  * Return rFLAFS.
+  *
+  * @return Current rFLAFS (interrupt priority level).
+  */
+
+static inline ipl_t interrupts_read(void)
+    {
+    ipl_t v;
+
+    asm volatile (
+        "pushfq\n"
+        "popq %[v]\n"
+        : [v] "=r" (v)
+        );
+
+    return v;
+    }
+
+/** Check interrupts state.
+ *
+ * @return True if interrupts are disabled.
+ *
+ */
+static inline bool interrupts_disabled(void)
+    {
+	ipl_t v;
+	
+	asm volatile (
+		"pushfq\n"
+		"popq %[v]\n"
+		: [v] "=r" (v)
+	    );
+	
+	return ((v & RFLAGS_IF) == 0);
+    }
+
 /*********************System registers and bits (start)**********************/
 
 #define CR0_PG      (1 << 31) /* PG Paging (bit 31 of CR0) */
@@ -134,125 +254,5 @@ GEN_WRITE_SYS_REG(dr3)
 GEN_WRITE_SYS_REG(dr6)
 GEN_WRITE_SYS_REG(dr7)
 #endif /* __ASM__*/
-
-#define RFLAGS_CF       (1 << 0) /* CF Carry Flag (bit 0) */
-#define RFLAGS_ALWAYS1  (1 << 1) /* Fixed flags */
-#define RFLAGS_PF       (1 << 2) /* PF Parity flag (bit 2)*/
-#define RFLAGS_AF       (1 << 4) /* AF Adjust flag (bit 4) */
-#define RFLAGS_ZF       (1 << 6) /* ZF Zero flag (bit 6) */
-#define RFLAGS_SF       (1 << 7) /* SF Sign flag (bit 7) */
-#define RFLAGS_TF       (1 << 8) /* TF Trap (bit 8) */
-#define RFLAGS_IF       (1 << 9) /* IF Interrupt enable (bit 9) */
-#define RFLAGS_DF       (1 << 10) /* DF Direction flag (bit 10) */
-#define RFLAGS_OF       (1 << 11) /* OF Overflow flag (bit 11) */
-#define RFLAGS_IOPL0    (0 << 12) /* I/O privilege flags */
-#define RFLAGS_IOPL1    (1 << 12) /* (bits 12 and 13) */
-#define RFLAGS_IOPL2    (2 << 12)
-#define RFLAGS_IOPL3    (3 << 12)
-#define RFLAGS_IOPL_MSK (3 << 12)  /* IOPL I/O privilege level field  */
-#define RFLAGS_NT       (1 << 14)  /* NT Nested task (bit 14) */
-#define RFLAGS_RF       (1 << 16)  /* RF Resume (bit 16) */
-#define RFLAGS_VM86     (1 << 17)  /* VM Virtual-8086 mode (bit 17) */
-#define RFLAGS_AC       (1 << 18)  /* AC Alignment check (bit 18) */
-#define RFLAGS_VIF      (1 << 19)  /* VIF Virtual Interrupt (bit 19) */
-#define RFLAGS_VIP      (1 << 20)  /* VIP Virtual interrupt pending (bit 20) */
-#define RFLAGS_ID       (1 << 21)  /* ID Identification (bit 21) */
-
-#define USER_RFLAGS     (RFLAGS_ALWAYS1 | RFLAGS_IF)
-
-/** interrupts_enable - enable interrupts
- *
- * Enable interrupts and return previous value of rFLAGS.
- *
- * @return Old rFLAGS (interrupt priority level).
- */
-
-static inline ipl_t interrupts_enable(void)
-    {
-    ipl_t v;
-
-    asm volatile (
-        "pushfq\n"
-        "popq %[v]\n"
-        "sti\n"
-        : [v] "=r" (v)
-        );
-
-    return v;
-    }
-
-/** interrupts_disable - disable interrupts
- *
- * Disable interrupts and return previous value of rFLAGS.
- *
- * @return Old rFLAGS (interrupt priority level).
- */
-
-static inline ipl_t interrupts_disable(void)
-    {
-    ipl_t v;
-
-    asm volatile (
-        "pushfq\n"
-        "popq %[v]\n"
-        "cli\n"
-        : [v] "=r" (v)
-        );
-    return v;
-    }
-
-/** interrupts_restore - restore rFLAGS (interrupt priority level)
- *
- * Restore EFLAGS.
- *
- * @param ipl Saved interrupt priority level.
- */
-
-static inline void interrupts_restore(ipl_t ipl)
-    {
-    asm volatile (
-        "pushq %[ipl]\n"
-        "popfq\n"
-        :: [ipl] "r" (ipl)
-        );
-    }
-
-/** interrupts_read - return interrupt priority level
-  *
-  * Return rFLAFS.
-  *
-  * @return Current rFLAFS (interrupt priority level).
-  */
-
-static inline ipl_t interrupts_read(void)
-    {
-    ipl_t v;
-
-    asm volatile (
-        "pushfq\n"
-        "popq %[v]\n"
-        : [v] "=r" (v)
-        );
-
-    return v;
-    }
-
-/** Check interrupts state.
- *
- * @return True if interrupts are disabled.
- *
- */
-static inline bool interrupts_disabled(void)
-    {
-	ipl_t v;
-	
-	asm volatile (
-		"pushfq\n"
-		"popq %[v]\n"
-		: [v] "=r" (v)
-	    );
-	
-	return ((v & RFLAGS_IF) == 0);
-    }
 
 #endif /* _ARCH_X86_X64_CTRLREGS_H */
