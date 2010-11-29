@@ -19,10 +19,12 @@ typedef void (* clock_irq_handler_t)(stack_frame_t *r);
 
 typedef struct os_clock 
     { 
+    char name[NAME_MAX];
+    
     list_t node;
     
-	int (*open) (struct os_clock *);
-	int (*close) (struct os_clock *);
+	int (*start) (struct os_clock *);
+	int (*stop) (struct os_clock *);
     
 	int (*set_abstime)(struct os_clock *, abstime_t);
 	int (*get_abstime)(struct os_clock *, abstime_t *);

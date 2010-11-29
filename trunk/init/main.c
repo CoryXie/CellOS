@@ -21,24 +21,29 @@ void cpu_heart_beat (int cpu)
         }
     }
 
-
 void *sched_bsp_idle_thread (void *notused)
     {
     interrupts_disable();
-    
+
+    lapic_bsp_pre_init();
+
+    pci_init();
+
     rtc_init();
     
     keyboard_init();
 
-    lapic_init();
+    lapic_common_init();
 
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
 #endif
 
-    thread_create_test();
-
+    lapic_bsp_post_init();
+    
     interrupts_enable();
+    
+    thread_create_test();
 
     lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
 
@@ -49,7 +54,7 @@ void *sched_ap_idle_thread (void *notused)
     {
     interrupts_disable();
     
-    lapic_init();
+    lapic_common_init();
 
     interrupts_enable();
 

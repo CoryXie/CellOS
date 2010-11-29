@@ -73,6 +73,7 @@ OBJS =  arch/x64/boot.o \
         arch/x64/cpuid.o \
         arch/x64/kbd.o \
         arch/x64/rtc.o \
+		arch/x64/pci.o	\
 		arch/x64/sched_arch.o \
 		arch/x64/context.o
 

@@ -351,7 +351,7 @@ create_ap_task:
 
     reschedule();
     
-    /* No reached */ 
+    /* Not reached */ 
     }
 
 void smp_ap_entry_point(void)

@@ -2,6 +2,8 @@
 #include <arch.h>
 #include <os.h>
 
+struct cpuid_info_struct cpuid_features;
+
 /* Intel Specific brand list */
 
 char *Intel[] = 
@@ -107,7 +109,15 @@ int do_intel(void)
     stepping = eax & 0xf;
     reserved = eax >> 14;
     signature = eax;
-    
+
+    cpuid_features.model = model;
+    cpuid_features.family = family;
+    cpuid_features.type = type;
+    cpuid_features.brand = brand;    
+    cpuid_features.step = stepping;
+    cpuid_features.fill = reserved;
+    cpuid_features.cpuid = signature;
+        
     printk("Type %d - ", type);
     switch(type) 
         {
