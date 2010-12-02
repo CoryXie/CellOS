@@ -31,5 +31,7 @@
 
 #define CONFIG_LP64                         1
 
+#define CONFIG_ACPICA                       1
+
 #endif
 

@@ -3,6 +3,8 @@
 #ifndef _ARCH_X86_COMMON_CPUID_H
 #define _ARCH_X86_COMMON_CPUID_H
 
+#include <sys.h>
+
 int detect_cpu(void); 
 
 struct cpuid_info_struct

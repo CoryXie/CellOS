@@ -16,23 +16,23 @@ mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
 mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
 Free physical area range [0x0000000000100000 - 0x000000000fef0000]
 base_pml4=256 base_pdpt=0
-lowest_addr=0x0000000000136000, highest_addr=0x00000000ffffffff
-user available physical RAM 0x000000000013b000-0x000000000fef0000
+lowest_addr=0x0000000000183000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x0000000000188000-0x000000000fef0000
 x64_paging_map: page tables using 20 KB
-first_pdpt=0xffffffff80136000, first_pdir=0xffffffff80137000, num_pdpt = 1
-current_pdpt = 0xffffffff80136000
-pdpt #0 0x0000000000137003 -> 0xffffffff80137000
-pdpt #1 0x0000000000138003 -> 0xffffffff80138000
-pdpt #2 0x0000000000139003 -> 0xffffffff80139000
-pdpt #3 0x000000000013a003 -> 0xffffffff8013a000
-just set 0x0000000000136003 0xffffffff80136000
+first_pdpt=0xffffffff80183000, first_pdir=0xffffffff80184000, num_pdpt = 1
+current_pdpt = 0xffffffff80183000
+pdpt #0 0x0000000000184003 -> 0xffffffff80184000
+pdpt #1 0x0000000000185003 -> 0xffffffff80185000
+pdpt #2 0x0000000000186003 -> 0xffffffff80186000
+pdpt #3 0x0000000000187003 -> 0xffffffff80187000
+just set 0x0000000000183003 0xffffffff80183000
 end address 0x0000000100000000
 num_pdirs=4
 num_pdpt=1
-new CR3 0x0000000000116000
-page_alloc_init(): pages_available=64440 lowest_addr=0x0000000000338000
+new CR3 0x0000000000162000
+page_alloc_init(): pages_available=64364 lowest_addr=0x0000000000384000
 page_alloc_init(): done!
-mem_pool 0xffff800000338000, mem_pool_size 0x0000000001000000 done
+mem_pool 0xffff800000384000, mem_pool_size 0x0000000001000000 done
 Intel Specific Features:
 Type 0 - Original OEM
 Family 6 - Pentium Pro
@@ -50,9 +50,9 @@ smp_parse_config:found cpu-0 enabled.
 smp_parse_config:found cpu-1 enabled.
 smp_init: cpu 0, lapic_id = 0, BSP
 smp_init: cpu 1, lapic_id = 1, AP
-_binary_ap_boot_start at 0xffffffff80113d68, _binary_ap_boot_end at 0xffffffff80113e3a, ap_boot_size 0x00000000000000d2
+_binary_ap_boot_start at 0xffffffff8015f5c0, _binary_ap_boot_end at 0xffffffff8015f692, ap_boot_size 0x00000000000000d2
 code copy done!
-smp_activiate_ap:_boot_pml4 0x0000000000116000 entry 0xffffffff80101e0a
+smp_activiate_ap:_boot_pml4 0x0000000000162000 entry 0xffffffff80101e0a
 smp_activiate_ap: activiate AP cpu #1......ok
 get free page 0x000000000feef000
 AP cpu-1 is now ready, lapic_base 0x00000000fee00800
@@ -70,349 +70,25 @@ Using scheduling policy SCHED_RR!
 Created thread KBD
 KBD registered
 MSR_FSB_FREQ 0x0000000000000000
+AcpiNsRootInitialize - 5
+acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
+ACPI: RSDP 0x00000000000f6940 00024 (v02 PTLTD )
+ACPI: XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)
+ACPI: FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)
+ACPI: DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)
+ACPI: FACS 0x000000000fefffc0 00040
+ACPI: BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)
+ACPI: APIC 0x000000000fef08da 0005E (v01 PTLTD  ? APIC   06040000  LTP 00000000)
+ACPI: MCFG 0x000000000fef089e 0003C (v01 PTLTD  $PCITBL$ 06040000  LTP 00000001)
+ACPI: SRAT 0x000000000fef081e 00080 (v02 VMWARE MEMPLUG  06040000 VMW  00000001)
+Parsing all Control Methods:
+Table [DSDT](id 0001) - 2810 Objects with 326 Devices 842 Methods 282 Regions
+ tbxface-0601 [02] TbLoadNamespace       : ACPI Tables successfully acquired
+evxfevnt-0170 [02] Enable                : System is already in ACPI mode
+evgpeblk-1129 [04] EvCreateGpeBlock      : GPE 00 to 0F [_GPE] 2 regs on int 0x9
+Completing Region/Field/Buffer/Package initialization:...............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Initialized 282/282 Regions 0/0 Fields 26/26 Buffers 363/363 Packages (2819 nodes)
+Initializing Device/Processor/Thermal objects by executing _INI methods:..
+Executed 2 _INI methods requiring 0 _STA executions (examined 330 objects)
+evgpeblk-1234 [03] EvInitializeGpeBlock  : Found 3 Wake, Enabled 2 Runtime GPEs in this block
 Using scheduling policy SCHED_RR!
-Using scheduling policy SCHED_RR!
-Created thread INIT_CPU1
-KSH:000> MSR_FSB_FREQ 0x0000000000000000
-Using scheduling policy SCHED_RR!
-Created thread cpu1-task1
-Using scheduling policy SCHED_RR!
-Created thread cpu1-task2
-Using scheduling policy SCHED_RR!
-Created thread cpu1-task3
-Created thread cpu0-task1
-Using scheduling policy SCHED_RR!
-Created thread cpu0-task2
-Using scheduling policy SCHED_RR!
-Created thread cpu0-task3
-
-KSH: Please enter a command!
-KSH:001> 
-KSH: Please enter a command!
-KSH:002> lspci
-Bus = 0, Device = 0
-	vendor_id = 0x8086, device_id = 0x7190
-	status = 0x0200, command = 0x0006
-	class = 0x06, subclass = 0x00
-	IRQ = 0
-Bus = 0, Device = 0
-	vendor_id = 0x8086, device_id = 0x7190
-	status = 0x0200, command = 0x0006
-	class = 0x06, subclass = 0x00
-	IRQ = 0
-Bus = 0, Device = 1
-	PCI-to-PCI bridge
-	vendor_id = 0x8086, device_id = 0x7191
-	status = 0x0220, command = 0x011f
-	class = 0x06, subclass = 0x04
-	IRQ = 0
-Bus = 0, Device = 1
-	PCI-to-PCI bridge
-	vendor_id = 0x8086, device_id = 0x7191
-	status = 0x0220, command = 0x011f
-	class = 0x06, subclass = 0x04
-	IRQ = 0
-	primary bus = 0, secondary bus = 1
-Bus = 0, Device = 7
-	vendor_id = 0x8086, device_id = 0x7110
-	status = 0x0280, command = 0x0007
-	class = 0x06, subclass = 0x01
-	IRQ = 0
-Bus = 0, Device = 7
-	vendor_id = 0x8086, device_id = 0x7110
-	status = 0x0280, command = 0x0007
-	class = 0x06, subclass = 0x01
-	IRQ = 0
-	multiple functions are available
-	primary bus = 0, secondary bus = 0
-Bus = 0, Device = 15
-	vendor_id = 0x15ad, device_id = 0x0405
-	status = 0x0290, command = 0x0003
-	class = 0x03, subclass = 0x00
-	IRQ = 9
-Bus = 0, Device = 15
-	vendor_id = 0x15ad, device_id = 0x0405
-	status = 0x0290, command = 0x0003
-	class = 0x03, subclass = 0x00
-	IRQ = 9
-	bar0 = 0x000010d1
-	bar1 = 0xd0000000
-	bar2 = 0xd8000000
-Bus = 0, Device = 16
-	vendor_id = 0x1000, device_id = 0x0030
-	status = 0x0280, command = 0x0007
-	class = 0x01, subclass = 0x00
-	IRQ = 11
-Bus = 0, Device = 16
-	vendor_id = 0x1000, device_id = 0x0030
-	status = 0x0280, command = 0x0007
-	class = 0x01, subclass = 0x00
-	IRQ = 11
-	bar0 = 0x00001401
-	bar1 = 0xd8820004
-	bar3 = 0xd8800004
-Bus = 0, Device = 17
-	PCI-to-PCI bridge
-	vendor_id = 0x15ad, device_id = 0x0790
-	status = 0x0290, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 17
-	PCI-to-PCI bridge
-	vendor_id = 0x15ad, device_id = 0x0790
-	status = 0x0290, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	primary bus = 0, secondary bus = 2
-Bus = 0, Device = 21
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 21
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 3
-	bar2 = 0x00030300
-	bar3 = 0x00004040
-	bar4 = 0xd9d0d9d0
-	bar5 = 0xdca1dca1
-Bus = 0, Device = 22
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 22
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 11
-	bar2 = 0x000b0b00
-	bar3 = 0x00005050
-	bar4 = 0xd9e0d9e0
-	bar5 = 0xdcb1dcb1
-Bus = 0, Device = 23
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 23
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 19
-	bar2 = 0x00131300
-	bar3 = 0x00006060
-	bar4 = 0xd9f0d9f0
-	bar5 = 0xdcc1dcc1
-Bus = 0, Device = 24
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 24
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 27
-	bar2 = 0x001b1b00
-	bar3 = 0x00007070
-	bar4 = 0xda00da00
-	bar5 = 0xdcd1dcd1
-Bus = 2, Device = 0
-	vendor_id = 0x8086, device_id = 0x100f
-	status = 0x0230, command = 0x0113
-	class = 0x02, subclass = 0x00
-	IRQ = 10
-Bus = 2, Device = 0
-	vendor_id = 0x8086, device_id = 0x100f
-	status = 0x0230, command = 0x0113
-	class = 0x02, subclass = 0x00
-	IRQ = 10
-	bar0 = 0xd8920004
-	bar2 = 0xd8900004
-	bar4 = 0x00002001
-Bus = 2, Device = 1
-	vendor_id = 0x1274, device_id = 0x1371
-	status = 0x0280, command = 0x0003
-	class = 0x04, subclass = 0x01
-	IRQ = 5
-Bus = 2, Device = 1
-	vendor_id = 0x1274, device_id = 0x1371
-	status = 0x0280, command = 0x0003
-	class = 0x04, subclass = 0x01
-	IRQ = 5
-	bar0 = 0x00002041
-KSH:003> lspci
-Bus = 0, Device = 0
-	vendor_id = 0x8086, device_id = 0x7190
-	status = 0x0200, command = 0x0006
-	class = 0x06, subclass = 0x00
-	IRQ = 0
-Bus = 0, Device = 0
-	vendor_id = 0x8086, device_id = 0x7190
-	status = 0x0200, command = 0x0006
-	class = 0x06, subclass = 0x00
-	IRQ = 0
-Bus = 0, Device = 1
-	PCI-to-PCI bridge
-	vendor_id = 0x8086, device_id = 0x7191
-	status = 0x0220, command = 0x011f
-	class = 0x06, subclass = 0x04
-	IRQ = 0
-Bus = 0, Device = 1
-	PCI-to-PCI bridge
-	vendor_id = 0x8086, device_id = 0x7191
-	status = 0x0220, command = 0x011f
-	class = 0x06, subclass = 0x04
-	IRQ = 0
-	primary bus = 0, secondary bus = 1
-Bus = 0, Device = 7
-	vendor_id = 0x8086, device_id = 0x7110
-	status = 0x0280, command = 0x0007
-	class = 0x06, subclass = 0x01
-	IRQ = 0
-Bus = 0, Device = 7
-	vendor_id = 0x8086, device_id = 0x7110
-	status = 0x0280, command = 0x0007
-	class = 0x06, subclass = 0x01
-	IRQ = 0
-	multiple functions are available
-	primary bus = 0, secondary bus = 0
-Bus = 0, Device = 15
-	vendor_id = 0x15ad, device_id = 0x0405
-	status = 0x0290, command = 0x0003
-	class = 0x03, subclass = 0x00
-	IRQ = 9
-Bus = 0, Device = 15
-	vendor_id = 0x15ad, device_id = 0x0405
-	status = 0x0290, command = 0x0003
-	class = 0x03, subclass = 0x00
-	IRQ = 9
-	bar0 = 0x000010d1
-	bar1 = 0xd0000000
-	bar2 = 0xd8000000
-Bus = 0, Device = 16
-	vendor_id = 0x1000, device_id = 0x0030
-	status = 0x0280, command = 0x0007
-	class = 0x01, subclass = 0x00
-	IRQ = 11
-Bus = 0, Device = 16
-	vendor_id = 0x1000, device_id = 0x0030
-	status = 0x0280, command = 0x0007
-	class = 0x01, subclass = 0x00
-	IRQ = 11
-	bar0 = 0x00001401
-	bar1 = 0xd8820004
-	bar3 = 0xd8800004
-Bus = 0, Device = 17
-	PCI-to-PCI bridge
-	vendor_id = 0x15ad, device_id = 0x0790
-	status = 0x0290, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 17
-	PCI-to-PCI bridge
-	vendor_id = 0x15ad, device_id = 0x0790
-	status = 0x0290, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	primary bus = 0, secondary bus = 2
-Bus = 0, Device = 21
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 21
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 3
-	bar2 = 0x00030300
-	bar3 = 0x00004040
-	bar4 = 0xd9d0d9d0
-	bar5 = 0xdca1dca1
-Bus = 0, Device = 22
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 22
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 11
-	bar2 = 0x000b0b00
-	bar3 = 0x00005050
-	bar4 = 0xd9e0d9e0
-	bar5 = 0xdcb1dcb1
-Bus = 0, Device = 23
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 23
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 19
-	bar2 = 0x00131300
-	bar3 = 0x00006060
-	bar4 = 0xd9f0d9f0
-	bar5 = 0xdcc1dcc1
-Bus = 0, Device = 24
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-Bus = 0, Device = 24
-	vendor_id = 0x15ad, device_id = 0x07a0
-	status = 0x0010, command = 0x0007
-	class = 0x06, subclass = 0x04
-	IRQ = 255
-	multiple functions are available
-	primary bus = 0, secondary bus = 27
-	bar2 = 0x001b1b00
-	bar3 = 0x00007070
-	bar4 = 0xda00da00
-	bar5 = 0xdcd1dcd1
-Bus = 2, Device = 0
-	vendor_id = 0x8086, device_id = 0x100f
-	status = 0x0230, command = 0x0113
-	class = 0x02, subclass = 0x00
-	IRQ = 10
-Bus = 2, Device = 0
-	vendor_id = 0x8086, device_id = 0x100f
-	status = 0x0230, command = 0x0113
-	class = 0x02, subclass = 0x00
-	IRQ = 10
-	bar0 = 0xd8920004
-	bar2 = 0xd8900004
-	bar4 = 0x00002001
-Bus = 2, Device = 1
-	vendor_id = 0x1274, device_id = 0x1371
-	status = 0x0280, command = 0x0003
-	class = 0x04, subclass = 0x01
-	IRQ = 5
-Bus = 2, Device = 1
-	vendor_id = 0x1274, device_id = 0x1371
-	status = 0x0280, command = 0x0003
-	class = 0x04, subclass = 0x01
-	IRQ = 5
-	bar0 = 0x00002041
-KSH:004> 

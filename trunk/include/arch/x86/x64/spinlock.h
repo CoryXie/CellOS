@@ -5,7 +5,7 @@
 
 #include <sys.h>
 
-typedef struct spinlock_t
+typedef struct spinlock
     {
     unsigned int counter;
     ipl_t flags;

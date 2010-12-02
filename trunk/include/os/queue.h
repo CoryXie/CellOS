@@ -1,7 +1,7 @@
 /* queue.h - generic queque operations with safe lock option */
 
-#ifndef _QUEUE_H
-#define _QUEUE_H
+#ifndef _OS_QUEUE_H
+#define _OS_QUEUE_H
 
 #include <stddef.h>
 #include <arch.h>
@@ -285,4 +285,4 @@ static inline void queue_remove (qelement_t * item, int lock)
     //printk("queue_remove %p done\n", item);
     }
 
-#endif /* _QUEUE_H */
+#endif /* _OS_QUEUE_H */

@@ -102,7 +102,7 @@ OBJS += tests/testing.o
 
 OBJS += init/ksh.o init/main.o 
 
-#include $(CELLOS)/drivers/acpica/acpica.mk
+include $(CELLOS)/drivers/acpica/acpica.mk
 
 AP_BOOT = arch/x64/ap_boot
 
