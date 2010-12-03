@@ -1,4 +1,4 @@
-/* sched_rr.c - round-robin scheduling policy */
+/* sched_runq.c - scheduling run queue manangement */
 
 #include <sys.h>
 #include <arch.h>

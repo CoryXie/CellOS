@@ -1,6 +1,7 @@
 #include <sys.h>
 #include <arch.h>
 #include <os.h>
+#include <time.h>
 
 /*
  * Local-APIC:
@@ -60,7 +61,6 @@
  */
 
 uint64_t x64_lapic_reg_base = 0;
-uint64_t lapic_freq_hz = 0;
 uint32_t bsp_apic_init_done = 0;
 
 extern uint8_t smp_IMCRP;
@@ -85,10 +85,18 @@ void lapic_ipi(uint32_t dest, uint32_t type, uint8_t vec)
 uint8_t lapic_id(void)
     {
     uint32_t reg32;
-
+    uint8_t id;
+    
     reg32 = lapic_read(LAPIC_ID);
 
-    return (uint8_t)(reg32 >> 24);
+    id = (uint8_t)(reg32 >> 24);
+
+    if (id >= CONFIG_NR_CPUS)
+        {
+        printk("@@@@@@@@@################id = %p\n", id);
+        }
+    
+    return id;
     }
 
 static inline void lapic_eoi(void)
@@ -119,17 +127,14 @@ static void lapic_timer_disable(void)
     lapic_write(LAPIC_LVT_TIMER, INTR_LAPIC_TIMER | LAPIC_LVT_MASKED);
     }
 
-static void lapic_timer_count_init(uint32_t HZ)
+static void lapic_timer_count_init(uint32_t ns)
     {
-    /* 
-     * 1/HZ = n * (div/lapic_freq_hz); 
-     * => n=(lapic_freq_hz)/(div * HZ))
-     */
+	uint32_t count = (uint32_t)((kurrent_cpu->cpu_arch.apic_scale_factor * ns) >> 32);
+
+    printk("cpu%d - lapic_timer_count_init count %d, ns %d\n", 
+            this_cpu(), count, ns);
     
-    uint32_t count = (uint32_t)(lapic_freq_hz / (8 * HZ));
-
-
-    lapic_write(LAPIC_TICR, count);
+	lapic_write(LAPIC_TICR, (count == 0 && ns != 0) ? 1 : count);
     }
 
 void lapic_timer_irq_handler(uint64_t stack_frame)
@@ -221,7 +226,8 @@ status_t lapic_common_init(void)
     uint32_t reg32;
     uint32_t lvr;
     uint32_t maxlvt;
-
+    uint64_t lapic_freq_hz = 0;
+    
     printk("MSR_FSB_FREQ %p\n", read_msr(MSR_FSB_FREQ));
         
     lapic_switch_to_symmetric_io_mode();
@@ -262,7 +268,20 @@ status_t lapic_common_init(void)
     while (lapic_read(LAPIC_ICR_LOW) & LAPIC_ICR_BUSY)
         printk(".");
 
-    lapic_timer_count_init(CONFIG_HZ);
+    /* Figure out the CPU bus frequency only for BSP and apply for AP */
+    printk("cpu%d - calculate lapic frequency...", this_cpu());
+
+    lapic_freq_hz = calculate_lapic_frequency() / 8;
+    
+    kurrent_cpu->cpu_arch.apic_period_ns = (NSECS_PER_SEC) / lapic_freq_hz;
+    
+    kurrent_cpu->cpu_arch.apic_scale_factor = 
+            (lapic_freq_hz << 32) / NSECS_PER_SEC;
+        
+    printk("done! lapic_freq_hz %lld, apic_period_ns %lld\n",
+            lapic_freq_hz, kurrent_cpu->cpu_arch.apic_period_ns);
+
+    lapic_timer_count_init(NSECS_PER_SEC/CONFIG_HZ);
 
     lapic_timer_enable_periodic();
 
@@ -339,13 +358,6 @@ status_t lapic_bsp_pre_init(void)
 
     printk("LAPIC: version 0x%x, %d LVTs\n", 
            GET_LAPIC_VERSION(lvr), GET_LAPIC_MAXLVT(lvr) + 1);
-
-    /* Figure out the CPU bus frequency only for BSP and apply for AP */
-    printk("cpu%d - calculate lapic frequency...", this_cpu());
-
-    //lapic_freq_hz = calculate_lapic_frequency();
-    lapic_freq_hz = 266666666 / 4;
-    printk("done! lapic_freq_hz %lld\n", lapic_freq_hz);
 
     irq_register(INTR_LAPIC_TIMER,
                  "LAPIC_TIMER",

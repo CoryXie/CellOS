@@ -8,7 +8,8 @@
 
 typedef struct sched_cpu_arch
     {
-
+    uint64_t apic_period_ns;
+    uint64_t apic_scale_factor;
     }sched_cpu_arch_t;
 
 #endif /* _ARCH_X86_X64_SCHED_ARCH_H */

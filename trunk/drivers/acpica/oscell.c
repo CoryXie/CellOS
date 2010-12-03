@@ -121,6 +121,9 @@
 #include <sys.h>
 #include <arch.h>
 #include <os.h>
+#include <semaphore.h>
+#include <pthread.h>
+#include <errno.h>
 
 #include "acpi.h"
 #include "accommon.h"
@@ -522,23 +525,29 @@ AcpiOsCreateSemaphore (
     UINT32              InitialUnits,
     ACPI_HANDLE         *OutHandle)
 {
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_setname_np(&attr, "Acpi_mutex");
-    
-    if (pthread_mutex_init(OutHandle, &attr) != OK)
-        {
-        printk("AcpiOsCreateMutex fail\n");
-        
-        pthread_mutexattr_destroy(&attr);
-        
-        return AE_NO_MEMORY;
-        }
-    
-    pthread_mutexattr_destroy(&attr);
+    sem_t               *Sem;
 
+
+    if (!OutHandle)
+    {
+        return (AE_BAD_PARAMETER);
+    }
+
+    Sem = AcpiOsAllocate (sizeof (sem_t));
+
+    if (!Sem)
+    {
+        return (AE_NO_MEMORY);
+    }
+
+    if (sem_init (Sem, 0, InitialUnits) == -1)
+    {
+        AcpiOsFree (Sem);
+        return (AE_BAD_PARAMETER);
+    }
+
+    *OutHandle = (ACPI_HANDLE) Sem;
     return (AE_OK);
-
 }
 
 
@@ -558,8 +567,18 @@ ACPI_STATUS
 AcpiOsDeleteSemaphore (
     ACPI_HANDLE         Handle)
 {
-    pthread_mutex_destroy(&Handle);
+    sem_t               *Sem = (sem_t *) Handle;
 
+
+    if (!Sem)
+    {
+        return (AE_BAD_PARAMETER);
+    }
+
+    if (sem_destroy (Sem) == -1)
+    {
+        return (AE_BAD_PARAMETER);
+    }
     return (AE_OK);
 }
 
@@ -583,12 +602,61 @@ AcpiOsWaitSemaphore (
     ACPI_HANDLE         Handle,
     UINT32              Units,
     UINT16              Timeout)
-{
-    if (pthread_mutex_lock(&Handle) != OK)
-        return AE_NOT_ACQUIRED;
-    else
-        return (AE_OK);
-}
+    {
+    ACPI_STATUS         Status = AE_OK;
+    sem_t               *Sem = (sem_t *) Handle;
+    struct timespec     T;
+
+
+    if (!Sem)
+        {
+        return (AE_BAD_PARAMETER);
+        }
+
+    switch (Timeout)
+        {
+        /*
+         * No Wait:
+         * --------
+         * A zero timeout value indicates that we shouldn't wait - just
+         * acquire the semaphore if available otherwise return AE_TIME
+         * (a.k.a. 'would block').
+         */
+        case ACPI_DO_NOT_WAIT:
+
+            if (sem_trywait(Sem) == -1)
+                {
+                Status = (AE_TIME);
+                }
+            break;
+
+        /* Wait Indefinitely */
+
+        case ACPI_WAIT_FOREVER:
+
+            if (sem_wait (Sem))
+                {
+                Status = (AE_TIME);
+                }
+            break;
+
+        /* Wait with Timeout */
+
+        default:
+
+            T.tv_sec = Timeout / 1000;
+            T.tv_nsec = (Timeout - (T.tv_sec * 1000)) * 1000000;
+
+            if (sem_timedwait (Sem, &T))
+                {
+                Status = (AE_TIME);
+                }
+
+            break;
+        }
+
+    return (Status);
+    }
 
 
 /******************************************************************************
@@ -608,11 +676,21 @@ ACPI_STATUS
 AcpiOsSignalSemaphore (
     ACPI_HANDLE         Handle,
     UINT32              Units)
-{
-    pthread_mutex_unlock(&Handle);
+    {
+    sem_t               *Sem = (sem_t *)Handle;
+
+    if (!Sem)
+        {
+        return (AE_BAD_PARAMETER);
+        }
+
+    if (sem_post (Sem) == -1)
+        {
+        return (AE_LIMIT);
+        }
 
     return (AE_OK);
-}
+    }
 
 ACPI_STATUS
 AcpiOsCreateMutex (
@@ -778,10 +856,27 @@ AcpiOsExecute (
     ACPI_EXECUTE_TYPE       Type,
     ACPI_OSD_EXEC_CALLBACK  Function,
     void                    *Context)
-{
+    {
+    pthread_attr_t thread_attr;
+    pthread_t task1;
+    char name[NAME_MAX];
+    ACPI_STATUS sts = AE_OK;
+    
+    pthread_attr_init(&thread_attr);
 
-    return (0);
-}
+    snprintf(name, NAME_MAX, "cpu%d-acpi", this_cpu());
+    
+    pthread_attr_setname_np(&thread_attr, name);
+    
+    if (pthread_create(&task1, &thread_attr, Function, Context) != OK)
+        {
+        sts = AE_NO_MEMORY;
+        }
+
+    pthread_attr_destroy(&thread_attr);
+    
+    return sts;
+    }
 
 
 /******************************************************************************
@@ -799,11 +894,17 @@ AcpiOsExecute (
 void
 AcpiOsStall (
     UINT32                  microseconds)
-{
-    int i, j;
-
+    {
+    int i, j = 0;
+    
+    /* 
+     * Stall the thread for n microseconds.
+     * Note: this should not put the thread in the sleep queue. 
+     * The thread should keep on running. Just looping.
+     */
+     
     for (i = 0; i < microseconds; i++) j++;
-}
+    }
 
 
 /******************************************************************************
@@ -821,11 +922,13 @@ AcpiOsStall (
 void
 AcpiOsSleep (
     UINT64                  milliseconds)
-{
+    {
     int i, j;
 
-    for (i = 0; i < milliseconds; i++) j++;
-}
+    for (i = 0; i < milliseconds; i++) 
+        for (j = 0; j < 100; j++) 
+            j = j;
+    }
 
 /******************************************************************************
  *

@@ -240,7 +240,8 @@ sched_runq_t *  sched_fifo_get_cpu_runq
     
     if (sched_runq_fifo_cpu[cpu->cpu_idx].runq.magic != MAGIC_VALID)
         {
-        printk("Invalid magic\n");
+        printk("sched_fifo_get_cpu_runq - Invalid magic 0x%X\n",
+            sched_runq_fifo_cpu[cpu->cpu_idx].runq.magic);
         return NULL;
         }
     

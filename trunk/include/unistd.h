@@ -583,7 +583,7 @@ RATIONALE
  * The implementation provides a C-language compilation environment
  * with 32-bit int and 64-bit long, pointer, and off_t types.
  */
-#define  _POSIX_V6_ILP32_OFFBIG       __OPTION_SUPPORTED
+#define  _POSIX_V6_LP64_OFF64         __OPTION_SUPPORTED
 
 /*
  * _POSIX_V6_LPBIG_OFFBIG

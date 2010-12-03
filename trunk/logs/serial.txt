@@ -16,23 +16,23 @@ mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
 mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
 Free physical area range [0x0000000000100000 - 0x000000000fef0000]
 base_pml4=256 base_pdpt=0
-lowest_addr=0x0000000000183000, highest_addr=0x00000000ffffffff
-user available physical RAM 0x0000000000188000-0x000000000fef0000
+lowest_addr=0x0000000000184000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x0000000000189000-0x000000000fef0000
 x64_paging_map: page tables using 20 KB
-first_pdpt=0xffffffff80183000, first_pdir=0xffffffff80184000, num_pdpt = 1
-current_pdpt = 0xffffffff80183000
-pdpt #0 0x0000000000184003 -> 0xffffffff80184000
-pdpt #1 0x0000000000185003 -> 0xffffffff80185000
-pdpt #2 0x0000000000186003 -> 0xffffffff80186000
-pdpt #3 0x0000000000187003 -> 0xffffffff80187000
-just set 0x0000000000183003 0xffffffff80183000
+first_pdpt=0xffffffff80184000, first_pdir=0xffffffff80185000, num_pdpt = 1
+current_pdpt = 0xffffffff80184000
+pdpt #0 0x0000000000185003 -> 0xffffffff80185000
+pdpt #1 0x0000000000186003 -> 0xffffffff80186000
+pdpt #2 0x0000000000187003 -> 0xffffffff80187000
+pdpt #3 0x0000000000188003 -> 0xffffffff80188000
+just set 0x0000000000184003 0xffffffff80184000
 end address 0x0000000100000000
 num_pdirs=4
 num_pdpt=1
-new CR3 0x0000000000162000
-page_alloc_init(): pages_available=64364 lowest_addr=0x0000000000384000
+new CR3 0x0000000000163000
+page_alloc_init(): pages_available=64363 lowest_addr=0x0000000000385000
 page_alloc_init(): done!
-mem_pool 0xffff800000384000, mem_pool_size 0x0000000001000000 done
+mem_pool 0xffff800000385000, mem_pool_size 0x0000000001000000 done
 Intel Specific Features:
 Type 0 - Original OEM
 Family 6 - Pentium Pro
@@ -50,19 +50,18 @@ smp_parse_config:found cpu-0 enabled.
 smp_parse_config:found cpu-1 enabled.
 smp_init: cpu 0, lapic_id = 0, BSP
 smp_init: cpu 1, lapic_id = 1, AP
-_binary_ap_boot_start at 0xffffffff8015f5c0, _binary_ap_boot_end at 0xffffffff8015f692, ap_boot_size 0x00000000000000d2
+_binary_ap_boot_start at 0xffffffff801600a0, _binary_ap_boot_end at 0xffffffff80160172, ap_boot_size 0x00000000000000d2
 code copy done!
-smp_activiate_ap:_boot_pml4 0x0000000000162000 entry 0xffffffff80101e0a
+smp_activiate_ap:_boot_pml4 0x0000000000163000 entry 0xffffffff80101e4a
 smp_activiate_ap: activiate AP cpu #1......ok
 get free page 0x000000000feef000
 AP cpu-1 is now ready, lapic_base 0x00000000fee00800
-RIP = 0xffffffff80101d61
+RIP = 0xffffffff80101da1
 Using scheduling policy SCHED_RR!
 Created thread INIT_CPU0
 CPU does not support x2APIC
 This is BSP
 LAPIC: version 0x11, 5 LVTs
-cpu0 - calculate lapic frequency...done! lapic_freq_hz 66666666
 Using scheduling policy SCHED_RR!
 Created thread RTC
 RTC registered
@@ -70,7 +69,8 @@ Using scheduling policy SCHED_RR!
 Created thread KBD
 KBD registered
 MSR_FSB_FREQ 0x0000000000000000
-AcpiNsRootInitialize - 5
+cpu0 - calculate lapic frequency...done! lapic_freq_hz 8066279, apic_period_ns 123
+cpu0 - lapic_timer_count_init count 80662, ns 10000000
 acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
 ACPI: RSDP 0x00000000000f6940 00024 (v02 PTLTD )
 ACPI: XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)
@@ -92,3 +92,64 @@ Initializing Device/Processor/Thermal objects by executing _INI methods:..
 Executed 2 _INI methods requiring 0 _STA executions (examined 330 objects)
 evgpeblk-1234 [03] EvInitializeGpeBlock  : Found 3 Wake, Enabled 2 Runtime GPEs in this block
 Using scheduling policy SCHED_RR!
+Created thread cpu0-task1
+Using scheduling policy SCHED_RR!
+Using scheduling policy SCHED_RR!
+Created thread INIT_CPU1
+Created thread cpu0-task2
+MSR_FSB_FREQ 0x0000000000000000
+Using scheduling policy SCHED_RR!
+cpu1 - calculate lapic frequency...Created thread cpu0-task3
+done! lapic_freq_hz 8048518, apic_period_ns 124
+KSH:000> cpu1 - lapic_timer_count_init count 80485, ns 10000000
+
+KSH: Please enter a command!
+KSH:001> 
+KSH: Please enter a command!
+KSH:002> i
+ID(0)-NAME(INIT_CPU0)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff80000038ff28)-STACK(0xffff80000038efc0-->0xffff80000038ffc0)
+ID(1)-NAME(RTC)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff800000392d28)-STACK(0xffff800000391da0-->0xffff800000392da0)
+ID(2)-NAME(KBD)-CPU(0)-STATE(RUNNING):
+POLICY(2)-SP(0xffff800000394348)-STACK(0xffff800000393430-->0xffff800000394430)
+ID(3)-NAME(cpu0-task1)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff800000414c18)-STACK(0xffff800000413ca0-->0xffff800000414ca0)
+ID(4)-NAME(INIT_CPU1)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff800000415b58)-STACK(0xffff800000414cb0-->0xffff800000415cb0)
+ID(5)-NAME(cpu0-task2)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff800000416c38)-STACK(0xffff800000415cc0-->0xffff800000416cc0)
+ID(6)-NAME(cpu0-task3)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000004180b8)-STACK(0xffff800000417140-->0xffff800000418140)
+KSH:003> Using scheduling policy SCHED_RR!
+Created thread cpu1-task1
+Using scheduling policy SCHED_RR!
+Created thread cpu1-task2
+Using scheduling policy SCHED_RR!
+Created thread cpu1-task3
+
+KSH: Please enter a command!
+KSH:004> 
+KSH: Please enter a command!
+KSH:005> i
+ID(0)-NAME(INIT_CPU0)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff80000038ff28)-STACK(0xffff80000038efc0-->0xffff80000038ffc0)
+ID(1)-NAME(RTC)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff800000392d28)-STACK(0xffff800000391da0-->0xffff800000392da0)
+ID(2)-NAME(KBD)-CPU(1)-STATE(RUNNING):
+POLICY(2)-SP(0xffff800000394348)-STACK(0xffff800000393430-->0xffff800000394430)
+ID(3)-NAME(cpu0-task1)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff800000414c18)-STACK(0xffff800000413ca0-->0xffff800000414ca0)
+ID(4)-NAME(INIT_CPU1)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff800000415c18)-STACK(0xffff800000414cb0-->0xffff800000415cb0)
+ID(5)-NAME(cpu0-task2)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff800000416c38)-STACK(0xffff800000415cc0-->0xffff800000416cc0)
+ID(6)-NAME(cpu0-task3)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff8000004180b8)-STACK(0xffff800000417140-->0xffff800000418140)
+ID(7)-NAME(cpu1-task1)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff800000419538)-STACK(0xffff8000004185c0-->0xffff8000004195c0)
+ID(8)-NAME(cpu1-task2)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff80000041a9b8)-STACK(0xffff800000419a40-->0xffff80000041aa40)
+ID(9)-NAME(cpu1-task3)-CPU(0)-STATE(READY):
+POLICY(2)-SP(0xffff80000041be38)-STACK(0xffff80000041aec0-->0xffff80000041bec0)
+KSH:006> 

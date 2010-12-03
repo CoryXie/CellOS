@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <time.h>
+#include <os/sched_sem.h>
 
 /*
  * The <semaphore.h> header shall define the sem_t type, used 
@@ -15,18 +16,14 @@
  * and semaphores.
  */
  
-typedef struct _sem_t 
-    {
-	int32_t	id;
-	int32_t	_padding[3];
-    } sem_t;
+typedef struct sched_semaphore  sem_t;
 
 /* 
  * The <semaphore.h> header shall define the symbolic constant
  * SEM_FAILED which shall have type sem_t *.
  */
  
-#define SEM_FAILED	((sem_t*)(long)-1)
+#define SEM_FAILED	((sem_t*)(NULL))
 
 #ifdef __cplusplus
 extern "C" {

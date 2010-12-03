@@ -66,10 +66,11 @@ _cell64_32_entry:
   * bit1, R/W,      Read/write; if 0, writes may not be allowed to the region
   *                 controlled by this entry.
   * bit2, U/S,      User/supervisor; if 0, accesses with CPL=3 are not allowed
-  *             to the region controlled by this entry
-  * bit7, PS,       Page Size; apply for PDE only, if set, the PDE is pointing to a 2MB
-  *                 big page and there is no page table associated with this PDE;
-  *                 otherwise th PDE is pointing to a page table which contains PTEs.
+  *                 to the region controlled by this entry
+  * bit7, PS,       Page Size; apply for PDE only, if set, the PDE is pointing
+  *                 to a 2MB big page and there is no page table associated 
+  *                 with this PDE; otherwise th PDE is pointing to a page table 
+  *                 which contains PTEs.
   */
 
     /* map the pdpt(page directory pointer table) into the pml4 */
@@ -89,7 +90,7 @@ _cell64_32_entry:
     movl $KA2PA(_boot_pd0) + (PG_PRESENT | PG_WRITE), KA2PA(_boot_pdpt)+0xFF0
 
 
-    /* identity map the first 2 x 2MB pages - PS bit is set */
+    /* identity map the first 6 x 2MB pages - PS bit is set */
 
     movl $KA2PA(_boot_pd0), %ebx
     movl $(PG_PRESENT | PG_WRITE | PG_LARGE | PG_GLOBAL), %eax    /* 2MB starting at 0x0 */
@@ -98,6 +99,26 @@ _cell64_32_entry:
 
     add $8, %ebx
     addl $0x200000, %eax /* 2MB starting at 0x200000 */
+    movl %eax, (%ebx)
+    movl $0, 4(%ebx)
+
+    add $8, %ebx
+    addl $0x200000, %eax /* 2MB starting at 0x400000 */
+    movl %eax, (%ebx)
+    movl $0, 4(%ebx)
+
+    add $8, %ebx
+    addl $0x200000, %eax /* 2MB starting at 0x600000 */
+    movl %eax, (%ebx)
+    movl $0, 4(%ebx)
+
+    add $8, %ebx
+    addl $0x200000, %eax /* 2MB starting at 0x800000 */
+    movl %eax, (%ebx)
+    movl $0, 4(%ebx)
+
+    add $8, %ebx
+    addl $0x200000, %eax /* 2MB starting at 0xA00000 */
     movl %eax, (%ebx)
     movl $0, 4(%ebx)
 

@@ -327,10 +327,6 @@ void reschedule(void)
 #ifdef SCHED_DETAIL        
         printk("cpu%d - No switching, staying %s\n",
                this_cpu(), kurrent->name);
-#endif   
-#ifdef SCHED_DETAIL        
-        printk("cpu%d - release lock for %s\n", 
-        this_cpu(), kurrent->name);
 #endif  
         kurrent->state = STATE_RUNNING;
 
@@ -355,6 +351,7 @@ void sched_tick
         sched_thread_global_show();
 #endif
 
+#define SCHED_SELDOM
 #ifdef SCHED_SELDOM
     if ((timer_ticks[this_cpu()] % (CONFIG_HZ)) == 0)
 #endif        

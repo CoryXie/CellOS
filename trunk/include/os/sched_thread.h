@@ -148,6 +148,9 @@ typedef struct sched_thread
     /* Remianing time slice */
     int             remain_time_slice;  
 
+    /* Thread errno */
+    int             err;
+
     /* List of all mutexes owned by thread */
     list_t          mutex_list; 
 

@@ -196,7 +196,9 @@ sched_runq_t *  sched_rr_get_cpu_runq
     
     if (sched_runq_rr_cpu[cpu->cpu_idx].runq.magic != MAGIC_VALID)
         {
-        printk("Invalid magic\n");
+        printk("sched_rr_get_cpu_runq - Invalid magic 0x%X cpu->cpu_idx %d apic_period_ns %d\n",
+            sched_runq_rr_cpu[cpu->cpu_idx].runq.magic, cpu->cpu_idx,
+            cpu->cpu_arch.apic_period_ns);
         return NULL;
         }
     

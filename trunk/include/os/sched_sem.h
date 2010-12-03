@@ -3,70 +3,38 @@
 #ifndef _OS_SCHED_SEM_H
 #define _OS_SCHED_SEM_H
 
+#include <sys.h>
+#include <arch.h>
+#include <os.h>
+
 /* Kernel semaphore structure */
 
-typedef struct ksemaphore
+typedef struct sched_semaphore
     {
-    unsigned long   id;     /* semaphore id which is an interger */
-    char *          name;   /* The semaphore name */
-    int             flags;  /* Flags of this semaphore */
+    /* Node for list of all semaphores - debug show */
+    list_t  node;   
+
+    /* ID of semaphore */
+    id_t    id;
+        
+    /* Name of the semaphore */
+    char    name[NAME_MAX];
     
-    /* Current semaphore count. Zero means not available. */
-    
-    size_t          count;
+    /* Semaphore current count */
+    int     count;
 
-    /* Threads list and count pending on this semaphore */
-    
-    list_t          pending_thread_list;   
-    unsigned long   pending_thread_count;
+    /* Threads list pending on this semaphore */
+    qhead_t  waitq;    
 
-    /* List of all semaphores */
-    
-    list_t          list;   
-    } ksemaphore_t;
+    /* Lock for the above list */
+    spinlock_t lock;
 
-/* 
- * Create a semaphore with specified name 
- * and initial count 
- */
+    /* Highest priority thread pending on this semaphore */
+    struct sched_thread *best_waiter;
 
-ksemaphore_t * ksemaphore_create
-    (
-    char * name, 
-    int count,
-    int flags
-    );
+    /* Magic number */
+    int magic;
+    } sched_semaphore_t;
 
-/* Delete a semaphore */
-
-int ksemaphore_delete
-    (
-    ksemaphore_t * sema    
-    );
-
-/* Take a semaphore */
-
-int ksemaphore_take
-    (
-    ksemaphore_t * sema,
-    long wait_option
-    );
-
-/* Give a semaphore */
-
-int ksemaphore_give
-    (
-    ksemaphore_t * sema
-    );
-
-/* 
- * Prioritize the pending thread to the head position
- * of the pending thread list
- */
-
-int ksemaphore_prioritize
-    (
-    ksemaphore_t * sema    
-    );
 
 #endif /* _OS_SCHED_SEM_H */

@@ -96,7 +96,9 @@ OBJS += kernel/sched_core.o 	\
 		kernel/sched_thread.o	\
 		kernel/sched_thread_spin.o \
 		kernel/sched_thread_attr.o \
-		kernel/sched_thread_cancel.o
+		kernel/sched_thread_cancel.o \
+		kernel/semaphore.o
+
 		
 OBJS += tests/testing.o
 
