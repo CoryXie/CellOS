@@ -460,6 +460,15 @@ AcpiOsUnmapMemory (
     return;
 }
 
+ACPI_STATUS
+AcpiOsGetPhysicalAddress (
+    void                    *LogicalAddress,
+    ACPI_PHYSICAL_ADDRESS   *PhysicalAddress)
+{
+    *PhysicalAddress = VA2PA(LogicalAddress);
+
+    return (AE_OK);
+}
 
 /******************************************************************************
  *
@@ -990,9 +999,10 @@ AcpiOsValidateInterface (
 ACPI_STATUS
 AcpiOsReadPciConfiguration (
     ACPI_PCI_ID             *PciId,
-    UINT32                  Register,
-    void                    *Value,
+    UINT32                  Reg,
+    UINT64                  *Value,
     UINT32                  Width)
+
 {
 
     return (AE_OK);

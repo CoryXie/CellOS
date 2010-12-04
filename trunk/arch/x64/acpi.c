@@ -2,6 +2,13 @@
 #include <arch.h>
 #include <os.h>
 
+#include <acpi.h>
+#include <accommon.h>
+#include <amlcode.h>
+#include <acparser.h>
+#include <acdebug.h>
+#include <acnamesp.h>
+
 /*
  * Refering http://wiki.osdev.org/ACPI:
  *
@@ -138,3 +145,4 @@ void acpi_init(void)
 
     x64_acpi_debug(rsdp);
     }
+

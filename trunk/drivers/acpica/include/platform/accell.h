@@ -134,7 +134,7 @@
 
 #define ACPI_SPINLOCK               spinlock_t *
 #define ACPI_CPU_FLAGS              unsigned long
-#define ACPI_THREAD_ID              pthread_t
+#define ACPI_USE_LOCAL_CACHE
 
 #define ACPI_MACHINE_WIDTH          64
 #define COMPILER_DEPENDENT_INT64    long

@@ -188,7 +188,6 @@
  *
  * ACPI_SIZE        16/32/64-bit unsigned value
  * ACPI_NATIVE_INT  16/32/64-bit signed value
- *
  */
 
 /*******************************************************************************
@@ -204,6 +203,16 @@ typedef COMPILER_DEPENDENT_UINT64       UINT64;
 typedef COMPILER_DEPENDENT_INT64        INT64;
 
 /*! [End] no source code translation !*/
+
+/*
+ * Value returned by AcpiOsGetThreadId. There is no standard "thread_id"
+ * across operating systems or even the various UNIX systems. Since ACPICA
+ * only needs the thread ID as a unique thread identifier, we use a UINT64
+ * as the only common data type - it will accommodate any type of pointer or
+ * any type of integer. It is up to the host-dependent OSL to cast the
+ * native thread ID type to a UINT64 (in AcpiOsGetThreadId).
+ */
+#define ACPI_THREAD_ID                  UINT64
 
 
 /*******************************************************************************
@@ -285,12 +294,6 @@ typedef UINT32                          ACPI_PHYSICAL_ADDRESS;
  * be defined in the OS-specific header, and this will take precedence.
  *
  ******************************************************************************/
-
-/* Value returned by AcpiOsGetThreadId */
-
-#ifndef ACPI_THREAD_ID
-#define ACPI_THREAD_ID                  ACPI_SIZE
-#endif
 
 /* Flags for AcpiOsAcquireLock/AcpiOsReleaseLock */
 
@@ -454,21 +457,6 @@ typedef void *                          ACPI_HANDLE;    /* Actually a ptr to a N
 
 typedef UINT8                           ACPI_OWNER_ID;
 #define ACPI_OWNER_ID_MAX               0xFF
-
-
-typedef struct uint64_struct
-{
-    UINT32                          Lo;
-    UINT32                          Hi;
-
-} UINT64_STRUCT;
-
-typedef union uint64_overlay
-{
-    UINT64                          Full;
-    UINT64_STRUCT                   Part;
-
-} UINT64_OVERLAY;
 
 
 #define ACPI_INTEGER_BIT_SIZE           64
@@ -742,53 +730,37 @@ typedef UINT32                          ACPI_EVENT_STATUS;
 #define ACPI_GPE_MAX                    0xFF
 #define ACPI_NUM_GPE                    256
 
+/* Actions for AcpiSetGpe, AcpiGpeWakeup, AcpiHwLowSetGpe */
+
 #define ACPI_GPE_ENABLE                 0
 #define ACPI_GPE_DISABLE                1
-
+#define ACPI_GPE_CONDITIONAL_ENABLE     2
 
 /*
  * GPE info flags - Per GPE
- * +-+-+-+---+---+-+
- * |7|6|5|4:3|2:1|0|
- * +-+-+-+---+---+-+
- *  | | |  |   |  |
- *  | | |  |   |  +--- Interrupt type: Edge or Level Triggered
- *  | | |  |   +--- Type: Wake-only, Runtime-only, or wake/runtime
- *  | | |  +--- Type of dispatch -- to method, handler, or none
- *  | | +--- Enabled for runtime?
- *  | +--- Enabled for wake?
- *  +--- Unused
+ * +-------+---+-+-+
+ * |  7:4  |3:2|1|0|
+ * +-------+---+-+-+
+ *     |     |  | |
+ *     |     |  | +--- Interrupt type: edge or level triggered
+ *     |     |  +----- GPE can wake the system
+ *     |     +-------- Type of dispatch:to method, handler, or none
+ *     +-------------- <Reserved>
  */
 #define ACPI_GPE_XRUPT_TYPE_MASK        (UINT8) 0x01
 #define ACPI_GPE_LEVEL_TRIGGERED        (UINT8) 0x01
 #define ACPI_GPE_EDGE_TRIGGERED         (UINT8) 0x00
 
-#define ACPI_GPE_TYPE_MASK              (UINT8) 0x06
-#define ACPI_GPE_TYPE_WAKE_RUN          (UINT8) 0x06
-#define ACPI_GPE_TYPE_WAKE              (UINT8) 0x02
-#define ACPI_GPE_TYPE_RUNTIME           (UINT8) 0x04    /* Default */
+#define ACPI_GPE_CAN_WAKE               (UINT8) 0x02
 
-#define ACPI_GPE_DISPATCH_MASK          (UINT8) 0x18
-#define ACPI_GPE_DISPATCH_HANDLER       (UINT8) 0x08
-#define ACPI_GPE_DISPATCH_METHOD        (UINT8) 0x10
-#define ACPI_GPE_DISPATCH_NOT_USED      (UINT8) 0x00    /* Default */
-
-#define ACPI_GPE_RUN_ENABLE_MASK        (UINT8) 0x20
-#define ACPI_GPE_RUN_ENABLED            (UINT8) 0x20
-#define ACPI_GPE_RUN_DISABLED           (UINT8) 0x00    /* Default */
-
-#define ACPI_GPE_WAKE_ENABLE_MASK       (UINT8) 0x40
-#define ACPI_GPE_WAKE_ENABLED           (UINT8) 0x40
-#define ACPI_GPE_WAKE_DISABLED          (UINT8) 0x00    /* Default */
-
-#define ACPI_GPE_ENABLE_MASK            (UINT8) 0x60    /* Both run/wake */
+#define ACPI_GPE_DISPATCH_MASK          (UINT8) 0x0C
+#define ACPI_GPE_DISPATCH_HANDLER       (UINT8) 0x04
+#define ACPI_GPE_DISPATCH_METHOD        (UINT8) 0x08
+#define ACPI_GPE_DISPATCH_NOT_USED      (UINT8) 0x00
 
 /*
  * Flags for GPE and Lock interfaces
  */
-#define ACPI_EVENT_WAKE_ENABLE          0x2             /* AcpiGpeEnable */
-#define ACPI_EVENT_WAKE_DISABLE         0x2             /* AcpiGpeDisable */
-
 #define ACPI_NOT_ISR                    0x1
 #define ACPI_ISR                        0x0
 
@@ -1110,10 +1082,15 @@ ACPI_STATUS (*ACPI_ADR_SPACE_SETUP) (
 
 typedef
 ACPI_STATUS (*ACPI_WALK_CALLBACK) (
-    ACPI_HANDLE                     ObjHandle,
+    ACPI_HANDLE                     Object,
     UINT32                          NestingLevel,
     void                            *Context,
     void                            **ReturnValue);
+
+typedef
+UINT32 (*ACPI_INTERFACE_HANDLER) (
+    ACPI_STRING                     InterfaceName,
+    UINT32                          Supported);
 
 
 /* Interrupt handler return values */

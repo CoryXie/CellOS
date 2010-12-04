@@ -57,6 +57,9 @@ CPPFLAGS = -Wall -fomit-frame-pointer -O $(INCLUDEDIR)
 
 LDFLAGS = -nostdlib -nostdinc -nodefaultlibs -Bstatic -Tcell64.ld 
 
+ACPICA_DIR = $(CELLOS)/drivers/acpica
+INCLUDEDIR += -I$(ACPICA_DIR)/include
+
 OBJS =  arch/x64/boot.o \
 		arch/x64/gdt.o \
         arch/x64/idt.o \

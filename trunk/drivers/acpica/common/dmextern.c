@@ -252,7 +252,7 @@ AcpiDmNormalizeParentPrefix (
     Node = Op->Common.Node;
     while (Node && (*Path == (UINT8) AML_PARENT_PREFIX))
     {
-        Node = AcpiNsGetParentNode (Node);
+        Node = Node->Parent;
         Path++;
     }
 
@@ -270,6 +270,15 @@ AcpiDmNormalizeParentPrefix (
     }
 
     Length = (ACPI_STRLEN (ParentPath) + ACPI_STRLEN (Path) + 1);
+    if (ParentPath[1])
+    {
+        /*
+         * If ParentPath is not just a simple '\', increment the length
+         * for the required dot separator (ParentPath.Path)
+         */
+        Length++;
+    }
+
     Fullpath = ACPI_ALLOCATE_ZEROED (Length);
     if (!Fullpath)
     {
@@ -298,6 +307,95 @@ AcpiDmNormalizeParentPrefix (
 Cleanup:
     ACPI_FREE (ParentPath);
     return (Fullpath);
+}
+
+
+/*******************************************************************************
+ *
+ * FUNCTION:    AcpiDmAddToExternalFileList
+ *
+ * PARAMETERS:  PathList            - Single path or list separated by comma
+ *
+ * RETURN:      None
+ *
+ * DESCRIPTION: Add external files to global list
+ *
+ ******************************************************************************/
+
+ACPI_STATUS
+AcpiDmAddToExternalFileList (
+    char                    *PathList)
+{
+    ACPI_EXTERNAL_FILE      *ExternalFile;
+    char                    *Path;
+    char                    *TmpPath;
+
+
+    if (!PathList)
+    {
+        return (AE_OK);
+    }
+
+    Path = strtok (PathList, ",");
+
+    while (Path)
+    {
+        TmpPath = ACPI_ALLOCATE_ZEROED (ACPI_STRLEN (Path) + 1);
+        if (!TmpPath)
+        {
+            return (AE_NO_MEMORY);
+        }
+
+        ACPI_STRCPY (TmpPath, Path);
+
+        ExternalFile = ACPI_ALLOCATE_ZEROED (sizeof (ACPI_EXTERNAL_FILE));
+        if (!ExternalFile)
+        {
+            ACPI_FREE (TmpPath);
+            return (AE_NO_MEMORY);
+        }
+
+        ExternalFile->Path = TmpPath;
+
+        if (AcpiGbl_ExternalFileList)
+        {
+            ExternalFile->Next = AcpiGbl_ExternalFileList;
+        }
+
+        AcpiGbl_ExternalFileList = ExternalFile;
+        Path = strtok (NULL, ",");
+    }
+
+    return (AE_OK);
+}
+
+
+/*******************************************************************************
+ *
+ * FUNCTION:    AcpiDmClearExternalFileList
+ *
+ * PARAMETERS:  None
+ *
+ * RETURN:      None
+ *
+ * DESCRIPTION: Clear the external file list
+ *
+ ******************************************************************************/
+
+void
+AcpiDmClearExternalFileList (
+    void)
+{
+    ACPI_EXTERNAL_FILE      *NextExternal;
+
+
+    while (AcpiGbl_ExternalFileList)
+    {
+        NextExternal = AcpiGbl_ExternalFileList->Next;
+        ACPI_FREE (AcpiGbl_ExternalFileList->Path);
+        ACPI_FREE (AcpiGbl_ExternalFileList);
+        AcpiGbl_ExternalFileList = NextExternal;
+    }
 }
 
 
@@ -374,7 +472,7 @@ AcpiDmAddToExternalList (
                 (NextExternal->Value != Value))
             {
                 ACPI_ERROR ((AE_INFO,
-                    "Argument count mismatch for method %s %d %d",
+                    "Argument count mismatch for method %s %u %u",
                     NextExternal->Path, NextExternal->Value, Value));
             }
 
@@ -620,7 +718,7 @@ AcpiDmEmitExternals (
 
         if (AcpiGbl_ExternalList->Type == ACPI_TYPE_METHOD)
         {
-            AcpiOsPrintf (")    // %d Arguments\n",
+            AcpiOsPrintf (")    // %u Arguments\n",
                 AcpiGbl_ExternalList->Value);
         }
         else

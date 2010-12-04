@@ -1,8 +1,4 @@
-ACPICA_DIR = $(CELLOS)/drivers/acpica
-
 CFLAGS += -DCONFIG_ACPICA
-
-INCLUDEDIR += -I$(ACPICA_DIR)/include
 
 OBJS += $(ACPICA_DIR)/oscell.o
 
@@ -15,8 +11,9 @@ OBJS += $(ACPICA_DIR)/events/evevent.o	\
 	$(ACPICA_DIR)/events/evsci.o	\
 	$(ACPICA_DIR)/events/evxface.o	\
 	$(ACPICA_DIR)/events/evxfevnt.o	\
-	$(ACPICA_DIR)/events/evxfregn.o	
-
+	$(ACPICA_DIR)/events/evxfregn.o	\
+	$(ACPICA_DIR)/events/evgpeutil.o \
+	$(ACPICA_DIR)/events/evgpeinit.o
 
 OBJS += $(ACPICA_DIR)/hardware/hwacpi.o \
 	$(ACPICA_DIR)/hardware/hwgpe.o 	 \
@@ -24,14 +21,19 @@ OBJS += $(ACPICA_DIR)/hardware/hwacpi.o \
 	$(ACPICA_DIR)/hardware/hwsleep.o \
 	$(ACPICA_DIR)/hardware/hwtimer.o \
 	$(ACPICA_DIR)/hardware/hwvalid.o \
-	$(ACPICA_DIR)/hardware/hwxface.o 
+	$(ACPICA_DIR)/hardware/hwxface.o \
+	$(ACPICA_DIR)/hardware/hwpci.o 
 
 
 OBJS += $(ACPICA_DIR)/debugger/dbdisply.o \
 	$(ACPICA_DIR)/debugger/dbxface.o \
 	
 
-OBJS + = $(ACPICA_DIR)/disassembler/dmobject.o
+OBJS + = $(ACPICA_DIR)/disassembler/dmobject.o \
+		 $(ACPICA_DIR)/disassembler/dmresrc.o \
+		 $(ACPICA_DIR)/disassembler/dmopcode.o
+
+# Note that the "compiler" directory files are not included
 
 
 OBJS += $(ACPICA_DIR)/dispatcher/dsfield.o \
@@ -69,7 +71,8 @@ OBJS += $(ACPICA_DIR)/executer/exconfig.o \
 	$(ACPICA_DIR)/executer/exstoren.o \
 	$(ACPICA_DIR)/executer/exstorob.o \
 	$(ACPICA_DIR)/executer/exsystem.o \
-	$(ACPICA_DIR)/executer/exutils.o
+	$(ACPICA_DIR)/executer/exutils.o \
+	$(ACPICA_DIR)/executer/exdebug.o
 
 
 OBJS += $(ACPICA_DIR)/parser/psargs.o \
@@ -144,6 +147,8 @@ OBJS += $(ACPICA_DIR)/utilities/utalloc.o \
 	$(ACPICA_DIR)/utilities/utresrc.o \
 	$(ACPICA_DIR)/utilities/utstate.o \
 	$(ACPICA_DIR)/utilities/uttrack.o \
-	$(ACPICA_DIR)/utilities/utxface.o 
+	$(ACPICA_DIR)/utilities/utxface.o \
+	$(ACPICA_DIR)/utilities/utxferror.o \
+	$(ACPICA_DIR)/utilities/utosi.o
 
 

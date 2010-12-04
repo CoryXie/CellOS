@@ -122,20 +122,21 @@
 #define _COMPONENT          PARSER
         ACPI_MODULE_NAME    ("aemain")
 
-UINT8           AcpiGbl_BatchMode = 0;
-UINT8           AcpiGbl_RegionFillValue = 0;
-BOOLEAN         AcpiGbl_IgnoreErrors = FALSE;
-BOOLEAN         AcpiGbl_DbOpt_NoRegionSupport = FALSE;
-BOOLEAN         AcpiGbl_DebugTimeout = FALSE;
-char            BatchBuffer[128];
-AE_TABLE_DESC   *AeTableListHead = NULL;
+
+UINT8                   AcpiGbl_RegionFillValue = 0;
+BOOLEAN                 AcpiGbl_IgnoreErrors = FALSE;
+BOOLEAN                 AcpiGbl_DbOpt_NoRegionSupport = FALSE;
+BOOLEAN                 AcpiGbl_DebugTimeout = FALSE;
+
+static UINT8            AcpiGbl_BatchMode = 0;
+static char             BatchBuffer[128];
+static AE_TABLE_DESC    *AeTableListHead = NULL;
 
 #define ASL_MAX_FILES   256
-char                    *FileList[ASL_MAX_FILES];
-int                     FileCount;
+static char             *FileList[ASL_MAX_FILES];
 
 
-#define AE_SUPPORTED_OPTIONS    "?ab:de^f:ghimo:rstvx:z"
+#define AE_SUPPORTED_OPTIONS    "?b:d:e:f:gm^ovx:"
 
 
 /******************************************************************************
@@ -157,19 +158,25 @@ usage (void)
 
     printf ("Where:\n");
     printf ("   -?                  Display this message\n");
-    printf ("   -a                  Do not abort methods on error\n");
     printf ("   -b <CommandLine>    Batch mode command execution\n");
-    printf ("   -e [Method]         Batch mode method execution\n");
-    printf ("   -f <Value>          Specify OpRegion initialization fill value\n");
-    printf ("   -i                  Do not run STA/INI methods during init\n");
-    printf ("   -m                  Display final memory use statistics\n");
-    printf ("   -o <OutputFile>     Send output to this file\n");
-    printf ("   -r                  Disable OpRegion address simulation\n");
-    printf ("   -s                  Enable Interpreter Slack Mode\n");
-    printf ("   -t                  Enable Interpreter Serialized Mode\n");
-    printf ("   -v                  Verbose init output\n");
-    printf ("   -x <DebugLevel>     Specify debug output level\n");
-    printf ("   -z                  Enable debug semaphore timeout\n");
+    printf ("   -m [Method]         Batch mode method execution. Default=MAIN\n");
+    printf ("\n");
+
+    printf ("   -da                 Disable method abort on error\n");
+    printf ("   -di                 Disable execution of STA/INI methods during init\n");
+    printf ("   -do                 Disable Operation Region address simulation\n");
+    printf ("   -dt                 Disable allocation tracking (performance)\n");
+    printf ("\n");
+
+    printf ("   -ef                 Enable display of final memory statistics\n");
+    printf ("   -em                 Enable Interpreter Serialized Mode\n");
+    printf ("   -es                 Enable Interpreter Slack Mode\n");
+    printf ("   -et                 Enable debug semaphore timeout\n");
+    printf ("\n");
+
+    printf ("   -f <Value>          Operation Region initialization fill value\n");
+    printf ("   -v                  Verbose initialization output\n");
+    printf ("   -x <DebugLevel>     Debug output level\n");
 }
 
 
@@ -196,6 +203,7 @@ AcpiDbRunBatchMode (
     char                    *Ptr = BatchBuffer;
     char                    *Cmd = Ptr;
     UINT8                   Run = 0;
+
 
     AcpiGbl_MethodExecuting = FALSE;
     AcpiGbl_StepToNextCall = FALSE;
@@ -354,6 +362,7 @@ AsDoWildcard (
 #ifdef WIN32
     void                    *DirInfo;
     char                    *Filename;
+    int                     FileCount;
 
 
     FileCount = 0;
@@ -435,7 +444,7 @@ main (
     ACPI_TABLE_HEADER       *Table = NULL;
     UINT32                  TableCount;
     AE_TABLE_DESC           *TableDesc;
-    char                    **FileList;
+    char                    **WildcardList;
     char                    *Filename;
     char                    *Directory;
     char                    *FullPathname;
@@ -446,14 +455,12 @@ main (
                     _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 #endif
 
-    printf ("\nIntel ACPI Component Architecture\nAML Execution/Debug Utility");
-    printf (" version %8.8X", ((UINT32) ACPI_CA_VERSION));
-    printf (" [%s]\n\n",  __DATE__);
+    printf (ACPI_COMMON_SIGNON ("AML Execution/Debug Utility"));
 
     if (argc < 2)
     {
         usage ();
-        return 0;
+        return (0);
     }
 
     signal (SIGINT, AeCtrlCHandler);
@@ -465,42 +472,77 @@ main (
 
     /* Init ACPI and start debugger thread */
 
-    AcpiInitializeSubsystem ();
+    Status = AcpiInitializeSubsystem ();
+    AE_CHECK_OK (AcpiInitializeSubsystem, Status);
 
     /* Get the command line options */
 
     while ((j = AcpiGetopt (argc, argv, AE_SUPPORTED_OPTIONS)) != EOF) switch(j)
     {
-    case 'a':
-        AcpiGbl_IgnoreErrors = TRUE;
-        break;
-
     case 'b':
         if (strlen (AcpiGbl_Optarg) > 127)
         {
             printf ("**** The length of command line (%u) exceeded maximum (127)\n",
                 (UINT32) strlen (AcpiGbl_Optarg));
-            return -1;
+            return (-1);
         }
         AcpiGbl_BatchMode = 1;
         strcpy (BatchBuffer, AcpiGbl_Optarg);
         break;
 
     case 'd':
-        AcpiGbl_DbOpt_disasm = TRUE;
-        AcpiGbl_DbOpt_stats = TRUE;
+        switch (AcpiGbl_Optarg[0])
+        {
+        case 'a':
+            AcpiGbl_IgnoreErrors = TRUE;
+            break;
+
+        case 'i':
+            AcpiGbl_DbOpt_ini_methods = FALSE;
+            break;
+
+        case 'o':
+            AcpiGbl_DbOpt_NoRegionSupport = TRUE;
+            break;
+
+        case 't':
+            #ifdef ACPI_DBG_TRACK_ALLOCATIONS
+                AcpiGbl_DisableMemTracking = TRUE;
+            #endif
+            break;
+
+        default:
+            printf ("Unknown option: -d%s\n", AcpiGbl_Optarg);
+            return (-1);
+        }
         break;
 
     case 'e':
-        AcpiGbl_BatchMode = 2;
         switch (AcpiGbl_Optarg[0])
         {
-        case '^':
-            strcpy (BatchBuffer, "MAIN");
+        case 'f':
+            #ifdef ACPI_DBG_TRACK_ALLOCATIONS
+                AcpiGbl_DisplayFinalMemStats = TRUE;
+            #endif
             break;
+
+        case 'm':
+            AcpiGbl_AllMethodsSerialized = TRUE;
+            printf ("Enabling AML Interpreter serialized mode\n");
+            break;
+
+        case 's':
+            AcpiGbl_EnableInterpreterSlack = TRUE;
+            printf ("Enabling AML Interpreter slack mode\n");
+            break;
+
+        case 't':
+            AcpiGbl_DebugTimeout = TRUE;
+            break;
+
         default:
-            strcpy (BatchBuffer, AcpiGbl_Optarg);
-            break;
+            printf ("Unknown option: -e%s\n", AcpiGbl_Optarg);
+            return (-1);
         }
         break;
 
@@ -513,32 +555,23 @@ main (
         AcpiGbl_DbFilename = NULL;
         break;
 
-    case 'i':
-        AcpiGbl_DbOpt_ini_methods = FALSE;
-        break;
-
     case 'm':
-#ifdef ACPI_DBG_TRACK_ALLOCATIONS
-        AcpiGbl_DisplayFinalMemStats = TRUE;
-#endif
+        AcpiGbl_BatchMode = 2;
+        switch (AcpiGbl_Optarg[0])
+        {
+        case '^':
+            strcpy (BatchBuffer, "MAIN");
+            break;
+
+        default:
+            strcpy (BatchBuffer, AcpiGbl_Optarg);
+            break;
+        }
         break;
 
     case 'o':
-        printf ("O option is not implemented\n");
-        break;
-
-    case 'r':
-        AcpiGbl_DbOpt_NoRegionSupport = TRUE;
-        break;
-
-    case 's':
-        AcpiGbl_EnableInterpreterSlack = TRUE;
-        printf ("Enabling AML Interpreter slack mode\n");
-        break;
-
-    case 't':
-        AcpiGbl_AllMethodsSerialized = TRUE;
-        printf ("Enabling AML Interpreter serialized mode\n");
+        AcpiGbl_DbOpt_disasm = TRUE;
+        AcpiGbl_DbOpt_stats = TRUE;
         break;
 
     case 'v':
@@ -551,15 +584,11 @@ main (
         printf ("Debug Level: 0x%8.8X\n", AcpiDbgLevel);
         break;
 
-    case 'z':
-        AcpiGbl_DebugTimeout = TRUE;
-        break;
-
     case '?':
     case 'h':
     default:
         usage();
-        return -1;
+        return (-1);
     }
 
 
@@ -590,21 +619,21 @@ main (
 
             /* Expand wildcards (Windows only) */
 
-            FileList = AsDoWildcard (Directory, Filename);
-            if (!FileList)
+            WildcardList = AsDoWildcard (Directory, Filename);
+            if (!WildcardList)
             {
-                return -1;
+                return (-1);
             }
 
-            while (*FileList)
+            while (*WildcardList)
             {
                 FullPathname = AcpiOsAllocate (
-                    strlen (Directory) + strlen (*FileList) + 1);
+                    strlen (Directory) + strlen (*WildcardList) + 1);
 
                 /* Construct a full path to the file */
 
                 strcpy (FullPathname, Directory);
-                strcat (FullPathname, *FileList);
+                strcat (FullPathname, *WildcardList);
 
                 /* Get one table */
 
@@ -617,9 +646,9 @@ main (
                 }
 
                 AcpiOsFree (FullPathname);
-                AcpiOsFree (*FileList);
-                *FileList = NULL;
-                FileList++;
+                AcpiOsFree (*WildcardList);
+                *WildcardList = NULL;
+                WildcardList++;
 
                 /*
                  * Ignore an FACS or RSDT, we can't use them.
@@ -649,7 +678,7 @@ main (
         Status = AeBuildLocalTables (TableCount, AeTableListHead);
         if (ACPI_FAILURE (Status))
         {
-            return -1;
+            return (-1);
         }
 
         Status = AeInstallTables ();
@@ -703,6 +732,6 @@ enterloop:
         AcpiDbUserCommands (ACPI_DEBUGGER_COMMAND_PROMPT, NULL);
     }
 
-    return 0;
+    return (0);
 }
 
