@@ -2,6 +2,13 @@
 #include <arch.h>
 #include <os.h>
 
+#include <acpi.h>
+#include <accommon.h>
+#include <amlcode.h>
+#include <acparser.h>
+#include <acdebug.h>
+#include <acnamesp.h>
+
 /*
 I/O port     Usage
 
@@ -249,6 +256,56 @@ uint64_t calculate_cpu_frequency(void)
     return (cycles * PIT_8254_OSC_FREQ) / ticks;
     }
 
+
+/* Calculate CPU frequency in HZ. */
+uint64_t calculate_cpu_frequency2(void)
+    {
+    uint32_t start1 = 0, end1 = 0, ticks, us_elapsed;
+    uint64_t start, end, cycles, count;
+    
+    AcpiDbgLevel = ACPI_DEBUG_ALL;
+
+    /* Get the start TSC value. */
+    start = rdtsc();
+    
+    if (AcpiGetTimer(&start1) != AE_OK)
+        {
+        printk("AcpiGetTimer fail 1\n");
+        return 0;
+        }
+
+    for (count = 0; count < 1000000; count++) 
+        {
+        count++;
+        count--;
+        }
+    
+    /* Get the end TSC value. */
+    end = rdtsc();
+
+    if (AcpiGetTimer(&end1) != AE_OK)
+        {
+        printk("AcpiGetTimer fail 1\n");
+        return 0;
+        }
+    
+    AcpiDbgLevel = ACPI_DEBUG_DEFAULT;
+    
+    /* Calculate the differences between the values. */
+    cycles = end - start;
+    ticks = end1 - start1;
+    if (ticks == 0)
+        {
+        printk("AcpiGetTimer fail 3, start1 %d end1 %d\n", start1, end1);
+        return 0;
+        }
+    
+    AcpiGetTimerDuration(start1, end1, &us_elapsed);
+    
+
+    return (cycles * USECS_PER_SEC) / us_elapsed;
+    }
+
 /* Calculate BUS (LAPIC) frequency in HZ. */
 uint64_t calculate_lapic_frequency(void)
     {
@@ -339,7 +396,8 @@ int do_freq (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     {
     ipl_t ipl = interrupts_disable();
     
-    printk("CPU %lld HZ\n", calculate_cpu_frequency());
+    printk("CPU %lld HZ (PIT TIMER BASED)\n", calculate_cpu_frequency());
+    printk("CPU %lld HZ (ACPI PM TIMER BASED)\n", calculate_cpu_frequency2());
     printk("BUS %lld HZ\n", calculate_lapic_frequency());
 
     interrupts_restore(ipl);

@@ -102,6 +102,7 @@ extern int getdate_err;
  * (1000000000 = 0x3B9ACA00, so it is in 32 bit range.)
  */
 #define NSECS_PER_SEC 1000000000
+#define USECS_PER_SEC 1000000
 
 /* The <time.h> header shall declare the timespec structure */
 typedef struct timespec

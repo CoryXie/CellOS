@@ -35,12 +35,13 @@ void *sched_bsp_idle_thread (void *notused)
 
     lapic_common_init();
 
+    lapic_bsp_post_init();
+
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
+    pci_scan_devices();
 #endif
 
-    lapic_bsp_post_init();
-    
     interrupts_enable();
     
     thread_create_test();
@@ -88,6 +89,8 @@ void main (uint32_t mboot_magic, uint32_t mboot_info)
         {
         panic("No free memory for use! STOP~!\n");
         }
+
+    mb_parse_kernel_image();
     
     paging_init(first_free->base_addr,
                     first_free->base_addr + first_free->length);

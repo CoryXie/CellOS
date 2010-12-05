@@ -256,7 +256,7 @@ status_t lapic_common_init(void)
                 LAPIC_SPURIOUS_LAPIC_ENABLED |
                 LAPIC_SPURIOUS_FOCUS_DISABLED);
 
-    lapic_write(LAPIC_TDCR, LAPIC_TDIV_8);
+    lapic_write(LAPIC_TDCR, LAPIC_TDIV_1);
 
     /* Send an Init Level De-Assert to synchronise arbitration ID's. */
 
@@ -271,7 +271,7 @@ status_t lapic_common_init(void)
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
     printk("cpu%d - calculate lapic frequency...", this_cpu());
 
-    lapic_freq_hz = calculate_lapic_frequency() / 8;
+    lapic_freq_hz = calculate_lapic_frequency() / 1;
     
     kurrent_cpu->cpu_arch.apic_period_ns = (NSECS_PER_SEC) / lapic_freq_hz;
     

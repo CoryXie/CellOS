@@ -104,6 +104,8 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex)
         return EINVAL;
     
     mutexP->magic = MAGIC_INVALID;
+
+    kfree(mutexP);
     
     return OK;
     }
@@ -320,7 +322,7 @@ int pthread_mutex_lock
     if (mutexP->magic != MAGIC_VALID)
         return EINVAL;
 
-#ifdef MUTEX_DETAL
+#ifdef MUTEX_DETAL_ENTRY
     printk("cpu%d - thread %s want to lock mutex %s with protocol %d\n",
         this_cpu(), 
         kurrent->name,
@@ -353,8 +355,10 @@ int pthread_mutex_lock
              */
             if (mutexP->attr.type == PTHREAD_MUTEX_RECURSIVE)
                 {
+#ifdef MUTEX_DETAL
                 printk("PTHREAD_MUTEX_RECURSIVE for cpu-%d self_thread %s\n",
                     this_cpu(), kurrent->name);
+#endif
 
                 if (atomic_read(&mutexP->counter) >= SCHED_MUTEX_MAX_RECURSIVES)
                     {

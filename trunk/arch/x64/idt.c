@@ -141,23 +141,30 @@ void x64_idt_reserved_exception
 void dump_stack(struct stack_frame * stack)
     {
     printk("cpu-%d stack:\n"
-           "stack->ss       %p\n"
-           "stack->rsp      %p\n"
-           "stack->rflags   %p\n"
-           "stack->cs       %p\n"
-           "stack->rip      %p\n"
-           "stack->error    %p\n"
-           "stack->int_no   %p\n"
-           "stack->rax      %p\n"
-           "stack->rcx      %p\n"
-           "stack->rdx      %p\n"
-           "stack->rdi      %p\n"
-           "stack->rsi      %p\n"
-           "stack->rbp      %p\n"
-           "stack->r8       %p\n"
-           "stack->r9       %p\n"
-           "stack->r10      %p\n"
-           "stack->r11      %p\n"
+           "stack->ss           %p\n"
+           "stack->rsp          %p\n"
+           "stack->rflags       %p\n"
+           "stack->cs           %p\n"
+           "stack->rip          %p\n"
+           "stack->error        %p\n"
+           "stack->rip_frame    %p\n"
+           "stack->rbp_frame    %p\n"     
+           "stack->int_no       %p\n"
+           "stack->rax          %p\n"
+           "stack->rbx          %p\n"
+           "stack->rcx          %p\n"
+           "stack->rdx          %p\n"
+           "stack->rdi          %p\n"
+           "stack->rsi          %p\n"
+           "stack->rbp          %p\n"
+           "stack->r8           %p\n"
+           "stack->r9           %p\n"
+           "stack->r10          %p\n"
+           "stack->r11          %p\n"
+           "stack->r12          %p\n"
+           "stack->r13          %p\n"
+           "stack->r14          %p\n"
+           "stack->r15          %p\n"
            ,
            this_cpu(),
            stack->ss,
@@ -166,8 +173,11 @@ void dump_stack(struct stack_frame * stack)
            stack->cs,
            stack->rip,
            stack->error,
+           stack->rip_frame,
+           stack->rbp_frame,     
            stack->int_no,
            stack->rax,
+           stack->rbx,
            stack->rcx,
            stack->rdx,
            stack->rdi,
@@ -176,7 +186,12 @@ void dump_stack(struct stack_frame * stack)
            stack->r8,
            stack->r9,
            stack->r10,
-           stack->r11);
+           stack->r11,
+           stack->r12,
+           stack->r13,
+           stack->r14,
+           stack->r15
+           );
     }
 
 void x64_exception_handler

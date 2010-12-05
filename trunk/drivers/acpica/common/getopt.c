@@ -121,7 +121,7 @@
 #include "accommon.h"
 #include "acapps.h"
 
-#define ERR(szz,czz) if(AcpiGbl_Opterr){fprintf(stderr,"%s%s%c\n",argv[0],szz,czz);}
+#define ERR(szz,czz) if(AcpiGbl_Opterr){printk("%s%s%c\n",argv[0],szz,czz);}
 
 
 int   AcpiGbl_Opterr = 1;

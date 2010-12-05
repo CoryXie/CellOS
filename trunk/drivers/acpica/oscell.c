@@ -588,6 +588,9 @@ AcpiOsDeleteSemaphore (
     {
         return (AE_BAD_PARAMETER);
     }
+
+    AcpiOsFree(Sem);
+    
     return (AE_OK);
 }
 

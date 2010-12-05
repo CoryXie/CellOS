@@ -2,6 +2,18 @@ CFLAGS += -DCONFIG_ACPICA
 
 OBJS += $(ACPICA_DIR)/oscell.o
 
+OBJS += $(ACPICA_DIR)/common/dmtbinfo.o \
+	$(ACPICA_DIR)/common/getopt.o
+	
+#$(ACPICA_DIR)/common/adfile.o 	
+#$(ACPICA_DIR)/common/dmtable.o \
+#$(ACPICA_DIR)/common/adisasm.o \
+#$(ACPICA_DIR)/common/adwalk.o \
+#$(ACPICA_DIR)/common/dmextern.o \
+#$(ACPICA_DIR)/common/dmrestag.o \
+#$(ACPICA_DIR)/common/dmtbdump.o \
+		
+			
 OBJS += $(ACPICA_DIR)/events/evevent.o	\
 	$(ACPICA_DIR)/events/evgpe.o	\
 	$(ACPICA_DIR)/events/evgpeblk.o	\
@@ -24,15 +36,26 @@ OBJS += $(ACPICA_DIR)/hardware/hwacpi.o \
 	$(ACPICA_DIR)/hardware/hwxface.o \
 	$(ACPICA_DIR)/hardware/hwpci.o 
 
+OBJS += $(ACPICA_DIR)/disassembler/dmbuffer.o \
+	$(ACPICA_DIR)/disassembler/dmnames.o \
+	$(ACPICA_DIR)/disassembler/dmobject.o \
+	$(ACPICA_DIR)/disassembler/dmopcode.o \
+	$(ACPICA_DIR)/disassembler/dmresrc.o \
+	$(ACPICA_DIR)/disassembler/dmresrcl.o \
+	$(ACPICA_DIR)/disassembler/dmresrcs.o \
+	$(ACPICA_DIR)/disassembler/dmutils.o \
+	$(ACPICA_DIR)/disassembler/dmwalk.o 
 
-OBJS += $(ACPICA_DIR)/debugger/dbdisply.o \
-	$(ACPICA_DIR)/debugger/dbxface.o \
+OBJS += $(ACPICA_DIR)/debugger/dbcmds.o \
+	$(ACPICA_DIR)/debugger/dbdisply.o \
+	$(ACPICA_DIR)/debugger/dbexec.o \
+	$(ACPICA_DIR)/debugger/dbfileio.o \
+	$(ACPICA_DIR)/debugger/dbhistry.o \
+	$(ACPICA_DIR)/debugger/dbinput.o \
+	$(ACPICA_DIR)/debugger/dbstats.o \
+	$(ACPICA_DIR)/debugger/dbutils.o \
+	$(ACPICA_DIR)/debugger/dbxface.o 
 	
-
-OBJS + = $(ACPICA_DIR)/disassembler/dmobject.o \
-		 $(ACPICA_DIR)/disassembler/dmresrc.o \
-		 $(ACPICA_DIR)/disassembler/dmopcode.o
-
 # Note that the "compiler" directory files are not included
 
 
@@ -151,4 +174,8 @@ OBJS += $(ACPICA_DIR)/utilities/utalloc.o \
 	$(ACPICA_DIR)/utilities/utxferror.o \
 	$(ACPICA_DIR)/utilities/utosi.o
 
+OBJS += $(ACPICA_DIR)/tools/acpiexec/aeexec.o \
+	$(ACPICA_DIR)/tools/acpiexec/aehandlers.o \
+	$(ACPICA_DIR)/tools/acpiexec/aemain.o \
+	$(ACPICA_DIR)/tools/acpiexec/aetables.o 
 

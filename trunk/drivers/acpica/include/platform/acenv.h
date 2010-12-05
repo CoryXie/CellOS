@@ -151,8 +151,9 @@
 #define ACPI_SINGLE_THREADED
 #endif
 
-/* AcpiExec and AcpiBin configuration */
+#define ACPI_LARGE_NAMESPACE_NODE
 
+/* AcpiExec and AcpiBin configuration */
 #ifdef ACPI_EXEC_APP
 #define ACPI_APPLICATION
 #define ACPI_FULL_DEBUG
@@ -166,7 +167,7 @@
 #endif
 
 /* Linkable ACPICA library */
-
+#define ACPI_LIBRARY
 #ifdef ACPI_LIBRARY
 #define ACPI_USE_LOCAL_CACHE
 #endif
@@ -178,15 +179,16 @@
 #define ACPI_USE_LOCAL_CACHE
 #endif
 
-/* Common debug support */
+#define ACPI_FULL_DEBUG
+#define ACPI_MUTEX_DEBUG
+#define ACPI_DBG_TRACK_ALLOCATIONS
 
+/* Common debug support */
 #ifdef ACPI_FULL_DEBUG
 #define ACPI_DEBUGGER
 #define ACPI_DEBUG_OUTPUT
 #define ACPI_DISASSEMBLER
 #endif
-
-#define ACPI_DEBUG_OUTPUT
 
 /*! [Begin] no source code translation */
 

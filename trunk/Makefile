@@ -1,6 +1,7 @@
 # CELLOS64 top level make file
 CELLOS = $(shell pwd)
 ARCH = x64
+DATE=$(shell date +%F-%H-%M-%S)
 
 # Note about -mcmodel=mem_model
 #
@@ -58,7 +59,8 @@ CPPFLAGS = -Wall -fomit-frame-pointer -O $(INCLUDEDIR)
 LDFLAGS = -nostdlib -nostdinc -nodefaultlibs -Bstatic -Tcell64.ld 
 
 ACPICA_DIR = $(CELLOS)/drivers/acpica
-INCLUDEDIR += -I$(ACPICA_DIR)/include
+INCLUDEDIR += -I$(ACPICA_DIR)/include 
+INCLUDEDIR += -I$(ACPICA_DIR)/compiler 
 
 OBJS =  arch/x64/boot.o \
 		arch/x64/gdt.o \
@@ -101,6 +103,8 @@ OBJS += kernel/sched_core.o 	\
 		kernel/sched_thread_attr.o \
 		kernel/sched_thread_cancel.o \
 		kernel/semaphore.o
+		
+OBJS += drivers/pci/pci_acpi.o
 
 		
 OBJS += tests/testing.o
@@ -169,8 +173,9 @@ sim:
 asm:
 	objdump -D -S $(KERNELFN) > $(KERNELFN).asm
 
-DATE=$(shell date +%F-%H-%M-%S)
-
-backup:
+sym:
+	nm -A -l -n  $(KERNELFN) > $(KERNELFN).txt
+	
+bak:
 	7z a ../backup/cell64-$(DATE).7z ../cellos 
 

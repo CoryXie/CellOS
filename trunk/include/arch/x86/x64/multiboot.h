@@ -50,7 +50,24 @@ typedef struct multiboot_info
     uint32_t cmdline;            /*  Address of kernel command line. */
     uint32_t mods_count;        /*  Module count. */
     uint32_t mods_addr;            /*  Address of module structures. */
-    uint32_t elf_sec[4];        /*  ELF section headers. */
+    //uint32_t elf_sec[4];        /*  ELF section headers. */
+    union {
+        // if MULTIBOOT_INFO_FLAG_HAS_AOUT_SYMS
+        struct {
+            uint32_t    tabsize;
+            uint32_t    strsize;
+            uint32_t    addr;
+            uint32_t    reserved;
+        } aout;
+        
+        // if MULTIBOOT_INFO_FLAG_HAS_ELF_SYMS
+        struct {
+            uint32_t    num;
+            uint32_t    size;
+            uint32_t    addr;
+            uint32_t    shndx;
+        } elf;
+    } syms;
     uint32_t mmap_length;        /*  Memory map length. */
     uint32_t mmap_addr;            /*  Address of memory map. */
     uint32_t drives_length;        /*  Drive information length. */

@@ -184,7 +184,7 @@ AeCtrlCHandler (
     int                     Sig)
 {
 
-    signal (SIGINT, SIG_IGN);
+    //signal (SIGINT, SIG_IGN);
     SigintCount++;
 
     AcpiOsPrintf ("Caught a ctrl-c (#%u)\n\n", SigintCount);
@@ -192,7 +192,7 @@ AeCtrlCHandler (
     if (AcpiGbl_MethodExecuting)
     {
         AcpiGbl_AbortMethod = TRUE;
-        signal (SIGINT, AeCtrlCHandler);
+        //signal (SIGINT, AeCtrlCHandler);
 
         if (SigintCount < 10)
         {
@@ -200,7 +200,7 @@ AeCtrlCHandler (
         }
     }
 
-    exit (0);
+    //exit (0);
 }
 
 
@@ -229,7 +229,7 @@ AeNotifyHandler (
     {
 #if 0
     case 0:
-        printf ("[AcpiExec] Method Error 0x%X: Results not equal\n", Value);
+        printk ("[AcpiExec] Method Error 0x%X: Results not equal\n", Value);
         if (AcpiGbl_DebugFile)
         {
             AcpiOsPrintf ("[AcpiExec] Method Error: Results not equal\n");
@@ -238,7 +238,7 @@ AeNotifyHandler (
 
 
     case 1:
-        printf ("[AcpiExec] Method Error: Incorrect numeric result\n");
+        printk ("[AcpiExec] Method Error: Incorrect numeric result\n");
         if (AcpiGbl_DebugFile)
         {
             AcpiOsPrintf ("[AcpiExec] Method Error: Incorrect numeric result\n");
@@ -247,7 +247,7 @@ AeNotifyHandler (
 
 
     case 2:
-        printf ("[AcpiExec] Method Error: An operand was overwritten\n");
+        printk ("[AcpiExec] Method Error: An operand was overwritten\n");
         if (AcpiGbl_DebugFile)
         {
             AcpiOsPrintf ("[AcpiExec] Method Error: An operand was overwritten\n");
@@ -257,10 +257,10 @@ AeNotifyHandler (
 #endif
 
     default:
-        printf ("[AcpiExec] Received a System Notify on [%4.4s] %p Value 0x%2.2X (%s)\n",
+        printk ("[AcpiExec] Received a System Notify on [%4.4s] %p Value 0x%2.2X (%s)\n",
             AcpiUtGetNodeName (Device), Device, Value,
             AcpiUtGetNotifyName (Value));
-        if (AcpiGbl_DebugFile)
+        //if (AcpiGbl_DebugFile)
         {
             AcpiOsPrintf ("[AcpiExec] Received a system notify, Value 0x%2.2X\n", Value);
         }
@@ -292,10 +292,11 @@ AeDeviceNotifyHandler (
     void                        *Context)
 {
 
-    printf ("[AcpiExec] Received a Device Notify on [%4.4s] %p Value 0x%2.2X (%s)\n",
+    printk ("[AcpiExec] Received a Device Notify on [%4.4s] %p Value 0x%2.2X (%s)\n",
         AcpiUtGetNodeName (Device), Device, Value,
         AcpiUtGetNotifyName (Value));
-    if (AcpiGbl_DebugFile)
+    
+    //if (AcpiGbl_DebugFile)
     {
         AcpiOsPrintf ("[AcpiExec] Received a device notify, Value 0x%2.2X\n", Value);
     }
@@ -436,7 +437,7 @@ AeTableHandler (
 
     /* TBD: could dump entire table header, need a header dump routine */
 
-    printf ("[AcpiExec] Table Event %s, [%4.4s] %p\n",
+    printk ("[AcpiExec] Table Event %s, [%4.4s] %p\n",
         TableEvents[Event], ((ACPI_TABLE_HEADER *) Table)->Signature, Table);
     return (AE_OK);
 }
@@ -565,21 +566,21 @@ AeInstallHandlers (void)
     Status = AcpiInstallInterfaceHandler (AeInterfaceHandler);
     if (ACPI_FAILURE (Status))
     {
-        printf ("Could not install interface handler, %s\n",
+        printk ("Could not install interface handler, %s\n",
             AcpiFormatException (Status));
     }
 
     Status = AcpiInstallTableHandler (AeTableHandler, NULL);
     if (ACPI_FAILURE (Status))
     {
-        printf ("Could not install table handler, %s\n",
+        printk ("Could not install table handler, %s\n",
             AcpiFormatException (Status));
     }
 
     Status = AcpiInstallExceptionHandler (AeExceptionHandler);
     if (ACPI_FAILURE (Status))
     {
-        printf ("Could not install exception handler, %s\n",
+        printk ("Could not install exception handler, %s\n",
             AcpiFormatException (Status));
     }
 
@@ -589,7 +590,7 @@ AeInstallHandlers (void)
                                         AeNotifyHandler, NULL);
     if (ACPI_FAILURE (Status))
     {
-        printf ("Could not install a global notify handler, %s\n",
+        printk ("Could not install a global notify handler, %s\n",
             AcpiFormatException (Status));
     }
 
@@ -597,7 +598,7 @@ AeInstallHandlers (void)
                                         AeDeviceNotifyHandler, NULL);
     if (ACPI_FAILURE (Status))
     {
-        printf ("Could not install a global notify handler, %s\n",
+        printk ("Could not install a global notify handler, %s\n",
             AcpiFormatException (Status));
     }
 
@@ -608,7 +609,7 @@ AeInstallHandlers (void)
                                             AeNotifyHandler, NULL);
         if (ACPI_FAILURE (Status))
         {
-            printf ("Could not install a notify handler, %s\n",
+            printk ("Could not install a notify handler, %s\n",
                 AcpiFormatException (Status));
         }
 
@@ -616,7 +617,7 @@ AeInstallHandlers (void)
                                             AeNotifyHandler);
         if (ACPI_FAILURE (Status))
         {
-            printf ("Could not remove a notify handler, %s\n",
+            printk ("Could not remove a notify handler, %s\n",
                 AcpiFormatException (Status));
         }
 
@@ -632,7 +633,7 @@ AeInstallHandlers (void)
                                             AeNotifyHandler, NULL);
         if (ACPI_FAILURE (Status))
         {
-            printf ("Could not install a notify handler, %s\n",
+            printk ("Could not install a notify handler, %s\n",
                 AcpiFormatException (Status));
         }
 
@@ -647,7 +648,7 @@ AeInstallHandlers (void)
     }
     else
     {
-        printf ("No _SB_ found, %s\n", AcpiFormatException (Status));
+        printk ("No _SB_ found, %s\n", AcpiFormatException (Status));
     }
 
     /* Set a handler for all supported operation regions */

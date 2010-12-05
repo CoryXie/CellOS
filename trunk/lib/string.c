@@ -482,3 +482,34 @@ int atoi(const char *s)
 
     return (sign == -1)? -v:v;
     }
+
+char * strstr 
+    (
+    const char                    *String1,
+    const char                    *String2
+    )
+    {
+    const char                    *String;
+
+
+    if (strlen (String2) > strlen (String1))
+    {
+        return (NULL);
+    }
+
+    /* Walk entire string, comparing the letters */
+
+    for (String = String1; *String2; )
+    {
+        if (*String2 != *String)
+        {
+            return (NULL);
+        }
+
+        String2++;
+        String++;
+    }
+
+    return (char *)(String1);
+    }
+
