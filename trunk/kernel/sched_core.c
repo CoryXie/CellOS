@@ -61,6 +61,8 @@ void sched_core_init(void)
 
     sched_thread_init();
 
+    semaphore_system_init();
+    
     memory_barrier();
     }
 

@@ -256,15 +256,20 @@ uint64_t calculate_cpu_frequency(void)
     return (cycles * PIT_8254_OSC_FREQ) / ticks;
     }
 
+#define PM_TIMER_CALIBRATE_DELAY_COUNT 10000000
 
 /* Calculate CPU frequency in HZ. */
 uint64_t calculate_cpu_frequency2(void)
     {
     uint32_t start1 = 0, end1 = 0, ticks, us_elapsed;
-    uint64_t start, end, cycles, count;
-    
-    AcpiDbgLevel = ACPI_DEBUG_ALL;
+    uint64_t start, end, cycles;
+    volatile uint64_t count;
 
+    printk("PM timer uses %s space %p and its width is %d bits\n",
+           AcpiGbl_FADT.XPmTimerBlock.SpaceId ? "IOPORT" : "MEMORY", 
+           AcpiGbl_FADT.XPmTimerBlock.Address,
+           AcpiGbl_FADT.Flags & ACPI_FADT_32BIT_TIMER ? 32 : 24);
+        
     /* Get the start TSC value. */
     start = rdtsc();
     
@@ -274,9 +279,10 @@ uint64_t calculate_cpu_frequency2(void)
         return 0;
         }
 
-    for (count = 0; count < 1000000; count++) 
+    for (count = 0; count < PM_TIMER_CALIBRATE_DELAY_COUNT; count++) 
         {
         count++;
+        cpu_relax();
         count--;
         }
     
@@ -288,9 +294,7 @@ uint64_t calculate_cpu_frequency2(void)
         printk("AcpiGetTimer fail 1\n");
         return 0;
         }
-    
-    AcpiDbgLevel = ACPI_DEBUG_DEFAULT;
-    
+        
     /* Calculate the differences between the values. */
     cycles = end - start;
     ticks = end1 - start1;
@@ -302,9 +306,76 @@ uint64_t calculate_cpu_frequency2(void)
     
     AcpiGetTimerDuration(start1, end1, &us_elapsed);
     
+    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", start1, end1, us_elapsed);
 
     return (cycles * USECS_PER_SEC) / us_elapsed;
     }
+
+/* Calculate BUS (LAPIC) frequency in HZ. */
+uint64_t calculate_lapic_frequency2(void)
+    {
+    uint32_t start1 = 0, end1 = 0, ticks, us_elapsed;
+    uint64_t end, lticks;
+    uint32_t div;
+    volatile uint64_t count;
+    
+    div = lapic_read(LAPIC_TDCR) & LAPIC_TDIV_MSK;
+    switch (div)
+        {
+        case LAPIC_TDIV_1: div = 1; break;
+        case LAPIC_TDIV_2: div = 2; break;
+        case LAPIC_TDIV_4: div = 4; break;
+        case LAPIC_TDIV_8: div = 8; break;
+        case LAPIC_TDIV_16: div = 16; break;
+        case LAPIC_TDIV_32: div = 32; break;
+        case LAPIC_TDIV_64: div = 64; break;
+        case LAPIC_TDIV_128: div = 128; break;
+        default: div = 1; break;
+        }
+
+    /* Kick off the LAPIC timer. */
+    lapic_write(LAPIC_TICR, 0xFFFFFFFF);
+
+    if (AcpiGetTimer(&start1) != AE_OK)
+        {
+        printk("AcpiGetTimer fail 1\n");
+        return 0;
+        }
+    
+    for (count = 0; count < PM_TIMER_CALIBRATE_DELAY_COUNT; count++) 
+        {
+        count++;
+        cpu_relax();
+        count--;
+        }
+
+    /* Get the current timer value. */
+    end = lapic_read(LAPIC_TCCR);
+    
+    if (AcpiGetTimer(&end1) != AE_OK)
+        {
+        printk("AcpiGetTimer fail 1\n");
+        return 0;
+        }
+
+    /* Calculate the differences between the values. */
+    lticks = 0xFFFFFFFF - end;
+
+    ticks = end1 - start1;
+    
+    if (ticks == 0)
+        {
+        printk("AcpiGetTimer fail, start1 %d end1 %d\n", start1, end1);
+        return 0;
+        }
+    
+    AcpiGetTimerDuration(start1, end1, &us_elapsed);
+    
+    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", start1, end1, us_elapsed);
+
+    return (lticks * USECS_PER_SEC) / us_elapsed;
+    }
+
 
 /* Calculate BUS (LAPIC) frequency in HZ. */
 uint64_t calculate_lapic_frequency(void)
@@ -398,9 +469,11 @@ int do_freq (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     
     printk("CPU %lld HZ (PIT TIMER BASED)\n", calculate_cpu_frequency());
     printk("CPU %lld HZ (ACPI PM TIMER BASED)\n", calculate_cpu_frequency2());
-    printk("BUS %lld HZ\n", calculate_lapic_frequency());
-
+    printk("BUS %lld HZ (PIT TIMER BASED)\n", calculate_lapic_frequency());
+    printk("BUS %lld HZ (ACPI PM TIMER BASED)\n", calculate_lapic_frequency2());
+    
     interrupts_restore(ipl);
+    
     return 0;
     }
 

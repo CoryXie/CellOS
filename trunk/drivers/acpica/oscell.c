@@ -1073,15 +1073,15 @@ AcpiOsReadPort (
     switch (Width)
     {
     case 8:
-        *Value = 0xFF;
+        *Value = ioport_in8(Address) & 0xFF;
         break;
 
     case 16:
-        *Value = 0xFFFF;
+        *Value = ioport_in16(Address) & 0xFFFF;
         break;
 
     case 32:
-        *Value = 0xFFFFFFFF;
+        *Value = ioport_in32(Address) & 0xFFFFFFFF;
         break;
 
     default:
@@ -1112,6 +1112,23 @@ AcpiOsWritePort (
     UINT32                  Value,
     UINT32                  Width)
 {
+    switch (Width)
+    {
+    case 8:
+        ioport_out8(Address, Value & 0xFF);
+        break;
+
+    case 16:
+        ioport_out8(Address, Value & 0xFFFF);
+        break;
+
+    case 32:
+        ioport_out8(Address, Value & 0xFFFFFFFF);
+        break;
+
+    default:
+        return (AE_BAD_PARAMETER);
+    }
 
     return (AE_OK);
 }
@@ -1136,21 +1153,28 @@ AcpiOsReadMemory (
     ACPI_PHYSICAL_ADDRESS   Address,
     UINT32                  *Value,
     UINT32                  Width)
-{
+    {
+    void    *LogicalAddress = PA2VA(Address);
+
+    printk("AcpiOsReadMemory - Address %p Width %d\n", Address, Width);
 
     switch (Width)
-    {
-    case 8:
-    case 16:
-    case 32:
-        *Value = 0;
-        break;
+        {
+        case 8:
+            *Value = *(volatile uint8_t *)LogicalAddress;
+            break;
+        case 16:
+            *Value = *(volatile uint16_t *)LogicalAddress;
+            break;
+        case 32:
+            *Value = *(volatile uint32_t *)LogicalAddress;
+            break;
+        default:
+            return (AE_BAD_PARAMETER);
+        }
 
-    default:
-        return (AE_BAD_PARAMETER);
-    }
     return (AE_OK);
-}
+    }
 
 
 /******************************************************************************
@@ -1172,10 +1196,28 @@ AcpiOsWriteMemory (
     ACPI_PHYSICAL_ADDRESS   Address,
     UINT32                  Value,
     UINT32                  Width)
-{
+    {
+    void    *LogicalAddress = PA2VA(Address);
+    
+    printk("AcpiOsWriteMemory - Address %p Width %d\n", Address, Width);
+
+    switch (Width)
+        {
+        case 8:
+            *(volatile uint8_t *)LogicalAddress = Value;
+            break;
+        case 16:
+            *(volatile uint16_t *)LogicalAddress = Value;
+            break;
+        case 32:
+            *(volatile uint32_t *)LogicalAddress = Value;
+            break;
+        default:
+            return (AE_BAD_PARAMETER);
+        }
 
     return (AE_OK);
-}
+    }
 
 
 /******************************************************************************
@@ -1241,10 +1283,9 @@ AcpiOsWritable (
 
 ACPI_THREAD_ID
 AcpiOsGetThreadId (void)
-{
-
+    {
     return (pthread_t)pthread_self();
-}
+    }
 
 
 /******************************************************************************
@@ -1264,21 +1305,21 @@ ACPI_STATUS
 AcpiOsSignal (
     UINT32                  Function,
     void                    *Info)
-{
+    {
 
     switch (Function)
-    {
-    case ACPI_SIGNAL_FATAL:
-        break;
+        {
+        case ACPI_SIGNAL_FATAL:
+            break;
 
-    case ACPI_SIGNAL_BREAKPOINT:
-        break;
+        case ACPI_SIGNAL_BREAKPOINT:
+            break;
 
-    default:
-        break;
-    }
+        default:
+            break;
+        }
 
     return (AE_OK);
-}
+    }
 
 
