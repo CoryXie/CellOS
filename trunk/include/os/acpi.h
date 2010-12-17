@@ -1,5 +1,12 @@
-#ifndef _ACPI_H
-#define _ACPI_H
+#ifndef _OS_ACPI_H
+#define _OS_ACPI_H
+
+#include <acpi.h>
+#include <accommon.h>
+#include <amlcode.h>
+#include <acparser.h>
+#include <acdebug.h>
+#include <acnamesp.h>
 
 typedef struct acpi_rsdp
     {
@@ -16,7 +23,7 @@ typedef struct acpi_rsdp
 
     } acpi_rsdp_t;
 
-typedef struct x64_acpi_rsdt_header
+typedef struct acpi_rsdt_header
     {
     uint8_t sig[4];
     uint32_t length;
@@ -28,11 +35,11 @@ typedef struct x64_acpi_rsdt_header
     uint32_t oem_revision;
     uint32_t creator_id;
     uint32_t creator_rev;
-    } x64_acpi_rsdt_header;
+    } acpi_rsdt_header_t;
 
 #define ACPI_SIGNATURE "RSD PTR "
 
 void acpi_init(void);
 
-#endif /* _ACPI_H */
+#endif /* _OS_ACPI_H */
 

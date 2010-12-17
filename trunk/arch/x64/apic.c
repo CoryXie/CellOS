@@ -285,7 +285,7 @@ status_t lapic_common_init(void)
 
     lapic_timer_enable_periodic();
 
-    disable_pit_intr();
+    //disable_pit_intr();
 
     /* Allow all interrupts */
     lapic_write(LAPIC_TASKPRI, lapic_read(LAPIC_TASKPRI) & 0xFFFFFF00);

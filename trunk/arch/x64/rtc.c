@@ -1,6 +1,17 @@
+/*
+  RTC
+  
+  The Real-Time Clock was added in XT 286 machines. It also includes a
+  counter running at 32 kHz but does not provide for direct access. Instead,
+  the chip uses the count to keep track of the time of day and also generate
+  periodic interrupts. Its only use nowadays seems to be storing the local
+  time in battery-buffered CMOS, which is then read during boot time and
+  maintained by the OS.
+*/
 #include <sys.h>
 #include <arch.h>
 #include <os.h>
+#include <time.h>
 
 uint32_t rtc_seconds = 0;
 uint32_t rtc_minutes = 0;
@@ -83,6 +94,115 @@ void rtc_update(void)
     rtc_update_screen_time();
     }
 
+/*
+ * The 2 ports used for the RTC and CMOS is 0x70 and 0x71.
+ * Port 0x70 is used to specify an index. Port 0x71 is used 
+ * to read or write to/from that byte of CMOS configuration space.
+ */
+#define RTC_INDEX 0x70
+#define RTC_DATA  0x71
+
+#define MINUTE 60
+#define HOUR (60*MINUTE)
+#define DAY (24*HOUR)
+#define YEAR (365*DAY)
+
+static int month[12] = 
+    {                
+    0,
+    DAY*(31),
+    DAY*(31+28),
+    DAY*(31+28+31),
+    DAY*(31+28+31+30),
+    DAY*(31+28+31+30+31),
+    DAY*(31+28+31+30+31+30),
+    DAY*(31+28+31+30+31+30+31),
+    DAY*(31+28+31+30+31+30+31+31),
+    DAY*(31+28+31+30+31+30+31+31+30),
+    DAY*(31+28+31+30+31+30+31+31+30+31),
+    DAY*(31+28+31+30+31+30+31+31+30+31+30)
+    };
+
+long _mktime(int _sec,int _min,int _hour,int _day,int _mon,int _year)
+    {
+    long res;
+    int year;
+    res = YEAR*(_year-1970);
+    for (year = 1970;year<_year;year++)
+       if ( (year%4==0) && (year%100!=0) || year%400==0)
+    res += DAY;
+    res += month[_mon-1];
+    res += (_day-1)*DAY;
+    res += _hour*HOUR;
+    res += _min*MINUTE;
+    res += _sec;
+
+    return res;
+    }
+
+int get_cmos_time(unsigned char addr)   
+    { 
+    char buf[2];
+    memset(buf,0,sizeof(buf));
+
+    ioport_out8(RTC_INDEX, addr); 
+    sprintf(buf,"%x", ioport_in8(RTC_DATA));
+    
+    return atoi(buf); 
+    }
+
+
+long utctime(void)
+    {
+    long unix_time;
+    int sec,min,hour,day,mon,year;
+    unsigned char sec_addr=0x00,min_addr=0x02,hou_addr=0x04,day_addr=0x07,mon_addr=0x08,year_addr=0x09;
+    char buf[12];
+    memset(buf,0,sizeof(buf));
+    sec=get_cmos_time(sec_addr);
+    min=get_cmos_time(min_addr);
+    hour=get_cmos_time(hou_addr);
+    day=get_cmos_time(day_addr);
+    mon=get_cmos_time(mon_addr);
+    year=get_cmos_time(year_addr);
+    
+    if ((year += 1900) < 1970)
+       year += 100;
+       
+    printk("Current CMOS Date (UTC): %d-%d-%d %d:%d:%d\n",
+        year, mon,day, hour, min, sec);
+    
+    unix_time=_mktime(sec,min,hour,day,mon,year);
+    
+    printk("unix time(cmos)=%ld\n",unix_time);
+
+    return unix_time;
+    }
+
+int do_utctime (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {    
+    ipl_t ipl = interrupts_disable();
+    
+    utctime();
+    
+    interrupts_restore(ipl);
+    
+    return 0;
+    }
+
+CELL_OS_CMD(
+    utc,   1,        1,    do_utctime,
+    "show current time",
+    "show current time (in both nanosecond and microsecond resolution)\n"
+    );
+
+timespec_t xtime;
+
+void xtime_init(void)
+    {
+    xtime.tv_sec = utctime();
+    xtime.tv_nsec = 0;
+    }
 
 void * rtc_thread (void *param)
     {

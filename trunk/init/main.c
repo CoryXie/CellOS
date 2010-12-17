@@ -42,6 +42,9 @@ void *sched_bsp_idle_thread (void *notused)
     pci_scan_devices();
 #endif
 
+    xtime_init();
+    pit_timer_init(CONFIG_HZ);
+
     interrupts_enable();
     
     thread_create_test();

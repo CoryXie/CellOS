@@ -79,8 +79,10 @@ OBJS =  arch/x64/boot.o \
         arch/x64/kbd.o \
         arch/x64/rtc.o \
 		arch/x64/pci.o	\
+		arch/x64/hpet.o	\
 		arch/x64/sched_arch.o \
-		arch/x64/context.o
+		arch/x64/context.o \
+		arch/x64/timecounter.o
 
 OBJS += lib/string.o 	\
 		lib/printk.o 	\

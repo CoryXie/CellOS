@@ -248,7 +248,7 @@ void x64_exception_handler
             printk("SEL 0x%X EXT %d IDT %d TI %d\n", sel, EXT, IDT, TI);
             sched_context_dump(&kurrent->saved_context);
 
-            sched_thread_global_show();
+            //sched_thread_global_show();
             while(1);
             }
         }

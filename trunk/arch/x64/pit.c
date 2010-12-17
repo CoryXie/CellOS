@@ -1,13 +1,21 @@
+/*
+  PIT
+ 
+  The 8254 Programmable Interval Timer was included in the original PC. At
+  its heart are three 16-bit counters running at 1.19 MHz (To save costs,
+  the original PC used a master 14.318 MHz oscillator and fed system
+  components with various ratios of this frequency \u2013 in this case, 1/12.).
+  They are accessible at fixed addresses in I/O-space, but must be latched
+  and then read as two single-byte values, which takes 3us - the slowest
+  of all the timers. Additionally, the narrow counter registers roll over 
+  too often to measure anything longer than 55 ms intervals. Instead, the
+  PIT's utility lies in its ability to generate periodic interrupts.
+*/
+
 #include <sys.h>
 #include <arch.h>
 #include <os.h>
-
-#include <acpi.h>
-#include <accommon.h>
-#include <amlcode.h>
-#include <acparser.h>
-#include <acdebug.h>
-#include <acnamesp.h>
+#include <os/acpi.h>
 
 /*
 I/O port     Usage
@@ -76,12 +84,41 @@ I/O port     Usage
 /* The oscillator used by the PIT chip runs at (roughly) 1.193182 MHz */
 #define PIT_8254_OSC_FREQ               1193182
 
+os_event_clock_t pit_clock;
+abstime_t pit_clock_totoal_time = 0;
+
+/* 
+ * Start to trigger at 'first' and repeat in 'period' ns;
+ * If 'period' is 0 then it is oneshot! The implementation 
+ * may round the trigger and period with most nearst values!
+ */
+int pit_8254_timer_start (struct os_event_clock * clk, 
+                          struct timespec * first, abstime_t period)
+    {
+    abstime_t trigger;
+    
+    if (clk != &pit_clock || first == NULL)
+        return ERROR;
+
+    trigger = first->tv_sec * NSECS_PER_SEC + first->tv_nsec;
+    }
+
+void pit_8254_clock_announce(void)
+    {
+    pit_clock.name = "PIT8254";
+    pit_clock.flags = CLOCK_FLAGS_PERIODIC | CLOCK_FLAGS_ONESHOT;
+    pit_clock.get_resolution = NULL;
+    pit_clock.min_period_ns = NSECS_PER_SEC / PIT_8254_OSC_FREQ;
+    pit_clock.max_period_ns = (NSECS_PER_SEC * 0x10000) / PIT_8254_OSC_FREQ;
+    pit_clock.base_freq = PIT_8254_OSC_FREQ;
+    }
+
 void timer_irq_handler
     (
     uint64_t stack_frame
     )
     {
-    sched_tick((stack_frame_t *)stack_frame);
+    xtime_fixup();
     }
 
 void pit_timer_init
@@ -190,6 +227,29 @@ void pit_timer_set_reload
     interrupts_restore(ipl);
     }
 
+/*
+  TSC
+  
+  The TimeStamp Counter has been available starting with fifth-generation
+  CPUs (Pentiums) and represents a 64-bit count of elapsed CPU cycles since
+  power-on. It can be retrieved with the RDTSC instruction, or by directly
+  reading the model-specific register that holds it; both methods are extremely
+  fast, on the order of dozens of CPU cycles. Since the CPU clock frequency
+  is much higher than that of the other hardware counters, a very fine
+  resolution is attained. Unfortunately this is counterbalanced somewhat by
+  the low quality of typical clock oscillators and their thermal drift.
+
+  TSC - makes brief and vague mention of problems:
+  
+  You can get different results on different processors due to
+  bugs in the basic input/output system (BIOS) or the hardware
+  abstraction layer (HAL).
+  
+  This is because TSCs do not start counting at the same time (due
+  to staggered boot-time processor initialization), nor do they run at
+  the same rate (due to independent throttling of cores).
+*/
+
 /* Calculate CPU frequency in HZ. */
 uint64_t calculate_cpu_frequency(void)
     {
@@ -256,6 +316,22 @@ uint64_t calculate_cpu_frequency(void)
     return (cycles * PIT_8254_OSC_FREQ) / ticks;
     }
 
+/*
+  PMT
+  
+  The Power Management Timer was added as part of the ACPI standard. Its
+  sole purpose is to deliver timestamps; improvements over the PIT are to be
+  found in its higher frequency (3x), larger counter width (24 or 32 bits) and
+  latch-free operation. It is accessed via 32-bit port I/O (at an address given
+  in the ACPI FACP table), which only takes 0.7us.
+
+  PMT - Timestamps can jump forward by several hundred ms during heavy
+  PCI bus load. 
+  
+  PMT - Results are undefined if the timer is not polled at least once every
+  4.6 seconds. This is caused by hardware bugs and/or incorrect software
+  handling of counter overflow.
+*/
 #define PM_TIMER_CALIBRATE_DELAY_COUNT 10000000
 
 /* Calculate CPU frequency in HZ. */
@@ -479,9 +555,7 @@ int do_freq (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 CELL_OS_CMD(
     freq,   1,        1,    do_freq,
-    "show kernel thread list information",
-    "[cpu...]\n"
-    "    - list the kernel thread information on the specified cpus;\n"
-    "if the cpu arguments are not specified, then list for all cpus."
+    "show current cpu and bus frequency",
+    "show current cpu and bus frequency using PIT and ACPI PM TIMER as base\n"
     );
 

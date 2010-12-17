@@ -9,6 +9,8 @@
 #include <os/list.h>
 #include <os/preemption.h>
 #include <os/queue.h>
+#include <os/timecounter.h>
+#include <os/clockeventer.h>
 #include <os/timer.h>
 #include <os/tlsf.h>
 #include <os/sched_core.h>
@@ -18,6 +20,8 @@
 #include <os/sched_rr.h>
 #include <os/sched_thread.h>
 #include <os/sched_mutex.h>
+
+extern timespec_t xtime;
 
 #endif /*__INCLUDE_OS_H */
 

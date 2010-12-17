@@ -7,6 +7,7 @@
 #include <arch/x86/common/vga.h>
 #include <arch/x86/common/rtc.h>
 #include <arch/x86/common/kbd.h>
+#include <arch/x86/common/hpet.h>
 #include <arch/x86/common/bitops.h>
 #include <arch/x86/x64/x64.h>
 #include <arch/x86/x64/ctrlregs.h>
@@ -17,7 +18,6 @@
 #include <arch/x86/x64/spinlock.h>
 #include <arch/x86/x64/smp.h>
 #include <arch/x86/x64/apic.h>
-#include <arch/x86/x64/acpi.h>
 #include <arch/x86/x64/interrupt.h>
 #include <arch/x86/x64/multiboot.h>
 #include <arch/x86/x64/segment.h>

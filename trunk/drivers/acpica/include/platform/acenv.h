@@ -180,7 +180,7 @@
 #endif
 
 #define ACPI_FULL_DEBUG
-#define ACPI_MUTEX_DEBUG
+//#define ACPI_MUTEX_DEBUG
 #define ACPI_DBG_TRACK_ALLOCATIONS
 
 /* Common debug support */

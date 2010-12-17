@@ -288,10 +288,10 @@ void x64_page_fault
 
     dump_stack(frame);
 
-    printk("Exception thread is %s\n", kurrent->name);
-    sched_context_dump(&kurrent->saved_context);
+    //printk("Exception thread is %s\n", kurrent->name);
+    //sched_context_dump(&kurrent->saved_context);
     
-    sched_thread_global_show();
+    //sched_thread_global_show();
 
     for(;;);
 

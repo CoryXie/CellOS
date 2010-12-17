@@ -707,8 +707,14 @@ enterloop:
     return (0);
 }
 
+int doAcpiTest (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {
+    AeMiscellaneousTests ();
+    return OK;
+    }
+
 CELL_OS_CMD(
-    acpiDump,   10,        10,    doAcpiDump,
+    acpiTest,   10,        10,    doAcpiTest,
     "dump acpi information",
     "dump acpi information"
     );

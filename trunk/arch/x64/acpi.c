@@ -1,13 +1,7 @@
 #include <sys.h>
 #include <arch.h>
 #include <os.h>
-
-#include <acpi.h>
-#include <accommon.h>
-#include <amlcode.h>
-#include <acparser.h>
-#include <acdebug.h>
-#include <acnamesp.h>
+#include <os/acpi.h>
 
 /*
  * Refering http://wiki.osdev.org/ACPI:
@@ -129,10 +123,10 @@ void x64_acpi_debug
     acpi_rsdp_t *p
     )
     {
-    struct x64_acpi_rsdt_header *header;
+    struct acpi_rsdt_header *header;
 
     printk("RSDT is at 0x%x\n",p->rsdt_address);
-    header = (struct x64_acpi_rsdt_header *) (PA2VA(p->rsdt_address));
+    header = (struct acpi_rsdt_header *) (PA2VA(p->rsdt_address));
     printk("header=%p\n",header);
     printk("length=%x\n",header->length);
     }
@@ -145,4 +139,106 @@ void acpi_init(void)
 
     x64_acpi_debug(rsdp);
     }
+
+/*
+ * Match a HID string against a handle
+ */
+BOOLEAN
+acpi_MatchHid(ACPI_HANDLE h, const char *hid) 
+{
+    ACPI_DEVICE_INFO    *devinfo;
+    BOOLEAN     ret;
+    int         i;
+
+    if (hid == NULL || h == NULL ||
+    ACPI_FAILURE(AcpiGetObjectInfo(h, &devinfo)))
+    return (FALSE);
+
+    ret = FALSE;
+    if ((devinfo->Valid & ACPI_VALID_HID) != 0 &&
+    strcmp(hid, devinfo->HardwareId.String) == 0)
+        ret = TRUE;
+    else if ((devinfo->Valid & ACPI_VALID_CID) != 0)
+    for (i = 0; i < devinfo->CompatibleIdList.Count; i++) {
+        if (strcmp(hid, devinfo->CompatibleIdList.Ids[i].String) == 0) {
+        ret = TRUE;
+        break;
+        }
+    }
+
+    AcpiOsFree(devinfo);
+    return (ret);
+}
+
+ACPI_STATUS
+acpi_ConvertBufferToInteger(ACPI_BUFFER *bufp, UINT32 *number)
+{
+    ACPI_OBJECT	*p;
+    UINT8	*val;
+    int		i;
+
+    p = (ACPI_OBJECT *)bufp->Pointer;
+    if (p->Type == ACPI_TYPE_INTEGER) {
+	*number = p->Integer.Value;
+	return (AE_OK);
+    }
+    if (p->Type != ACPI_TYPE_BUFFER)
+	return (AE_TYPE);
+    if (p->Buffer.Length > sizeof(int))
+	return (AE_BAD_DATA);
+
+    *number = 0;
+    val = p->Buffer.Pointer;
+    for (i = 0; i < p->Buffer.Length; i++)
+	*number += val[i] << (i * 8);
+    return (AE_OK);
+}
+
+/*
+ * Evaluate a path that should return an integer.
+ */
+ACPI_STATUS
+acpi_GetInteger(ACPI_HANDLE handle, char *path, UINT32 *number)
+{
+    ACPI_STATUS	status;
+    ACPI_BUFFER	buf;
+    ACPI_OBJECT	param;
+
+    if (handle == NULL)
+	handle = ACPI_ROOT_OBJECT;
+
+    /*
+     * Assume that what we've been pointed at is an Integer object, or
+     * a method that will return an Integer.
+     */
+    buf.Pointer = &param;
+    buf.Length = sizeof(param);
+    status = AcpiEvaluateObject(handle, path, NULL, &buf);
+    if (ACPI_SUCCESS(status)) {
+	if (param.Type == ACPI_TYPE_INTEGER)
+	    *number = param.Integer.Value;
+	else
+	    status = AE_TYPE;
+    }
+
+    /* 
+     * In some applications, a method that's expected to return an Integer
+     * may instead return a Buffer (probably to simplify some internal
+     * arithmetic).  We'll try to fetch whatever it is, and if it's a Buffer,
+     * convert it into an Integer as best we can.
+     *
+     * This is a hack.
+     */
+    if (status == AE_BUFFER_OVERFLOW) {
+	if ((buf.Pointer = AcpiOsAllocate(buf.Length)) == NULL) {
+	    status = AE_NO_MEMORY;
+	} else {
+	    status = AcpiEvaluateObject(handle, path, NULL, &buf);
+	    if (ACPI_SUCCESS(status))
+		status = acpi_ConvertBufferToInteger(&buf, number);
+	    AcpiOsFree(buf.Pointer);
+	}
+    }
+    return (status);
+}
 
