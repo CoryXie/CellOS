@@ -118,7 +118,7 @@ void timer_irq_handler
     uint64_t stack_frame
     )
     {
-    xtime_fixup();
+    system_time_regular_fixup();
     }
 
 void pit_timer_init

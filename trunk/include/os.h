@@ -21,7 +21,8 @@
 #include <os/sched_thread.h>
 #include <os/sched_mutex.h>
 
-extern timespec_t xtime;
+extern timespec_t system_time;
+extern struct os_time_counter * global_os_time_counter;
 
 #endif /*__INCLUDE_OS_H */
 

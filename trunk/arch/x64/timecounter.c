@@ -6,6 +6,9 @@
 #include <os/acpi.h>
 #include <sys/time.h>
 
+struct os_time_counter * global_os_time_counter = NULL;
+timespec_t system_time;
+
 static struct os_time_counter time_counter_pm_timer;
 
 status_t pm_timer_enable(void)
@@ -20,6 +23,8 @@ status_t pm_timer_enable(void)
     
     time_counter_pm_timer.counter_frequency_hz = PM_TIMER_FREQUENCY;
 
+    time_counter_pm_timer.counter_resolution_ns =
+        (NSECS_PER_SEC/PM_TIMER_FREQUENCY);
     /* 
      * PM Timer will overflow depending its bits:
      *
@@ -80,9 +85,45 @@ static struct os_time_counter time_counter_pm_timer =
     .counter_time_elapsed = pm_timer_counter_time_elapsed,
     };
 
-struct os_time_counter * select_os_time_counter(void)
+struct os_time_counter * select_global_os_time_counter(void)
     {
-    return &time_counter_pm_timer;
+    if (global_os_time_counter)
+        global_os_time_counter->counter_disable();
+    
+    global_os_time_counter = &time_counter_pm_timer;
+    
+    global_os_time_counter->counter_enable();
+    
+    return global_os_time_counter;
+    }
+
+
+void system_time_init(void)
+    {
+    select_global_os_time_counter();
+    system_time.tv_sec = rtc_get_utc_time();
+    system_time.tv_nsec = 0;
+    }
+
+void system_time_regular_fixup(void)
+    {
+    cycle_t last_read;
+    abstime_t eplased;
+
+    struct os_time_counter * timecounter = global_os_time_counter;
+
+    if (timecounter == NULL)
+        return;
+
+    last_read = timecounter->counter_latest_read;
+
+    timecounter->counter_latest_read = timecounter->counter_read();
+
+    eplased = timecounter->counter_time_elapsed(last_read,
+                                        timecounter->counter_latest_read);
+
+    timespec_add_ns(&system_time, eplased);
+
     }
 
 /*
@@ -116,8 +157,11 @@ int gettimeofday(struct timeval * tp, void * tzp)
     cycle_t last;
     abstime_t eplased;
     
-    struct os_time_counter * timecounter = select_os_time_counter();
+    struct os_time_counter * timecounter = global_os_time_counter;
 
+    if (timecounter == NULL)
+        return ENODEV;
+    
     last = timecounter->counter_latest_read;
 
     timecounter->counter_latest_read = timecounter->counter_read();
@@ -125,10 +169,10 @@ int gettimeofday(struct timeval * tp, void * tzp)
     eplased = timecounter->counter_time_elapsed(last, 
                                 timecounter->counter_latest_read);
 
-    timespec_add_ns(&xtime, eplased);
+    timespec_add_ns(&system_time, eplased);
 
-    tp->tv_sec = xtime.tv_sec;
-    tp->tv_usec = xtime.tv_nsec / 1000;
+    tp->tv_sec = system_time.tv_sec;
+    tp->tv_usec = system_time.tv_nsec / 1000;
     
     return OK;
     }
@@ -138,7 +182,10 @@ int getnstimeofday(struct timespec * tp, void * tzp)
     cycle_t last;
     abstime_t eplased;
     
-    struct os_time_counter * timecounter = select_os_time_counter();
+    struct os_time_counter * timecounter = global_os_time_counter;
+
+    if (timecounter == NULL)
+        return ENODEV;
 
     last = timecounter->counter_latest_read;
 
@@ -147,30 +194,12 @@ int getnstimeofday(struct timespec * tp, void * tzp)
     eplased = timecounter->counter_time_elapsed(last, 
                                 timecounter->counter_latest_read);
 
-    timespec_add_ns(&xtime, eplased);
+    timespec_add_ns(&system_time, eplased);
 
-    tp->tv_sec = xtime.tv_sec;
-    tp->tv_nsec = xtime.tv_nsec;
+    tp->tv_sec = system_time.tv_sec;
+    tp->tv_nsec = system_time.tv_nsec;
     
     return OK;
-    }
-
-void xtime_fixup(void)
-    {
-    cycle_t last_read;
-    abstime_t eplased;
-
-    struct os_time_counter * timecounter = select_os_time_counter();
-
-    last_read = timecounter->counter_latest_read;
-
-    timecounter->counter_latest_read = timecounter->counter_read();
-
-    eplased = timecounter->counter_time_elapsed(last_read,
-                                        timecounter->counter_latest_read);
-
-    timespec_add_ns(&xtime, eplased);
-
     }
 
 int do_time (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -182,14 +211,14 @@ int do_time (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
     
     gettimeofday(&timev, NULL);
     getnstimeofday(&times, NULL);
-    
-    printk("Time in Microsencond (%lld sec: %ld usec)\n", 
-        timev.tv_sec, timev.tv_usec);
-
-    printk("Time in Nanosencond (%lld sec: %ld nsec)\n", 
-        times.tv_sec, times.tv_nsec);
 
     interrupts_restore(ipl);
+
+    printk("Time in Micro Senconds (%lld sec: %ld usec)\n", 
+        timev.tv_sec, timev.tv_usec);
+
+    printk("Time in Nano Senconds  (%lld sec: %ld nsec)\n", 
+        times.tv_sec, times.tv_nsec);
     
     return 0;
     }

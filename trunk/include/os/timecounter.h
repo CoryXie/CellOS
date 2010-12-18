@@ -48,7 +48,5 @@ typedef struct os_time_counter
     abstime_t counter_fixup_period;
     }os_time_counter_t;
 
-struct os_time_counter * select_os_time_counter(void);
-
-void xtime_fixup(void);
+void system_time_regular_fixup(void);
 
