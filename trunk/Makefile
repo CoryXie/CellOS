@@ -115,6 +115,10 @@ OBJS += init/ksh.o init/main.o
 
 include $(CELLOS)/drivers/acpica/acpica.mk
 
+DEPS = $(OBJS:.o=.dep)
+
+-include $(OBJS:.o=.dep)
+
 AP_BOOT = arch/x64/ap_boot
 
 # The kernel filename
@@ -125,23 +129,20 @@ $(KERNELFN) : $(OBJS) ap_boot
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) -b binary ap_boot
 
 # Compile the source files
-.cc.o:
-	$(G++)  $(CPPFLAGS) -c -o $@ $<
 
-.cc.s:
-	$(G++)  $(CPPFLAGS) -S -o $@ $<
-
-.c.o:
-	$(CC)  $(CFLAGS) -c -o $@ $<
-
-.c.s:
-	$(CC)  $(CFLAGS) -S -o $@ $<
-
-.S.o:
-	$(CC)  $(CFLAGS) -D__ASM__ -c -o $@ $<
-
-.a.o:
-	$(CC)  $(CFLAGS) -c -o $@ $<
+%.o : %.c
+	$(COMPILE.c) -MD -o $@ $<
+	@cp $*.d $*.dep; \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.dep; \
+	rm -f $*.d	
+	
+%.o : %.S
+	$(COMPILE.S) -MD -D__ASM__ -c -o $@ $<
+	@cp $*.d $*.dep; \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.dep; \
+	rm -f $*.d	
 
 ap_boot:
 	gcc -o $(AP_BOOT).o -c $(AP_BOOT).S; \
@@ -155,7 +156,7 @@ ap_boot:
 clean:
 	$(RM) $(OBJS) $(KERNELFN) ap_boot cdrom.iso \
 	*~ arch/x64/*~ arch/x64/*elf init/*~ kernel/*~ lib/*~ \
-	drivers/*~ grub/*~ include/*~ include/arch/x64/*~ $(OBJS)
+	drivers/*~ grub/*~ include/*~ include/arch/x64/*~ $(OBJS) $(DEPS)
 
 TMP = distroot
 
