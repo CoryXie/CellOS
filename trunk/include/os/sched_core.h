@@ -12,7 +12,6 @@
 #include <os/sched_cpu.h>
 #include <os/sched_mutex.h>
 #include <os/sched_thread.h>
-#include <os/sched_task.h>
 
 extern sched_thread_t * kthread_current[];
 extern sched_cpu_t*    current_cpus[];

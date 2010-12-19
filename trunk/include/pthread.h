@@ -9,7 +9,6 @@
 #include <time.h>
 #include <signal.h>
 #include <sched.h>
-#include <os/sched_thread.h>
 
 /*
  * The <pthread.h> header shall define the 

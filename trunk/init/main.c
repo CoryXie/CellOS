@@ -2,6 +2,42 @@
 #include <arch.h>
 #include <os.h>
 
+void defaul_sighandler(int sig)
+    {
+    printk("thread %s received signal %d at time %lld\n", 
+        kurrent->name, sig, get_now_nanosecond());
+    }
+
+void itimer_set(void)
+    {
+    struct itimerval timerval;
+
+    timerval.it_interval.tv_sec = timerval.it_interval.tv_usec = 0;
+    timerval.it_value.tv_sec = (this_cpu() + 2);
+    timerval.it_value.tv_usec = (this_cpu() + 1) * 100;
+
+    signal(SIGALRM, defaul_sighandler);
+    
+    printk("set timer on cpu %d at time %lld\n", 
+        this_cpu(), get_now_nanosecond());
+    
+    setitimer(ITIMER_REAL, &timerval, NULL);
+
+    }
+
+int do_itimer (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {
+    itimer_set();
+
+    return OK;
+    }
+
+CELL_OS_CMD(
+    itimer,   1,        1,    do_itimer,
+    "test itimer",
+    "test itimer and thread based signal handling\n"
+    );
+
 void cpu_heart_beat (int cpu)
     {
     volatile uint8_t *vidmem = (volatile uint8_t *)VGA_TEXT_MODE_KERN_BASE_ADDR;
@@ -24,6 +60,10 @@ void cpu_heart_beat (int cpu)
 void *sched_bsp_idle_thread (void *notused)
     {
     interrupts_disable();
+    
+    clock_eventer_subsystem_init();
+    
+    pit_timer_init();
 
     lapic_bsp_pre_init();
 
@@ -42,11 +82,14 @@ void *sched_bsp_idle_thread (void *notused)
     pci_scan_devices();
 #endif
 
-    system_time_init();
-    pit_timer_init(CONFIG_HZ);
+    time_counter_subsystem_init();
 
-    interrupts_enable();
+    real_wall_time_init();
+
+    tick_eventer_init();
     
+    interrupts_enable();
+
     thread_create_test();
 
     lapic_ipi(1, 0, INTR_LAPIC_RESCHEDULE);
@@ -55,7 +98,7 @@ void *sched_bsp_idle_thread (void *notused)
     }
 
 void *sched_ap_idle_thread (void *notused)
-    {
+    {    
     interrupts_disable();
     
     lapic_common_init();

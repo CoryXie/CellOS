@@ -202,6 +202,17 @@ struct sigaction
     void   (*sa_sigaction)(int, siginfo_t *, void *);
     };
 
+struct sig_handler_node
+    {
+    list_t node;
+    int sig;
+    struct sigaction sa_action;
+    };
+
+struct	sched_thread;
+
+void sched_thread_signal_process (struct sched_thread * thread);
+
 /* Values for sa_flags */
 
 #define SA_NOCLDSTOP	0x01 /* Do not generate SIGCHLD when children 

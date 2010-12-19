@@ -28,23 +28,23 @@ mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
 mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
 Free physical area range [0x0000000000100000 - 0x000000000fef0000]
 base_pml4=256 base_pdpt=0
-lowest_addr=0x00000000001a2000, highest_addr=0x00000000ffffffff
-user available physical RAM 0x00000000001a7000-0x000000000fef0000
+lowest_addr=0x00000000001a3000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x00000000001a8000-0x000000000fef0000
 x64_paging_map: page tables using 20 KB
-first_pdpt=0xffffffff801a2000, first_pdir=0xffffffff801a3000, num_pdpt = 1
-current_pdpt = 0xffffffff801a2000
-pdpt #0 0x00000000001a3003 -> 0xffffffff801a3000
-pdpt #1 0x00000000001a4003 -> 0xffffffff801a4000
-pdpt #2 0x00000000001a5003 -> 0xffffffff801a5000
-pdpt #3 0x00000000001a6003 -> 0xffffffff801a6000
-just set 0x00000000001a2003 0xffffffff801a2000
+first_pdpt=0xffffffff801a3000, first_pdir=0xffffffff801a4000, num_pdpt = 1
+current_pdpt = 0xffffffff801a3000
+pdpt #0 0x00000000001a4003 -> 0xffffffff801a4000
+pdpt #1 0x00000000001a5003 -> 0xffffffff801a5000
+pdpt #2 0x00000000001a6003 -> 0xffffffff801a6000
+pdpt #3 0x00000000001a7003 -> 0xffffffff801a7000
+just set 0x00000000001a3003 0xffffffff801a3000
 end address 0x0000000100000000
 num_pdirs=4
 num_pdpt=1
-new CR3 0x000000000017f000
-page_alloc_init(): pages_available=64333 lowest_addr=0x00000000003a3000
+new CR3 0x0000000000180000
+page_alloc_init(): pages_available=64332 lowest_addr=0x00000000003a4000
 page_alloc_init(): done!
-mem_pool 0xffff8000003a3000, mem_pool_size 0x0000000001000000 done
+mem_pool 0xffff8000003a4000, mem_pool_size 0x0000000001000000 done
 Intel Specific Features:
 Type 0 - Original OEM
 Family 6 - Pentium Pro
@@ -62,9 +62,9 @@ smp_parse_config:found cpu-0 enabled.
 smp_parse_config:found cpu-1 enabled.
 smp_init: cpu 0, lapic_id = 0, BSP
 smp_init: cpu 1, lapic_id = 1, AP
-_binary_ap_boot_start at 0xffffffff8017cdc4, _binary_ap_boot_end at 0xffffffff8017ce96, ap_boot_size 0x00000000000000d2
+_binary_ap_boot_start at 0xffffffff8017dcc4, _binary_ap_boot_end at 0xffffffff8017dd96, ap_boot_size 0x00000000000000d2
 code copy done!
-smp_activiate_ap:_boot_pml4 0x000000000017f000 entry 0xffffffff801022fa
+smp_activiate_ap:_boot_pml4 0x0000000000180000 entry 0xffffffff801022fa
 smp_activiate_ap: activiate AP cpu #1......ok
 get free page 0x000000000feef000
 AP cpu-1 is now ready, lapic_base 0x00000000fee00800
@@ -81,28 +81,31 @@ Using scheduling policy SCHED_RR!
 Created thread KBD
 KBD registered
 MSR_FSB_FREQ 0x0000000000000000
-cpu0 - calculate lapic frequency...done! lapic_freq_hz 64850127, apic_period_ns 15
-cpu0 - lapic_timer_count_init count 648501, ns 10000000
+cpu0 - calculate lapic frequency...done! lapic_freq_hz 64851706, apic_period_ns 15
+cpu0 - lapic_timer_count_init count 648517, ns 10000000
 Using scheduling policy SCHED_RR!
 Created thread cpu0-acpi
 Using scheduling policy SCHED_RR!
 acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
 Created thread INIT_CPU1
-ACPI: MSR_FSB_FREQ 0x0000000000000000
-RSDP 0x00000000000f6940 00024 (v02 PTLTD )cpu1 - calculate lapic frequency...
-done! lapic_freq_hz 80686843, apic_period_ns 12
-ACPI: cpu1 - lapic_timer_count_init count 806868, ns 10000000
-XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)Using scheduling policy SCHED_RR!
+ACPI: RSDP 0x00000000000f6940 00024 (v02 PTLTD )MSR_FSB_FREQ 0x0000000000000000
 
-Created thread cpu1-task1
+cpu1 - calculate lapic frequency...ACPI: XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)done! lapic_freq_hz 65931771, apic_period_ns 15
+
+cpu1 - lapic_timer_count_init count 659317, ns 10000000
 ACPI: Using scheduling policy SCHED_RR!
-FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task2
+FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task1
 
 Using scheduling policy SCHED_RR!
-ACPI: DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)Created thread cpu1-task3
+ACPI: Created thread cpu1-task2
+DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)Using scheduling policy SCHED_RR!
 
-KSH:000> ACPI: FACS 0x000000000fefffc0 00040
-ACPI: BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)
+Created thread cpu1-task3
+ACPI: FACS 0x000000000fefffc0 00040KSH:000> 
+set timer on cpu 1 at time -2049427901
+ACPI: set timer on cpu 1 at time -3451196978
+BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)set timer on cpu 1 at time -3451197095
+
 ACPI: APIC 0x000000000fef08da 0005E (v01 PTLTD  ? APIC   06040000  LTP 00000000)
 ACPI: MCFG 0x000000000fef089e 0003C (v01 PTLTD  $PCITBL$ 06040000  LTP 00000001)
 ACPI: SRAT 0x000000000fef081e 00080 (v02 VMWARE MEMPLUG  06040000 VMW  00000001)
@@ -152,62 +155,21 @@ evgpeblk-0666 [02] EvInitializeGpeBlock  : Enabled 2 Runtime GPEs, added 3 Wake 
   0000: 23 01 00 18 79 00                                #...y.
 [ACPI Debug]  Buffer [0x06]
   0000: 23 01 00 18 79 00                                #...y.
-
-KSH: Please enter a command!
-KSH:001> i
-ID(0)-NAME(INIT_CPU0)-CPU(0)-STATE(RUNNING):
-POLICY(2)-SP(0xffff8000003adfc0)-STACK(0xffff8000003acfc0-->0xffff8000003adfc0)
-ID(1)-NAME(RTC)-CPU(1)-STATE(READY):
-POLICY(2)-SP(0xffff8000003b0d28)-STACK(0xffff8000003afda0-->0xffff8000003b0da0)
-ID(2)-NAME(KBD)-CPU(1)-STATE(RUNNING):
-POLICY(2)-SP(0xffff8000003b2348)-STACK(0xffff8000003b1430-->0xffff8000003b2430)
-ID(3)-NAME(cpu0-acpi)-CPU(1)-STATE(PENDING):
-POLICY(2)-SP(0xffff8000003b6088)-STACK(0xffff8000003b51b0-->0xffff8000003b61b0)
-ID(4)-NAME(INIT_CPU1)-CPU(1)-STATE(READY):
-POLICY(2)-SP(0xffff8000003b77a8)-STACK(0xffff8000003b6840-->0xffff8000003b7840)
-ID(5)-NAME(cpu1-task1)-CPU(1)-STATE(READY):
-POLICY(2)-SP(0xffff8000003b8e68)-STACK(0xffff8000003b7ef0-->0xffff8000003b8ef0)
-ID(6)-NAME(cpu1-task2)-CPU(1)-STATE(READY):
-POLICY(2)-SP(0xffff8000003ba2e8)-STACK(0xffff8000003b9370-->0xffff8000003ba370)
-ID(7)-NAME(cpu1-task3)-CPU(1)-STATE(READY):
-POLICY(2)-SP(0xffff8000003bb768)-STACK(0xffff8000003ba7f0-->0xffff8000003bb7f0)
 PM timer uses IOPORT space 0x0000000000001008 and its width is 24 bits
-KSH:002> Current CMOS Date (UTC): 2010-12-18 11:37:53
-unix time(cmos)=1292672273
-pit_timer_init: frequency=100, divisor = 11931
+Current CMOS Date (UTC): 2010-12-20 2:50:9
+Unix Time (CMOS Seconds):1292813409
+global_tick_eventer name PIT8254
+pit_timer_start - CLOCK_EVENTER_MODE_PERIODIC
 Using scheduling policy SCHED_RR!
+thread cpu1-task3 received signal 14 at time -716049384
 Created thread cpu0-task1
 Using scheduling policy SCHED_RR!
+set timer on cpu 1 at time -623171384
 Created thread cpu0-task2
+thread cpu0-task1 received signal 14 at time -558587384
 Using scheduling policy SCHED_RR!
+set timer on cpu 1 at time -510325384
 Created thread cpu0-task3
-
-KSH: Please enter a command!
-KSH:003> help
-?       - alias for 'help'
-acpiTest- dump acpi information
-echo    - echo args to console
-freq    - show current cpu and bus frequency
-help    - print online help
-hpet    - show hpet information
-i       - alias for 'threads'
-lspci   - show pci bus device tree
-scanpci - show pci bus device tree
-threads - show kernel thread list information
-ticks   - get already running ticks
-time    - show current time
-utc     - show current time
-version - print monitor version
-KSH:004> utc
-Current CMOS Date (UTC): 2010-12-18 11:38:9
-unix time(cmos)=1292672289
-KSH:005> time
-Time in Micro Senconds (1292672296 sec: 205418 usec)
-Time in Nano Senconds  (1292672296 sec: 205436000 nsec)
-KSH:006> time
-Time in Micro Senconds (1292672302 sec: 671981 usec)
-Time in Nano Senconds  (1292672302 sec: 671983000 nsec)
-KSH:007> time
-Time in Micro Senconds (1292672303 sec: 913998 usec)
-Time in Nano Senconds  (1292672303 sec: 914000000 nsec)
-KSH:008> 
+thread cpu0-task2 received signal 14 at time -446673384
+set timer on cpu 0 at time -430371384
+thread cpu0-task3 received signal 14 at time -325691384

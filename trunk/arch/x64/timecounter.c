@@ -7,7 +7,7 @@
 #include <sys/time.h>
 
 struct os_time_counter * global_os_time_counter = NULL;
-timespec_t system_time;
+timespec_t real_wall_time;
 
 static struct os_time_counter time_counter_pm_timer;
 
@@ -97,15 +97,18 @@ struct os_time_counter * select_global_os_time_counter(void)
     return global_os_time_counter;
     }
 
-
-void system_time_init(void)
+void time_counter_subsystem_init(void)
     {
     select_global_os_time_counter();
-    system_time.tv_sec = rtc_get_utc_time();
-    system_time.tv_nsec = 0;
     }
 
-void system_time_regular_fixup(void)
+void real_wall_time_init(void)
+    {
+    real_wall_time.tv_sec = rtc_get_utc_time();
+    real_wall_time.tv_nsec = 0;
+    }
+
+void real_wall_time_regular_update(void)
     {
     cycle_t last_read;
     abstime_t eplased;
@@ -122,7 +125,7 @@ void system_time_regular_fixup(void)
     eplased = timecounter->counter_time_elapsed(last_read,
                                         timecounter->counter_latest_read);
 
-    timespec_add_ns(&system_time, eplased);
+    timespec_add_ns(&real_wall_time, eplased);
 
     }
 
@@ -169,10 +172,10 @@ int gettimeofday(struct timeval * tp, void * tzp)
     eplased = timecounter->counter_time_elapsed(last, 
                                 timecounter->counter_latest_read);
 
-    timespec_add_ns(&system_time, eplased);
+    timespec_add_ns(&real_wall_time, eplased);
 
-    tp->tv_sec = system_time.tv_sec;
-    tp->tv_usec = system_time.tv_nsec / 1000;
+    tp->tv_sec = real_wall_time.tv_sec;
+    tp->tv_usec = real_wall_time.tv_nsec / 1000;
     
     return OK;
     }
@@ -194,12 +197,21 @@ int getnstimeofday(struct timespec * tp, void * tzp)
     eplased = timecounter->counter_time_elapsed(last, 
                                 timecounter->counter_latest_read);
 
-    timespec_add_ns(&system_time, eplased);
+    timespec_add_ns(&real_wall_time, eplased);
 
-    tp->tv_sec = system_time.tv_sec;
-    tp->tv_nsec = system_time.tv_nsec;
+    tp->tv_sec = real_wall_time.tv_sec;
+    tp->tv_nsec = real_wall_time.tv_nsec;
     
     return OK;
+    }
+
+abstime_t get_now_nanosecond(void)
+    {
+    struct timespec now;
+    
+    getnstimeofday(&now, NULL);
+
+    return timespec_to_abstime(&now);
     }
 
 int do_time (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])

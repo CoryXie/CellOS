@@ -509,6 +509,8 @@ void * test_thread1(void *param)
     
     cpu = params[1];
 
+    itimer_set();
+
     while(1)
         {
         vidmem[70 + cpu * 2] = '0' + count++;
@@ -569,6 +571,8 @@ void * test_thread2(void *param)
 
         return NULL;
         }
+
+    itimer_set();
     
     cpu = params[1];
     
@@ -631,7 +635,9 @@ void * test_thread3(void *param)
 
         return NULL;
         }
-    
+   
+    itimer_set();
+
     cpu = params[1];
     
     while(1)

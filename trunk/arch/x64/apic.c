@@ -271,7 +271,7 @@ status_t lapic_common_init(void)
     /* Figure out the CPU bus frequency only for BSP and apply for AP */
     printk("cpu%d - calculate lapic frequency...", this_cpu());
 
-    lapic_freq_hz = calculate_lapic_frequency() / 1;
+    lapic_freq_hz = calculate_lapic_frequency();
     
     kurrent_cpu->cpu_arch.apic_period_ns = (NSECS_PER_SEC) / lapic_freq_hz;
     

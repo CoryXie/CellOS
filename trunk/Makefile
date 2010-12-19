@@ -104,7 +104,11 @@ OBJS += kernel/sched_core.o 	\
 		kernel/sched_thread_spin.o \
 		kernel/sched_thread_attr.o \
 		kernel/sched_thread_cancel.o \
-		kernel/semaphore.o
+		kernel/semaphore.o      \
+	    kernel/clockeventer.o   \
+	    kernel/timer.o          \
+	    kernel/signal.o
+
 		
 OBJS += drivers/pci/pci_acpi.o
 

@@ -385,7 +385,7 @@ int pthread_create
     
 	new_thread->stack_base = stack_addr;
 	new_thread->stack_size = stack_size;
-	new_thread->stack_top = (char *)stack_addr + stack_size;
+	new_thread->stack_top = (unsigned char *)stack_addr + stack_size;
     new_thread->entry = start_routine;
     new_thread->param = arg;
 
@@ -429,6 +429,8 @@ int pthread_create
 
     new_thread->sched_runq = sched_runq;
 
+    list_init(&new_thread->sig_handler_list);
+    
     sched_thread_add_global(new_thread);
 
     printk("Created thread %s\n", new_thread->name);
@@ -1066,13 +1068,18 @@ int pthread_kill
         return OK;
         }
     
+    if (atomic_test_bit(sig, &thread->sig_blocked)) 
+        {
+        printk("Blocked singal %d\n", sig);
+        return EBUSY;
+        }
+    
     /* Set the singal bit */
     atomic_set_bit(sig, &thread->sig_pending);
-
+    
     /* 
      * If the target thread has better precedence than current 
-     * thread, reschedule so that that thread could receive this
-     * signal.
+     * thread, reschedule so that thread could receive this signal.
      */
     if (SCHED_THREAD_PRECEDENCE_COMPARE(thread, pthread_self()))
         reschedule();

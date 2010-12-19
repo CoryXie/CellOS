@@ -9,7 +9,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <os/queue.h>
-#include <os/sched_core.h>
+#include <os/list.h>
 
 /* Thread States */
 typedef enum sched_thread_state
@@ -108,6 +108,9 @@ typedef struct sched_thread
 
     /* Blocked signals */
     sigset_t        sig_blocked;
+
+    /* Active signal handlers */
+    list_t          sig_handler_list;
 
     /* Abort handler */
 	void (*abort)(void *);

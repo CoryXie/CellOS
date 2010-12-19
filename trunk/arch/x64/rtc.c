@@ -174,26 +174,21 @@ long rtc_get_utc_time(void)
     
     unix_time=_mktime(sec,min,hour,day,mon,year);
     
-    printk("unix time(cmos)=%ld\n",unix_time);
+    printk("Unix Time (CMOS Seconds):%ld\n", unix_time);
 
     return unix_time;
     }
 
 int do_utctime (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
-    {    
-    ipl_t ipl = interrupts_disable();
-    
+    {        
     rtc_get_utc_time();
-    
-    interrupts_restore(ipl);
-    
     return 0;
     }
 
 CELL_OS_CMD(
     utc,   1,        1,    do_utctime,
-    "show current time",
-    "show current time (in both nanosecond and microsecond resolution)\n"
+    "show current UTC time",
+    "show current UTC time (UTC time and Unix Time)\n"
     );
 
 void * rtc_thread (void *param)

@@ -1,3 +1,9 @@
+/* timer.c - timer management */
+
+#include <sys.h>
+#include <arch.h>
+#include <time.h>
+#include <os/timer.h>
 
 /*
   NAME
@@ -258,6 +264,211 @@ int timer_gettime(timer_t timerid, struct itimerspec *value)
 int timer_settime(timer_t timerid, int flags, const struct itimerspec * value,
        struct itimerspec * ovalue)
     {
+    return OK;
+    }
+
+/*
+  NAME
+  
+  getitimer, setitimer - get and set value of interval timer
+  
+  SYNOPSIS
+  
+  #include <sys/time.h>
+  
+  int getitimer(int which, struct itimerval *value);
+  int setitimer(int which, const struct itimerval *restrict value,
+         struct itimerval *restrict ovalue); 
+  
+  DESCRIPTION
+  
+  The getitimer() function shall store the current value of the timer 
+  specified by which into the structure pointed to by value. The setitimer() 
+  function shall set the timer specified by which to the value specified 
+  in the structure pointed to by value, and if ovalue is not a null pointer, 
+  store the previous value of the timer in the structure pointed to by ovalue.
+  
+  A timer value is defined by the itimerval structure, specified in 
+  <sys/time.h>. If it_value is non-zero, it shall indicate the time to the 
+  next timer expiration. If it_interval is non-zero, it shall specify a 
+  value to be used in reloading it_value when the timer expires. Setting 
+  it_value to 0 shall disable a timer, regardless of the value of it_interval.
+  Setting it_interval to 0 shall disable a timer after its next expiration 
+  (assuming it_value is non-zero).
+  
+  Implementations may place limitations on the granularity of timer values. 
+  For each interval timer, if the requested timer value requires a finer 
+  granularity than the implementation supports, the actual timer value shall
+  be rounded up to the next supported value.
+  
+  An XSI-conforming implementation provides each process with at least three 
+  interval timers, which are indicated by the which argument:
+  
+  ITIMER_PROF
+  
+  Decrements both in process virtual time and when the system is running on 
+  behalf of the process. It is designed to be used by interpreters in 
+  statistically profiling the execution of interpreted programs. Each time 
+  the ITIMER_PROF timer expires, the SIGPROF signal is delivered.
+  
+  ITIMER_REAL
+  
+  Decrements in real time. A SIGALRM signal is delivered when this timer 
+  expires.
+  
+  ITIMER_VIRTUAL
+  
+  Decrements in process virtual time. It runs only when the process is 
+  executing. A SIGVTALRM signal is delivered when it expires.
+  
+  The interaction between setitimer() and alarm() or sleep() is unspecified.
+  
+  RETURN VALUE
+  
+  Upon successful completion, getitimer() or setitimer() shall return 0; 
+  otherwise, -1 shall be returned and errno set to indicate the error.
+  
+  ERRORS
+  
+  The setitimer() function shall fail if:
+  
+  [EINVAL]
+  
+  The value argument is not in canonical form. (In canonical form, the number
+  of microseconds is a non-negative integer less than 1000000 and the number
+  of seconds is a non-negative integer.)
+  
+  The getitimer() and setitimer() functions may fail if:
+  
+  [EINVAL]
+  
+  The which argument is not recognized.
+*/
+interval_timer_t global_itimer_ITIMER_PROF;
+interval_timer_t global_itimer_ITIMER_REAL;
+interval_timer_t global_itimer_ITIMER_VIRTUAL;
+
+void itimer_callback_handler(void)
+    {
+    interval_timer_t * itimer = &global_itimer_ITIMER_REAL;
+
+    itimer->remain_intervals--;
+
+    if (itimer->remain_intervals)
+        return;
+    
+    if (itimer->enabled == TRUE)
+        {
+        itimer->handler(itimer->arg);
+        /*
+         * If it_interval is non-zero, it shall specify a value to be 
+         * used in reloading it_value when the timer expires. 
+         *
+         * Setting it_interval to 0 shall disable a timer after its 
+         * next expiration (assuming it_value is non-zero).
+         */
+        if (timeval_nz(&itimer->timerval.it_interval))
+            {
+            abstime_t expire;
+            
+            itimer->timerval.it_value = itimer->timerval.it_interval;
+            
+            /* Setup expiry time */
+            expire = timeval_to_abstime(&itimer->timerval.it_value);
+
+            itimer->remain_intervals = 
+                (expire / global_tick_eventer->resolution) +
+                (expire % global_tick_eventer->resolution) ? 1 : 0;
+            }
+        else
+            {
+            itimer->enabled = FALSE;
+            }
+        
+        }
+    }
+
+void itimer_expire_handler(void * arg)
+    {
+    interval_timer_t * itimer = (interval_timer_t *)arg;
+    if (itimer->timer_id == ITIMER_REAL)
+        pthread_kill(itimer->pid, SIGALRM);
+    }
+
+int getitimer(int which, struct itimerval *value)
+    {
+    /* Currently only supports ITIMER_REAL */
+    if (which != ITIMER_REAL)
+        return EINVAL;
+    
+    *value = global_itimer_ITIMER_REAL.timerval;
+    
+    return OK;
+    }
+
+int setitimer(int which, const struct itimerval * value, 
+              struct itimerval * ovalue)
+    {
+    int mode;
+    abstime_t expire;
+    static int first = 1;
+    
+    /* Currently only supports ITIMER_REAL */
+    if (which != ITIMER_REAL)
+        return EINVAL;
+
+    /* Make sure the value argument is in canonical form */
+    if (!value || 
+        value->it_interval.tv_usec >= USECS_PER_SEC ||
+        value->it_interval.tv_sec < 0 ||
+        value->it_value.tv_usec >= USECS_PER_SEC ||
+        value->it_value.tv_sec < 0)
+        return EINVAL;
+
+    if (first)
+        {
+        global_itimer_ITIMER_REAL.timer_id = ITIMER_REAL;
+        global_itimer_ITIMER_REAL.eventer = global_tick_eventer;
+        global_itimer_ITIMER_REAL.handler = itimer_expire_handler;
+        global_itimer_ITIMER_REAL.arg = &global_itimer_ITIMER_REAL;
+        first = 0;
+        }
+    
+    global_itimer_ITIMER_REAL.timerval = *value;
+        
+    /* 
+     * If it_value is non-zero, it shall indicate the time to the 
+     * next timer expiration. 
+     *
+     * Setting it_value to 0 shall disable a timer, regardless of 
+     * the value of it_interval.
+     */  
+    if (timeval_nz(&value->it_value))
+        {
+        /* Setup expiry time */
+        expire = timeval_to_abstime(&(value->it_value));
+        
+        global_itimer_ITIMER_REAL.remain_intervals = 
+            (expire / global_tick_eventer->resolution) +
+            (expire % global_tick_eventer->resolution) ? 1 : 0;
+        }
+    else
+        {
+        /* Disable the timer */
+        global_itimer_ITIMER_REAL.enabled = FALSE;
+
+        if (ovalue)
+            *ovalue = global_itimer_ITIMER_REAL.timerval;
+        
+        return OK;
+        }
+
+    global_itimer_ITIMER_REAL.pid = kurrent;
+    global_itimer_ITIMER_REAL.enabled = TRUE;
+
+    if (ovalue)
+        *ovalue = global_itimer_ITIMER_REAL.timerval;
+
     return OK;
     }
 

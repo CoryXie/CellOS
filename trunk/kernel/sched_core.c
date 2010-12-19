@@ -197,6 +197,8 @@ void reschedule(void)
 
     spinlock_lock(&kurrent->thread_lock);
 
+    sched_thread_signal_process (kurrent);
+
 #ifdef SCHED_DETAIL        
     printk("cpu%d - switching %s 2 state %s\n", 
     this_cpu(), kurrent->name, sched_thread_state_name(kurrent->state));

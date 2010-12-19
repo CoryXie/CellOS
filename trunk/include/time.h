@@ -103,6 +103,17 @@ extern int getdate_err;
  */
 #define NSECS_PER_SEC 1000000000
 #define USECS_PER_SEC 1000000
+#define MSECS_PER_SEC 1000
+
+#define NSECS2USECS(nsec) ((nsec) / 1000)
+#define NSECS2MSECS(nsec) ((nsec) / 1000000)
+#define USECS2MSECS(usec) ((usec) / 1000)
+#define USECS2NSECS(usec) ((usec) * 1000)
+#define MSECS2USECS(msec) ((msec) * 1000)
+#define MSECS2NSECS(msec) ((msec) * 1000000)
+#define HZ2NSECS(hz) (NSECS_PER_SEC / (hz))
+#define HZ2USECS(hz) (USECS_PER_SEC / (hz))
+#define HZ2MSECS(hz) (MSECS_PER_SEC / (hz))
 
 /* The <time.h> header shall declare the timespec structure */
 typedef struct timespec

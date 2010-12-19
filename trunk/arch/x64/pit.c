@@ -4,7 +4,7 @@
   The 8254 Programmable Interval Timer was included in the original PC. At
   its heart are three 16-bit counters running at 1.19 MHz (To save costs,
   the original PC used a master 14.318 MHz oscillator and fed system
-  components with various ratios of this frequency \u2013 in this case, 1/12.).
+  components with various ratios of this frequency - in this case, 1/12.).
   They are accessible at fixed addresses in I/O-space, but must be latched
   and then read as two single-byte values, which takes 3us - the slowest
   of all the timers. Additionally, the narrow counter registers roll over 
@@ -16,6 +16,8 @@
 #include <arch.h>
 #include <os.h>
 #include <os/acpi.h>
+
+#define PM_TIMER_CALIBRATE_DELAY_COUNT 10000000
 
 /*
 I/O port     Usage
@@ -82,80 +84,127 @@ I/O port     Usage
 #define PIT_8254_MCR_RD_BACK            (3 << 6)
 
 /* The oscillator used by the PIT chip runs at (roughly) 1.193182 MHz */
-#define PIT_8254_OSC_FREQ               1193182
+#define PIT_8254_OSC_FREQ               1193182 /* 0x1234DE */
 
-os_event_clock_t pit_clock;
-abstime_t pit_clock_totoal_time = 0;
+os_clock_eventer_t pit_clock_eventer;
 
 /* 
  * Start to trigger at 'first' and repeat in 'period' ns;
  * If 'period' is 0 then it is oneshot! The implementation 
  * may round the trigger and period with most nearst values!
  */
-int pit_8254_timer_start (struct os_event_clock * clk, 
-                          struct timespec * first, abstime_t period)
+int pit_timer_start (struct os_clock_eventer * eventer, 
+                          int mode, abstime_t expire)
     {
-    abstime_t trigger;
+    uint16_t count;
     
-    if (clk != &pit_clock || first == NULL)
-        return ERROR;
+    if (eventer != &pit_clock_eventer || expire == 0)
+        return EINVAL;
+    
+    if (mode == CLOCK_EVENTER_MODE_ONESHOT)
+        {
+        printk("pit_timer_start - CLOCK_EVENTER_MODE_ONESHOT\n");
+        
+        /* Send the command byte. */
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LOHI |
+                                  PIT_8254_MCR_SL_CH0);
 
-    trigger = first->tv_sec * NSECS_PER_SEC + first->tv_nsec;
+        }
+    else
+        {
+        printk("pit_timer_start - CLOCK_EVENTER_MODE_PERIODIC\n");
+        
+        /* Send the command byte. */
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_SQUARE |
+                                  PIT_8254_MCR_AC_LOHI |
+                                  PIT_8254_MCR_SL_CH0);
+        }
+
+    count = (expire / eventer->min_period_ns) + eventer->delta_multi_num;
+    
+    eventer->resolution = count * eventer->min_period_ns;
+    
+    pit_timer_set_reload(count);
     }
 
-void pit_8254_clock_announce(void)
+int pit_timer_stop (struct os_clock_eventer * eventer)
     {
-    pit_clock.name = "PIT8254";
-    pit_clock.flags = CLOCK_FLAGS_PERIODIC | CLOCK_FLAGS_ONESHOT;
-    pit_clock.get_resolution = NULL;
-    pit_clock.min_period_ns = NSECS_PER_SEC / PIT_8254_OSC_FREQ;
-    pit_clock.max_period_ns = (NSECS_PER_SEC * 0x10000) / PIT_8254_OSC_FREQ;
-    pit_clock.base_freq = PIT_8254_OSC_FREQ;
+    /* 
+     * When a Control Word is written to a Counter, all
+     * Control Logic is immediately reset and OUT goes to
+     * a known initial state. 
+     *
+     * --> This essentially makes a valid timer stop!
+     */
+     
+    if (eventer->mode == CLOCK_EVENTER_MODE_ONESHOT)
+        {
+        printk("pit_timer_stop - CLOCK_EVENTER_MODE_ONESHOT\n");
+        
+        /* Send the command byte. */
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_INTR |
+                                  PIT_8254_MCR_AC_LOHI |
+                                  PIT_8254_MCR_SL_CH0);
+
+        }
+    else
+        {
+        printk("pit_timer_stop - CLOCK_EVENTER_MODE_PERIODIC\n");
+        
+        /* Send the command byte. */
+        ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
+                                  PIT_8254_MCR_OP_SQUARE |
+                                  PIT_8254_MCR_AC_LOHI |
+                                  PIT_8254_MCR_SL_CH0);
+        }
     }
 
-void timer_irq_handler
+void pit_clock_eventer_announce(void)
+    {
+    memset(&pit_clock_eventer, 0, sizeof(os_clock_eventer_t));
+    
+    pit_clock_eventer.name = "PIT8254";
+    pit_clock_eventer.flags = CLOCK_EVENTER_FLAGS_PERIODIC | CLOCK_EVENTER_FLAGS_ONESHOT;
+    pit_clock_eventer.min_period_ns = NSECS_PER_SEC / PIT_8254_OSC_FREQ;
+    /* 838 ns */
+    pit_clock_eventer.max_period_ns = 0x10000 * 
+                                     (NSECS_PER_SEC / PIT_8254_OSC_FREQ);
+    /* 54919168 ns = 54919.168 us = 54.919168 ms */
+    
+    pit_clock_eventer.base_frequency = PIT_8254_OSC_FREQ;
+    
+    pit_clock_eventer.delta_multi_num = 0;
+
+    pit_clock_eventer.resolution = pit_clock_eventer.min_period_ns;
+
+    pit_clock_eventer.start = pit_timer_start;
+    pit_clock_eventer.stop = pit_timer_stop;
+    
+    clock_eventer_add(&pit_clock_eventer);
+    }
+
+void pit_timer_irq_handler
     (
     uint64_t stack_frame
     )
-    {
-    system_time_regular_fixup();
+    {        
+    if (pit_clock_eventer.handler)
+        {
+        pit_clock_eventer.handler(&pit_clock_eventer, 
+                                        pit_clock_eventer.arg);
+        }
     }
 
-void pit_timer_init
-    (
-    uint32_t frequency
-    )
+void pit_timer_init (void)
     {
-    uint32_t divisor;
-
     /* Firstly, register our timer callback.*/
-    irq_register(INTR_IRQ0, "timer", (addr_t)timer_irq_handler);
-
-    /* 
-     * The value we send to the PIT is the value to divide it's input clock
-     * (1193180 Hz) by, to get our required frequency. Important to note is
-     * that the divisor must be small enough to fit into 16-bits.
-     */
-     
-    divisor = PIT_8254_OSC_FREQ / frequency;
-
-    printk("pit_timer_init: frequency=%d, divisor = %d\n", 
-           frequency, divisor);
-
-    /* Send the command byte. */
-    ioport_out8(PIT_8254_MCR, PIT_8254_MCR_BIN |
-                              PIT_8254_MCR_OP_SQUARE |
-                              PIT_8254_MCR_AC_LOHI |
-                              PIT_8254_MCR_SL_CH0);
-
-    /* Send the frequency divisor. */
-
-    /*
-     * Divisor has to be sent byte-wise, so split here 
-     * into upper/lower bytes.
-     */
-    ioport_out8(PIT_8254_CHAN0, (uint8_t)(divisor & 0xFF));
-    ioport_out8(PIT_8254_CHAN0, (uint8_t)((divisor >> 8) & 0xFF ));
+    irq_register(INTR_IRQ0, "timer", (addr_t)pit_timer_irq_handler);
+    
+    pit_clock_eventer_announce();
     }
 
 /* 
@@ -332,7 +381,6 @@ uint64_t calculate_cpu_frequency(void)
   4.6 seconds. This is caused by hardware bugs and/or incorrect software
   handling of counter overflow.
 */
-#define PM_TIMER_CALIBRATE_DELAY_COUNT 10000000
 
 /* Calculate CPU frequency in HZ. */
 uint64_t calculate_cpu_frequency2(void)
@@ -382,7 +430,8 @@ uint64_t calculate_cpu_frequency2(void)
     
     AcpiGetTimerDuration(start1, end1, &us_elapsed);
     
-    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", start1, end1, us_elapsed);
+    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", 
+        start1, end1, us_elapsed);
 
     return (cycles * USECS_PER_SEC) / us_elapsed;
     }
@@ -447,7 +496,8 @@ uint64_t calculate_lapic_frequency2(void)
     
     AcpiGetTimerDuration(start1, end1, &us_elapsed);
     
-    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", start1, end1, us_elapsed);
+    printk("AcpiGetTimer start1 %d end1 %d us_elapsed %d\n", 
+        start1, end1, us_elapsed);
 
     return (lticks * USECS_PER_SEC) / us_elapsed;
     }

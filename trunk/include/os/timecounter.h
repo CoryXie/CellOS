@@ -48,5 +48,9 @@ typedef struct os_time_counter
     abstime_t counter_fixup_period;
     }os_time_counter_t;
 
-void system_time_regular_fixup(void);
+void real_wall_time_init(void);
+
+void real_wall_time_regular_update(void);
+
+abstime_t get_now_nanosecond(void);
 
