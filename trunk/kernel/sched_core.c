@@ -197,6 +197,7 @@ void reschedule(void)
 
     spinlock_lock(&kurrent->thread_lock);
 
+    /* Deliver signals for this thread */
     sched_thread_signal_process (kurrent);
 
 #ifdef SCHED_DETAIL        
@@ -292,6 +293,9 @@ void reschedule(void)
 
         kurrent->state = STATE_RUNNING;
         kurrent->resume_cycle = rdtsc();
+
+        /* Deliver signals for this thread */
+        sched_thread_signal_process (kurrent);
 
 #ifdef SCHED_DETAIL        
         printk("cpu%d - release lock for %s\n", 

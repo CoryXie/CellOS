@@ -384,6 +384,7 @@ int sigaction(int sig, const struct sigaction * act,
 
     if (signode == NULL)
         {
+        /* This will be freed when the thread is destroyed */
         signode = kmalloc(sizeof(struct sig_handler_node));
         if (signode == NULL)
             {

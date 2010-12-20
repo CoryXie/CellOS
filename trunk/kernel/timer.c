@@ -378,7 +378,7 @@ void itimer_callback_handler(void)
 
             itimer->remain_intervals = 
                 (expire / global_tick_eventer->resolution) +
-                (expire % global_tick_eventer->resolution) ? 1 : 0;
+                ((expire % global_tick_eventer->resolution) ? 1 : 0);
             }
         else
             {
@@ -450,7 +450,7 @@ int setitimer(int which, const struct itimerval * value,
         
         global_itimer_ITIMER_REAL.remain_intervals = 
             (expire / global_tick_eventer->resolution) +
-            (expire % global_tick_eventer->resolution) ? 1 : 0;
+            ((expire % global_tick_eventer->resolution) ? 1 : 0);
         }
     else
         {

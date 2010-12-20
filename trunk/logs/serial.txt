@@ -81,31 +81,31 @@ Using scheduling policy SCHED_RR!
 Created thread KBD
 KBD registered
 MSR_FSB_FREQ 0x0000000000000000
-cpu0 - calculate lapic frequency...done! lapic_freq_hz 64851706, apic_period_ns 15
-cpu0 - lapic_timer_count_init count 648517, ns 10000000
+cpu0 - calculate lapic frequency...done! lapic_freq_hz 64852320, apic_period_ns 15
+cpu0 - lapic_timer_count_init count 648523, ns 10000000
+Using scheduling policy SCHED_RR!
 Using scheduling policy SCHED_RR!
 Created thread cpu0-acpi
-Using scheduling policy SCHED_RR!
-acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
 Created thread INIT_CPU1
-ACPI: RSDP 0x00000000000f6940 00024 (v02 PTLTD )MSR_FSB_FREQ 0x0000000000000000
+acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
+MSR_FSB_FREQ 0x0000000000000000
+ACPI: cpu1 - calculate lapic frequency...RSDP 0x00000000000f6940 00024 (v02 PTLTD )done! lapic_freq_hz 78441795, apic_period_ns 12
 
-cpu1 - calculate lapic frequency...ACPI: XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)done! lapic_freq_hz 65931771, apic_period_ns 15
-
-cpu1 - lapic_timer_count_init count 659317, ns 10000000
+cpu1 - lapic_timer_count_init count 784417, ns 10000000
 ACPI: Using scheduling policy SCHED_RR!
-FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task1
+Created thread cpu1-task1
+XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)Using scheduling policy SCHED_RR!
 
-Using scheduling policy SCHED_RR!
-ACPI: Created thread cpu1-task2
-DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)Using scheduling policy SCHED_RR!
+Created thread cpu1-task2
+ACPI: Using scheduling policy SCHED_RR!
+FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task3
 
-Created thread cpu1-task3
-ACPI: FACS 0x000000000fefffc0 00040KSH:000> 
-set timer on cpu 1 at time -2049427901
-ACPI: set timer on cpu 1 at time -3451196978
-BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)set timer on cpu 1 at time -3451197095
+KSH:000> ACPI: set timer on cpu 1 at time 3901365853632083
+DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)set timer on cpu 1 at time -2146383080146368034
 
+set timer on cpu 1 at time -2146383080146368151
+ACPI: FACS 0x000000000fefffc0 00040
+ACPI: BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)
 ACPI: APIC 0x000000000fef08da 0005E (v01 PTLTD  ? APIC   06040000  LTP 00000000)
 ACPI: MCFG 0x000000000fef089e 0003C (v01 PTLTD  $PCITBL$ 06040000  LTP 00000001)
 ACPI: SRAT 0x000000000fef081e 00080 (v02 VMWARE MEMPLUG  06040000 VMW  00000001)
@@ -156,20 +156,43 @@ evgpeblk-0666 [02] EvInitializeGpeBlock  : Enabled 2 Runtime GPEs, added 3 Wake 
 [ACPI Debug]  Buffer [0x06]
   0000: 23 01 00 18 79 00                                #...y.
 PM timer uses IOPORT space 0x0000000000001008 and its width is 24 bits
-Current CMOS Date (UTC): 2010-12-20 2:50:9
-Unix Time (CMOS Seconds):1292813409
+Current CMOS Date (UTC): 2010-12-20 21:12:57
+Unix Time (CMOS Seconds):1292879577
 global_tick_eventer name PIT8254
 pit_timer_start - CLOCK_EVENTER_MODE_PERIODIC
 Using scheduling policy SCHED_RR!
-thread cpu1-task3 received signal 14 at time -716049384
+thread cpu1-task3 received signal 14 at time 1292879578027851000
 Created thread cpu0-task1
 Using scheduling policy SCHED_RR!
-set timer on cpu 1 at time -623171384
+set timer on cpu 1 at time 1292879578133393000
 Created thread cpu0-task2
-thread cpu0-task1 received signal 14 at time -558587384
 Using scheduling policy SCHED_RR!
-set timer on cpu 1 at time -510325384
+set timer on cpu 1 at time 1292879578224683000
 Created thread cpu0-task3
-thread cpu0-task2 received signal 14 at time -446673384
-set timer on cpu 0 at time -430371384
-thread cpu0-task3 received signal 14 at time -325691384
+set timer on cpu 1 at time 1292879578320588000
+thread cpu0-task3 received signal 14 at time 1292879581448371000
+
+KSH: Please enter a command!
+KSH:001> 
+KSH: Please enter a command!
+KSH:002> itimer
+set timer on cpu 1 at time 1292879597358874000
+KSH:003> thread KBD received signal 14 at time 1292879600499764000
+
+KSH: Please enter a command!
+KSH:004> itimer
+set timer on cpu 1 at time 1292879618742517000
+KSH:005> thread KBD received signal 14 at time 1292879621870975000
+
+KSH: Please enter a command!
+KSH:006> itimer
+set timer on cpu 0 at time 1292879625021476000
+KSH:007> thread KBD received signal 14 at time 1292879628179382000
+
+KSH: Please enter a command!
+KSH:008> itimer
+set timer on cpu 1 at time 1292879630734462000
+KSH:009> thread KBD received signal 14 at time 1292879633869240000
+
+KSH: Please enter a command!
+KSH:010> 

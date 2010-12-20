@@ -99,12 +99,14 @@ static inline void timespec_add_ns (timespec_t * t, long n)
 
 static inline abstime_t timespec_to_abstime(timespec_t * t)
     {
-    return (abstime_t)(t->tv_sec * NSECS_PER_SEC + t->tv_nsec);
+    return (abstime_t)(((abstime_t)t->tv_sec * NSECS_PER_SEC) + 
+                        (abstime_t)t->tv_nsec);
     }
 
 static inline abstime_t timeval_to_abstime(timeval_t * t)
     {
-    return (abstime_t)(t->tv_sec * USECS_PER_SEC + t->tv_usec);
+    return (abstime_t)(((abstime_t)t->tv_sec * NSECS_PER_SEC) + 
+                        (abstime_t)USECS2NSECS(t->tv_usec));
     }
 
 static inline timespec_t * abstime_to_timespec(abstime_t abst, timespec_t * ts)

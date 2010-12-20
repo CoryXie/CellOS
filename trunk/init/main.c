@@ -13,8 +13,8 @@ void itimer_set(void)
     struct itimerval timerval;
 
     timerval.it_interval.tv_sec = timerval.it_interval.tv_usec = 0;
-    timerval.it_value.tv_sec = (this_cpu() + 2);
-    timerval.it_value.tv_usec = (this_cpu() + 1) * 100;
+    timerval.it_value.tv_sec = 3;
+    timerval.it_value.tv_usec = 100000;
 
     signal(SIGALRM, defaul_sighandler);
     
