@@ -7,6 +7,9 @@ typedef uint64_t cycle_t;
 
 typedef struct os_time_counter
     {
+    /* Time Counter node in the list of counters */
+    list_t      node;
+    
     /* The name of the time counter */
     
     const char * counter_name;
@@ -53,4 +56,7 @@ void real_wall_time_init(void);
 void real_wall_time_regular_update(void);
 
 abstime_t get_now_nanosecond(void);
+
+extern struct os_time_counter time_counter_pm_timer;
+extern struct os_time_counter * global_os_time_counter;
 

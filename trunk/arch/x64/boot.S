@@ -127,6 +127,7 @@ _cell64_32_entry:
  *
  *  - Have paging disabled (this is true when GRUB booted us)
  *  - Set the PAE enable bit in CR4 (bit 5)
+ *  - Set the PCE enable bit in CR4 (bit 8)
  *  - Load CR3 with the physical address of the PML4
  *  - Enable long mode by setting the EFER.LME flag (bit 8) in MSR 0xC0000080
  *  - Enable paging (PE, bit 31 in CR0)
@@ -140,7 +141,8 @@ _cell64_32_entry:
     /* enable PAE */
 
     movl %cr4, %eax
-    bts $5, %eax
+    bts $5, %eax /* CR4_PAE */
+    bts $8, %eax /* CR4_PCE */
     movl %eax, %cr4
 
     /* load our PML4 */

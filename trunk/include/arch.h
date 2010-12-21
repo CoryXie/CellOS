@@ -8,6 +8,7 @@
 #include <arch/x86/common/rtc.h>
 #include <arch/x86/common/kbd.h>
 #include <arch/x86/common/hpet.h>
+#include <arch/x86/common/pmc.h>
 #include <arch/x86/common/bitops.h>
 #include <arch/x86/x64/x64.h>
 #include <arch/x86/x64/ctrlregs.h>

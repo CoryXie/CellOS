@@ -432,10 +432,17 @@ int setitimer(int which, const struct itimerval * value,
         global_itimer_ITIMER_REAL.handler = itimer_expire_handler;
         global_itimer_ITIMER_REAL.arg = &global_itimer_ITIMER_REAL;
         first = 0;
+        if (ovalue) 
+            *ovalue = *value;
+        }
+    else
+        {
+        if (ovalue) 
+            *ovalue = global_itimer_ITIMER_REAL.timerval;
         }
     
     global_itimer_ITIMER_REAL.timerval = *value;
-        
+
     /* 
      * If it_value is non-zero, it shall indicate the time to the 
      * next timer expiration. 
@@ -456,19 +463,13 @@ int setitimer(int which, const struct itimerval * value,
         {
         /* Disable the timer */
         global_itimer_ITIMER_REAL.enabled = FALSE;
-
-        if (ovalue)
-            *ovalue = global_itimer_ITIMER_REAL.timerval;
         
         return OK;
         }
 
     global_itimer_ITIMER_REAL.pid = kurrent;
     global_itimer_ITIMER_REAL.enabled = TRUE;
-
-    if (ovalue)
-        *ovalue = global_itimer_ITIMER_REAL.timerval;
-
+    
     return OK;
     }
 

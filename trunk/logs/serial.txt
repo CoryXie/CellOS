@@ -28,23 +28,23 @@ mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
 mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
 Free physical area range [0x0000000000100000 - 0x000000000fef0000]
 base_pml4=256 base_pdpt=0
-lowest_addr=0x00000000001a3000, highest_addr=0x00000000ffffffff
-user available physical RAM 0x00000000001a8000-0x000000000fef0000
+lowest_addr=0x00000000001a4000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x00000000001a9000-0x000000000fef0000
 x64_paging_map: page tables using 20 KB
-first_pdpt=0xffffffff801a3000, first_pdir=0xffffffff801a4000, num_pdpt = 1
-current_pdpt = 0xffffffff801a3000
-pdpt #0 0x00000000001a4003 -> 0xffffffff801a4000
-pdpt #1 0x00000000001a5003 -> 0xffffffff801a5000
-pdpt #2 0x00000000001a6003 -> 0xffffffff801a6000
-pdpt #3 0x00000000001a7003 -> 0xffffffff801a7000
-just set 0x00000000001a3003 0xffffffff801a3000
+first_pdpt=0xffffffff801a4000, first_pdir=0xffffffff801a5000, num_pdpt = 1
+current_pdpt = 0xffffffff801a4000
+pdpt #0 0x00000000001a5003 -> 0xffffffff801a5000
+pdpt #1 0x00000000001a6003 -> 0xffffffff801a6000
+pdpt #2 0x00000000001a7003 -> 0xffffffff801a7000
+pdpt #3 0x00000000001a8003 -> 0xffffffff801a8000
+just set 0x00000000001a4003 0xffffffff801a4000
 end address 0x0000000100000000
 num_pdirs=4
 num_pdpt=1
-new CR3 0x0000000000180000
-page_alloc_init(): pages_available=64332 lowest_addr=0x00000000003a4000
+new CR3 0x0000000000181000
+page_alloc_init(): pages_available=64331 lowest_addr=0x00000000003a5000
 page_alloc_init(): done!
-mem_pool 0xffff8000003a4000, mem_pool_size 0x0000000001000000 done
+mem_pool 0xffff8000003a5000, mem_pool_size 0x0000000001000000 done
 Intel Specific Features:
 Type 0 - Original OEM
 Family 6 - Pentium Pro
@@ -62,9 +62,9 @@ smp_parse_config:found cpu-0 enabled.
 smp_parse_config:found cpu-1 enabled.
 smp_init: cpu 0, lapic_id = 0, BSP
 smp_init: cpu 1, lapic_id = 1, AP
-_binary_ap_boot_start at 0xffffffff8017dcc4, _binary_ap_boot_end at 0xffffffff8017dd96, ap_boot_size 0x00000000000000d2
+_binary_ap_boot_start at 0xffffffff8017e1e4, _binary_ap_boot_end at 0xffffffff8017e2b6, ap_boot_size 0x00000000000000d2
 code copy done!
-smp_activiate_ap:_boot_pml4 0x0000000000180000 entry 0xffffffff801022fa
+smp_activiate_ap:_boot_pml4 0x0000000000181000 entry 0xffffffff801022fa
 smp_activiate_ap: activiate AP cpu #1......ok
 get free page 0x000000000feef000
 AP cpu-1 is now ready, lapic_base 0x00000000fee00800
@@ -81,30 +81,30 @@ Using scheduling policy SCHED_RR!
 Created thread KBD
 KBD registered
 MSR_FSB_FREQ 0x0000000000000000
-cpu0 - calculate lapic frequency...done! lapic_freq_hz 64852320, apic_period_ns 15
-cpu0 - lapic_timer_count_init count 648523, ns 10000000
-Using scheduling policy SCHED_RR!
+cpu0 - calculate lapic frequency...done! lapic_freq_hz 64843699, apic_period_ns 15
+cpu0 - lapic_timer_count_init count 648436, ns 10000000
 Using scheduling policy SCHED_RR!
 Created thread cpu0-acpi
-Created thread INIT_CPU1
+Using scheduling policy SCHED_RR!
 acpi_locate_rsdp: found ACPI at 0xffffffff800f6940, revision 3.0
-MSR_FSB_FREQ 0x0000000000000000
-ACPI: cpu1 - calculate lapic frequency...RSDP 0x00000000000f6940 00024 (v02 PTLTD )done! lapic_freq_hz 78441795, apic_period_ns 12
-
-cpu1 - lapic_timer_count_init count 784417, ns 10000000
-ACPI: Using scheduling policy SCHED_RR!
-Created thread cpu1-task1
+Created thread INIT_CPU1
+ACPI: MSR_FSB_FREQ 0x0000000000000000
+RSDP 0x00000000000f6940 00024 (v02 PTLTD )cpu1 - calculate lapic frequency...
+done! lapic_freq_hz 87282210, apic_period_ns 11
+ACPI: cpu1 - lapic_timer_count_init count 872822, ns 10000000
 XSDT 0x000000000fef079a 0004C (v01 INTEL  440BX    06040000 VMW  01324272)Using scheduling policy SCHED_RR!
 
-Created thread cpu1-task2
+Created thread cpu1-task1
 ACPI: Using scheduling policy SCHED_RR!
-FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task3
+FACP 0x000000000fefee98 000F4 (v04 INTEL  440BX    06040000 PTL  000F4240)Created thread cpu1-task2
 
-KSH:000> ACPI: set timer on cpu 1 at time 3901365853632083
-DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)set timer on cpu 1 at time -2146383080146368034
+Using scheduling policy SCHED_RR!
+ACPI: Created thread cpu1-task3
+DSDT 0x000000000fef0960 0E538 (v01 PTLTD  Custom   06040000 MSFT 03000001)
+KSH:000> ACPI: set timer on cpu 1 at time 3905461853632787
+FACS 0x000000000fefffc0 00040set timer on cpu 1 at time -2146382376146367330
 
-set timer on cpu 1 at time -2146383080146368151
-ACPI: FACS 0x000000000fefffc0 00040
+set timer on cpu 1 at time -2146382376146367447
 ACPI: BOOT 0x000000000fef0938 00028 (v01 PTLTD  $SBFTBL$ 06040000  LTP 00000001)
 ACPI: APIC 0x000000000fef08da 0005E (v01 PTLTD  ? APIC   06040000  LTP 00000000)
 ACPI: MCFG 0x000000000fef089e 0003C (v01 PTLTD  $PCITBL$ 06040000  LTP 00000001)
@@ -114,7 +114,9 @@ Table [DSDT](id 0001) - 2810 Objects with 326 Devices 842 Methods 282 Regions
  tbxface-0635 [02] TbLoadNamespace       : ACPI Tables successfully acquired
 evxfevnt-0184 [02] Enable                : Transition to ACPI mode successful
 evgpeblk-0519 [04] EvCreateGpeBlock      : GPE 00 to 0F [_GPE] 2 regs on int 0x9
-Completing Region/Field/Buffer/Package initialization:...............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Completing Region/Field/Buffer/Package initialization:...................................................................................................
+.KSH: Please enter a command!
+.KSH:001> ..........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
 Initialized 282/282 Regions 0/0 Fields 26/26 Buffers 363/363 Packages (2819 nodes)
 Initializing Device/Processor/Thermal objects by executing _INI methods:..
 Executed 2 _INI methods requiring 0 _STA executions (examined 330 objects)
@@ -155,44 +157,102 @@ evgpeblk-0666 [02] EvInitializeGpeBlock  : Enabled 2 Runtime GPEs, added 3 Wake 
   0000: 23 01 00 18 79 00                                #...y.
 [ACPI Debug]  Buffer [0x06]
   0000: 23 01 00 18 79 00                                #...y.
-PM timer uses IOPORT space 0x0000000000001008 and its width is 24 bits
-Current CMOS Date (UTC): 2010-12-20 21:12:57
-Unix Time (CMOS Seconds):1292879577
+
+KSH: Please enter a command!
+KSH:002> i
+ID(0)-NAME(INIT_CPU0)-CPU(0)-STATE(RUNNING):
+POLICY(2)-SP(0xffff8000003affc0)-STACK(0xffff8000003aefc0-->0xffff8000003affc0)
+ID(1)-NAME(RTC)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000003b2d28)-STACK(0xffff8000003b1da0-->0xffff8000003b2da0)
+ID(2)-NAME(KBD)-CPU(1)-STATE(RUNNING):
+POLICY(2)-SP(0xffff8000003b4348)-STACK(0xffff8000003b3430-->0xffff8000003b4430)
+ID(3)-NAME(cpu0-acpi)-CPU(1)-STATE(PENDING):
+POLICY(2)-SP(0xffff8000003b8088)-STACK(0xffff8000003b71b0-->0xffff8000003b81b0)
+ID(4)-NAME(INIT_CPU1)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000003b97a8)-STACK(0xffff8000003b8840-->0xffff8000003b9840)
+ID(5)-NAME(cpu1-task1)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000003bae68)-STACK(0xffff8000003b9ef0-->0xffff8000003baef0)
+ID(6)-NAME(cpu1-task2)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000003bc2e8)-STACK(0xffff8000003bb370-->0xffff8000003bc370)
+ID(7)-NAME(cpu1-task3)-CPU(1)-STATE(READY):
+POLICY(2)-SP(0xffff8000003bd768)-STACK(0xffff8000003bc7f0-->0xffff8000003bd7f0)
+KSH:003> hPM timer uses IOPORT space 0x0000000000001008 and its width is 24 bits
+Current CMOS Date (UTC): 2010-12-22 1:11:16
+Unix Time (CMOS Seconds):1292980276
 global_tick_eventer name PIT8254
 pit_timer_start - CLOCK_EVENTER_MODE_PERIODIC
+ethread cpu1-task3 received signal 14 at time 1292993162624213591
 Using scheduling policy SCHED_RR!
-thread cpu1-task3 received signal 14 at time 1292879578027851000
 Created thread cpu0-task1
 Using scheduling policy SCHED_RR!
-set timer on cpu 1 at time 1292879578133393000
+set timer on cpu 1 at time 1292993162727209440
 Created thread cpu0-task2
-Using scheduling policy SCHED_RR!
-set timer on cpu 1 at time 1292879578224683000
+lUsing scheduling policy SCHED_RR!
+set timer on cpu 1 at time 1292993162819508790
 Created thread cpu0-task3
-set timer on cpu 1 at time 1292879578320588000
-thread cpu0-task3 received signal 14 at time 1292879581448371000
+set timer on cpu 0 at time 1292993162907431442
+p
+?       - alias for 'help'
+acpiTest- dump acpi information
+echo    - echo args to console
+freq    - show current cpu and bus frequency
+help    - print online help
+hpet    - show hpet information
+i       - alias for 'threads'
+itimer  - test itimer
+lspci   - show pci bus device tree
+pmc     - show current cpu PMC values
+scanpci - show pci bus device tree
+threads - show kernel thread list information
+ticks   - get already running ticks
+time    - show current time
+utc     - show current UTC time
+version - print monitor version
+KSH:004> pthread cpu0-task3 received signal 14 at time 1292993166038989761
+mc
+PMC_PerfCtr0 - 0
+PMC_PerfCtr1 - 0
+TSC - 47221825429
+VMWARE_PMC_HOST_TSC - 25006140724500
+VMWARE_PMC_ELAPSED_REAL_TIME - 12890930134521
+VMWARE_PMC_ELAPSED_APPARENT_TIME - 12890959697626
+KSH:005> time
+Time in Micro Senconds (1292993170 sec: 335774 usec)
+Time in Nano Senconds  (1292993170 sec: 335776137 nsec)
+KSH:006> time
+Time in Micro Senconds (1292993177 sec: 319385 usec)
+Time in Nano Senconds  (1292993177 sec: 319387327 nsec)
+KSH:007> time
+Time in Micro Senconds (1292993178 sec: 678881 usec)
+Time in Nano Senconds  (1292993178 sec: 678883294 nsec)
+KSH:008> time
+Time in Micro Senconds (1292993179 sec: 931804 usec)
+Time in Nano Senconds  (1292993179 sec: 931806210 nsec)
+KSH:009> time
+Time in Micro Senconds (1292993183 sec: 160047 usec)
+Time in Nano Senconds  (1292993183 sec: 160049644 nsec)
+KSH:010> time
+Time in Micro Senconds (1292993185 sec: 716588 usec)
+Time in Nano Senconds  (1292993185 sec: 716590347 nsec)
+KSH:011> time
+Time in Micro Senconds (1292993186 sec: 956670 usec)
+Time in Nano Senconds  (1292993186 sec: 956672406 nsec)
+KSH:012> time
+Time in Micro Senconds (1292993188 sec: 31121 usec)
+Time in Nano Senconds  (1292993188 sec: 31123524 nsec)
+KSH:013> time
+Time in Micro Senconds (1292993189 sec: 44001 usec)
+Time in Nano Senconds  (1292993189 sec: 44003123 nsec)
+KSH:014> itimer
+set timer on cpu 0 at time 1292993229103619128
+KSH:015> thread KBD received signal 14 at time 1292993232247668151
 
 KSH: Please enter a command!
-KSH:001> 
-KSH: Please enter a command!
-KSH:002> itimer
-set timer on cpu 1 at time 1292879597358874000
-KSH:003> thread KBD received signal 14 at time 1292879600499764000
+KSH:016> itimer
+set timer on cpu 1 at time 1292993238322095499
+KSH:017> thread KBD received signal 14 at time 1292993241457869729
 
 KSH: Please enter a command!
-KSH:004> itimer
-set timer on cpu 1 at time 1292879618742517000
-KSH:005> thread KBD received signal 14 at time 1292879621870975000
-
+KSH:018> 
 KSH: Please enter a command!
-KSH:006> itimer
-set timer on cpu 0 at time 1292879625021476000
-KSH:007> thread KBD received signal 14 at time 1292879628179382000
-
-KSH: Please enter a command!
-KSH:008> itimer
-set timer on cpu 1 at time 1292879630734462000
-KSH:009> thread KBD received signal 14 at time 1292879633869240000
-
-KSH: Please enter a command!
-KSH:010> 
+KSH:019> 

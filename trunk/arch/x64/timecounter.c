@@ -6,10 +6,45 @@
 #include <os/acpi.h>
 #include <sys/time.h>
 
+static list_t os_time_counter_list;
+static spinlock_t os_time_counter_list_lock;
+
+#define OS_TIME_COUNTER_LIST_LOCK()    \
+    spinlock_lock(&os_time_counter_list_lock)
+#define OS_TIME_COUNTER_LIST_UNLOCK()  \
+    spinlock_unlock(&os_time_counter_list_lock)
+
 struct os_time_counter * global_os_time_counter = NULL;
 timespec_t real_wall_time;
 
-static struct os_time_counter time_counter_pm_timer;
+/* Add a clock eventer to the global clock list */
+status_t time_counter_add(struct os_time_counter *counter)
+    {
+    OS_TIME_COUNTER_LIST_LOCK();
+
+    list_append(&os_time_counter_list, &counter->node);
+    
+    if (counter->counter_enable)
+        counter->counter_enable();
+    
+    OS_TIME_COUNTER_LIST_UNLOCK();
+
+    return OK;
+    }
+
+/* Remove a clock eventer from the global clock list */
+status_t time_counter_remove(struct os_time_counter *counter)
+    {
+    OS_TIME_COUNTER_LIST_LOCK();
+
+    list_remove(&counter->node);
+    
+    OS_TIME_COUNTER_LIST_UNLOCK();
+
+    return OK;
+    }
+
+struct os_time_counter time_counter_pm_timer;
 
 status_t pm_timer_enable(void)
     {
@@ -76,7 +111,7 @@ abstime_t pm_timer_counter_time_elapsed(cycle_t t1, cycle_t t2)
     return (abstime_t) (time_us * 1000);
     }
 
-static struct os_time_counter time_counter_pm_timer = 
+struct os_time_counter time_counter_pm_timer = 
     {
     .counter_name = "PMT",
     .counter_enable = pm_timer_enable,
@@ -87,10 +122,26 @@ static struct os_time_counter time_counter_pm_timer =
 
 struct os_time_counter * select_global_os_time_counter(void)
     {
-    if (global_os_time_counter)
+    struct os_time_counter * best;
+    if (global_os_time_counter && 
+        global_os_time_counter->counter_disable)
         global_os_time_counter->counter_disable();
-    
+
+    OS_TIME_COUNTER_LIST_LOCK();
+
     global_os_time_counter = &time_counter_pm_timer;
+
+    LIST_FOREACH(&os_time_counter_list, iter)
+        {
+        best = LIST_ENTRY(iter, struct os_time_counter, node);
+
+        if (best && 
+            (best->counter_resolution_ns < 
+            global_os_time_counter->counter_resolution_ns))
+            global_os_time_counter = best;
+        }
+    
+    OS_TIME_COUNTER_LIST_UNLOCK();
     
     global_os_time_counter->counter_enable();
     
@@ -99,6 +150,11 @@ struct os_time_counter * select_global_os_time_counter(void)
 
 void time_counter_subsystem_init(void)
     {
+    list_init(&os_time_counter_list);
+    spinlock_init(&os_time_counter_list_lock);
+    
+    time_counter_add(&time_counter_pm_timer);
+    time_counter_add(&time_counter_pm_counter);
     select_global_os_time_counter();
     }
 

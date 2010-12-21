@@ -292,7 +292,6 @@ static inline uint64_t read_msr(uint32_t msr)
     return ((uint64_t) dx << 32) | ax;
     }
 
-
 /** enable_lapic_in_msr - enable local APIC
  *
  * Enable local APIC in MSR.

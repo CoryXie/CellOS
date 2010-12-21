@@ -26,12 +26,21 @@ uint32_t pci_read32(struct pci_config_addr_t *addr)
     return r;
     }
 
+void amd64EnableCf8ExtCfg(void)
+    {
+    uint64_t msr;
+    msr = read_msr(MSR_AMD64_NB_CFG);
+    /* Bit 46, EnableCf8ExtCfg: enable CF8 extended configuration cycles */
+    msr |= (uint64_t)(0x8000 << 31);
+    write_msr(MSR_AMD64_NB_CFG, msr);
+    }
+
 uint32_t pci_init(void)
     {
     uint32_t ret, tmp;
 
     spinlock_init(&pci_lock);
-    
+        
     ioport_out32(CONFIG1_ADDRESS, 0);
     ioport_out32(CONFIG2_ADDRESS, 0);
     

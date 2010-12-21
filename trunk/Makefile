@@ -80,6 +80,7 @@ OBJS =  arch/x64/boot.o \
         arch/x64/rtc.o \
 		arch/x64/pci.o	\
 		arch/x64/hpet.o	\
+		arch/x64/pmc.o	\
 		arch/x64/sched_arch.o \
 		arch/x64/context.o \
 		arch/x64/timecounter.o
