@@ -3,4 +3,4 @@
 
 typedef int __jmp_buf[23];
 
-#endif	/* _ARCH_SETJMP_H_ */
+#endif    /* _ARCH_SETJMP_H_ */

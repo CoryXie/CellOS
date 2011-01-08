@@ -219,7 +219,7 @@ static inline void ioport_out32(uint16_t port, uint32_t val)
  *  data structures and simultaneously save the user's GS base. Upon exit it
  *  can use SwapGS to restore the user's GS base:
  *
- *    SystemCallEntryPoint:
+ *    SystemCallEntryPoint:  ; Note: the code below uses Intel ASM (dst <- src)
  *       SwapGS              ; set up kernel pointer, save user's GS base
  *       mov gs:[SavedUserRSP], rsp    ; save user's stack pointer
  *       mov rsp, gs:[KernelStackPtr]  ; set up kernel stack

@@ -35,7 +35,7 @@ extern "C" {
 #define xor     ^
 #define xor_eq  ^=
 
-#endif	/* !defined(__cplusplus) || __cplusplus < 199711 */
+#endif    /* !defined(__cplusplus) || __cplusplus < 199711 */
 
 #ifdef __cplusplus
 }

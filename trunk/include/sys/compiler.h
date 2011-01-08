@@ -79,7 +79,10 @@
 
 /* Number of elements in an array */ 
 
-#define NELEMENTS(array)		\
-		(sizeof (array) / sizeof ((array) [0]))
+#define NELEMENTS(array)        \
+        (sizeof (array) / sizeof ((array) [0]))
+
+#define CONTAINER_OF(node, type, member)        \
+    (type *)((char *)node - offsetof(type, member))
 
 #endif /* __COMPILER_H */

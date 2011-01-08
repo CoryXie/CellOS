@@ -86,19 +86,19 @@ I/O port     Usage
 /* The oscillator used by the PIT chip runs at (roughly) 1.193182 MHz */
 #define PIT_8254_OSC_FREQ               1193182 /* 0x1234DE */
 
-os_clock_eventer_t pit_clock_eventer;
+clockeventer_t pit_clockeventer;
 
 /* 
  * Start to trigger at 'first' and repeat in 'period' ns;
  * If 'period' is 0 then it is oneshot! The implementation 
  * may round the trigger and period with most nearst values!
  */
-int pit_timer_start (struct os_clock_eventer * eventer, 
+int pit_timer_start (struct clockeventer * eventer, 
                           int mode, abstime_t expire)
     {
     uint16_t count;
     
-    if (eventer != &pit_clock_eventer || expire == 0)
+    if (eventer != &pit_clockeventer || expire == 0)
         return EINVAL;
     
     if (mode == CLOCK_EVENTER_MODE_ONESHOT)
@@ -130,7 +130,7 @@ int pit_timer_start (struct os_clock_eventer * eventer,
     pit_timer_set_reload(count);
     }
 
-int pit_timer_stop (struct os_clock_eventer * eventer)
+int pit_timer_stop (struct clockeventer * eventer)
     {
     /* 
      * When a Control Word is written to a Counter, all
@@ -163,28 +163,28 @@ int pit_timer_stop (struct os_clock_eventer * eventer)
         }
     }
 
-void pit_clock_eventer_announce(void)
+void pit_clockeventer_announce(void)
     {
-    memset(&pit_clock_eventer, 0, sizeof(os_clock_eventer_t));
+    memset(&pit_clockeventer, 0, sizeof(clockeventer_t));
     
-    pit_clock_eventer.name = "PIT8254";
-    pit_clock_eventer.flags = CLOCK_EVENTER_FLAGS_PERIODIC | CLOCK_EVENTER_FLAGS_ONESHOT;
-    pit_clock_eventer.min_period_ns = NSECS_PER_SEC / PIT_8254_OSC_FREQ;
+    pit_clockeventer.name = "PIT8254";
+    pit_clockeventer.flags = CLOCK_EVENTER_FLAGS_PERIODIC | CLOCK_EVENTER_FLAGS_ONESHOT;
+    pit_clockeventer.min_period_ns = NSECS_PER_SEC / PIT_8254_OSC_FREQ;
     /* 838 ns */
-    pit_clock_eventer.max_period_ns = 0x10000 * 
+    pit_clockeventer.max_period_ns = 0x10000 * 
                                      (NSECS_PER_SEC / PIT_8254_OSC_FREQ);
     /* 54919168 ns = 54919.168 us = 54.919168 ms */
     
-    pit_clock_eventer.base_frequency = PIT_8254_OSC_FREQ;
+    pit_clockeventer.base_frequency = PIT_8254_OSC_FREQ;
     
-    pit_clock_eventer.delta_multi_num = 0;
+    pit_clockeventer.delta_multi_num = 0;
 
-    pit_clock_eventer.resolution = pit_clock_eventer.min_period_ns;
+    pit_clockeventer.resolution = pit_clockeventer.min_period_ns;
 
-    pit_clock_eventer.start = pit_timer_start;
-    pit_clock_eventer.stop = pit_timer_stop;
+    pit_clockeventer.start = pit_timer_start;
+    pit_clockeventer.stop = pit_timer_stop;
     
-    clock_eventer_add(&pit_clock_eventer);
+    clockeventer_add(&pit_clockeventer);
     }
 
 void pit_timer_irq_handler
@@ -192,10 +192,10 @@ void pit_timer_irq_handler
     uint64_t stack_frame
     )
     {        
-    if (pit_clock_eventer.handler)
+    if (pit_clockeventer.handler)
         {
-        pit_clock_eventer.handler(&pit_clock_eventer, 
-                                        pit_clock_eventer.arg);
+        pit_clockeventer.handler(&pit_clockeventer, 
+                                        pit_clockeventer.arg);
         }
     }
 
@@ -204,7 +204,7 @@ void pit_timer_init (void)
     /* Firstly, register our timer callback.*/
     irq_register(INTR_IRQ0, "timer", (addr_t)pit_timer_irq_handler);
     
-    pit_clock_eventer_announce();
+    pit_clockeventer_announce();
     }
 
 /* 

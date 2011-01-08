@@ -54,9 +54,7 @@ extern sched_cpu_t* current_cpus[];
 void sched_core_init(void)
     {
     spinlock_init(&reschedule_lock);
-    
-    sched_cpu_init();
-        
+            
     sched_policy_init();
 
     sched_thread_init();

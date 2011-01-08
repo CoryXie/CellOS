@@ -1,7 +1,7 @@
 /* dlfcn.h - dynamic linking */
 
 #ifndef _POSIX_DLFCN_H
-#define	_POSIX_DLFCN_H
+#define    _POSIX_DLFCN_H
 
 #include <sys.h>
 
@@ -31,10 +31,10 @@ extern "C" {
  * other modules. 
  */
  
-#define RTLD_LAZY	0	
-#define RTLD_NOW	1	
-#define RTLD_GLOBAL	2	
-#define RTLD_LOCAL	3	
+#define RTLD_LAZY    0    
+#define RTLD_NOW    1    
+#define RTLD_GLOBAL    2    
+#define RTLD_LOCAL    3    
 
 int    dlclose(void *);
 char  *dlerror(void);

@@ -129,12 +129,12 @@ static void lapic_timer_disable(void)
 
 static void lapic_timer_count_init(uint32_t ns)
     {
-	uint32_t count = (uint32_t)((kurrent_cpu->cpu_arch.apic_scale_factor * ns) >> 32);
+    uint32_t count = (uint32_t)((kurrent_cpu->cpu_arch.apic_scale_factor * ns) >> 32);
 
     printk("cpu%d - lapic_timer_count_init count %d, ns %d\n", 
             this_cpu(), count, ns);
     
-	lapic_write(LAPIC_TICR, (count == 0 && ns != 0) ? 1 : count);
+    lapic_write(LAPIC_TICR, (count == 0 && ns != 0) ? 1 : count);
     }
 
 void lapic_timer_irq_handler(uint64_t stack_frame)

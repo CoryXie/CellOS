@@ -10,6 +10,8 @@ typedef struct sched_cpu_arch
     {
     uint64_t apic_period_ns;
     uint64_t apic_scale_factor;
+    x64_seg_descriptor_t gdt[GDT_SEL_ENTRIES];
+    x64_tss_t            tss;
     }sched_cpu_arch_t;
 
 #endif /* _ARCH_X86_X64_SCHED_ARCH_H */

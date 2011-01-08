@@ -60,8 +60,8 @@ void cpu_heart_beat (int cpu)
 void *sched_bsp_idle_thread (void *notused)
     {
     interrupts_disable();
-    
-    clock_eventer_subsystem_init();
+
+    clockeventer_subsystem_init();
     
     pit_timer_init();
 
@@ -75,19 +75,20 @@ void *sched_bsp_idle_thread (void *notused)
 
     lapic_common_init();
 
-    lapic_bsp_post_init();
-
 #ifdef CONFIG_ACPICA
     acpica_sub_system_init ();
     pci_scan_devices();
 #endif
 
-    time_counter_subsystem_init();
+    clockcounter_subsystem_init();
+    timerchain_subsystem_init();
 
     real_wall_time_init();
 
     tick_eventer_init();
     
+    lapic_bsp_post_init();
+
     interrupts_enable();
 
     thread_create_test();
@@ -116,6 +117,8 @@ void main (uint32_t mboot_magic, uint32_t mboot_info)
     uint64_t *new_stack;
 
     asm volatile ("cli");
+
+    cpu_early_init();
 
     x64_gdt_init();
 
@@ -156,7 +159,7 @@ void main (uint32_t mboot_magic, uint32_t mboot_info)
     smp_init();
 
     paging_late_init();
-    
+
     sched_core_init();
 
     sched_init();

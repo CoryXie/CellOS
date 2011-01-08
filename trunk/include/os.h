@@ -9,7 +9,7 @@
 #include <os/list.h>
 #include <os/preemption.h>
 #include <os/queue.h>
-#include <os/timecounter.h>
+#include <os/clockcounter.h>
 #include <os/clockeventer.h>
 #include <os/timer.h>
 #include <os/tlsf.h>
@@ -22,7 +22,7 @@
 #include <os/sched_mutex.h>
 
 extern timespec_t real_wall_time;
-extern struct os_time_counter * global_os_time_counter;
+extern struct clockcounter * global_clockcounter;
 
 #endif /*__INCLUDE_OS_H */
 

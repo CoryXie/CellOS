@@ -62,21 +62,21 @@ extern "C" {
  * preprocessing directives.
  */
 
-#define	F_DUPFD			0x0001		/* Duplicate file descriptor. */
+#define    F_DUPFD            0x0001        /* Duplicate file descriptor. */
 #define F_DUPFD_CLOEXEC 0x0002      /* Duplicate file descriptor with the
                                      * close-on-exec flag FD_CLOEXEC set. */
-#define	F_GETFD			0x0004		/* Get file descriptor flags. */
-#define	F_SETFD			0x0008		/* Set file descriptor flags. */
-#define	F_GETFL			0x0010		/* Get file status flags and file access
+#define    F_GETFD            0x0004        /* Get file descriptor flags. */
+#define    F_SETFD            0x0008        /* Set file descriptor flags. */
+#define    F_GETFL            0x0010        /* Get file status flags and file access
                                      * modes. */
-#define	F_SETFL			0x0020		/* Set file status flags. */
-#define F_GETLK         0x0040		/* Get record locking information. */
-#define F_SETLK         0x0080		/* Set record locking information. */
-#define F_SETLKW        0x0100		/* Set record locking information; wait
+#define    F_SETFL            0x0020        /* Set file status flags. */
+#define F_GETLK         0x0040        /* Get record locking information. */
+#define F_SETLK         0x0080        /* Set record locking information. */
+#define F_SETLKW        0x0100        /* Set record locking information; wait
                                      * if blocked. */
-#define F_GETOWN        0x0200	    /* Get process or process group ID to
+#define F_GETOWN        0x0200        /* Get process or process group ID to
                                      * receive SIGURG signals. */
-#define F_SETOWN        0x0400	    /* Set process or process group ID to
+#define F_SETOWN        0x0400        /* Set process or process group ID to
                                      * receive SIGURG signals. */
 
 /*
@@ -85,7 +85,7 @@ extern "C" {
  * shall be suitable for use in #if preprocessing directives.
  */
 
-#define FD_CLOEXEC		0x0001	    /* Close the file descriptor upon
+#define FD_CLOEXEC        0x0001        /* Close the file descriptor upon
                                      * execution of an exec family function. */
 
 /*
@@ -95,9 +95,9 @@ extern "C" {
  * use in #if preprocessing directives.
  */
 
-#define F_RDLCK         0x0001		/* Shared or read lock. */
-#define F_UNLCK         0x0002		/* Unlock. */
-#define F_WRLCK         0x0004		/* Exclusive or write lock. */
+#define F_RDLCK         0x0001        /* Shared or read lock. */
+#define F_UNLCK         0x0002        /* Unlock. */
+#define F_WRLCK         0x0004        /* Exclusive or write lock. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
@@ -109,13 +109,13 @@ extern "C" {
  * it need not be bitwise-distinct from the other flags.
  */
 
-#define O_TTY_INIT	    0x0000		/* Set the termios structure terminal
+#define O_TTY_INIT        0x0000        /* Set the termios structure terminal
                                      * parameters to a state that provides
                                      * conforming behavior; */
-#define O_CREAT			0x0001		/* Create file if it does not exist. */
-#define	O_EXCL			0x0002		/* Exclusive use flag. */
-#define O_NOCTTY		0x0004		/* Do not assign controlling terminal. */
-#define O_TRUNC			0x0010		/* Truncate flag. */
+#define O_CREAT            0x0001        /* Create file if it does not exist. */
+#define    O_EXCL            0x0002        /* Exclusive use flag. */
+#define O_NOCTTY        0x0004        /* Do not assign controlling terminal. */
+#define O_TRUNC            0x0010        /* Truncate flag. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
@@ -124,12 +124,12 @@ extern "C" {
  * preprocessing directives.
  */
 
-#define O_APPEND		0x00000001	/* Set append mode. */
-#define O_DSYNC			0x00000002	/* Write according to synchronized I/O
+#define O_APPEND        0x00000001    /* Set append mode. */
+#define O_DSYNC            0x00000002    /* Write according to synchronized I/O
                                      * data integrity completion. */
-#define	O_NONBLOCK		0x00000004	/* Non-blocking mode. */
-#define O_RSYNC			0x00000008	/* Synchronized read I/O operations. */
-#define O_SYNC			0x00000010	/* Write according to synchronized I/O
+#define    O_NONBLOCK        0x00000004    /* Non-blocking mode. */
+#define O_RSYNC            0x00000008    /* Synchronized read I/O operations. */
+#define O_SYNC            0x00000010    /* Write according to synchronized I/O
                                      * file integrity completion. */
 
 /*
@@ -138,7 +138,7 @@ extern "C" {
  * shall be suitable for use in #if preprocessing directives.
  */
 
-#define O_ACCMODE		0x00000001	/* Mask for file access modes. */
+#define O_ACCMODE        0x00000001    /* Mask for file access modes. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
@@ -147,13 +147,13 @@ extern "C" {
  * use in #if preprocessing directives.
  */
 
-#define O_RDONLY		0x0000		/* Open for reading only. */
-#define O_WRONLY		0x0001		/* Open for writing only. */
-#define O_RDWR			0x0002		/* Open for reading and writing. */
-#define O_EXEC			0x0004		/* Open for execute only (non-directory
+#define O_RDONLY        0x0000        /* Open for reading only. */
+#define O_WRONLY        0x0001        /* Open for writing only. */
+#define O_RDWR            0x0002        /* Open for reading and writing. */
+#define O_EXEC            0x0004        /* Open for execute only (non-directory
                                      * files). The result is unspecified if
                                      * this flag is applied to a directory. */
-#define O_SEARCH	    0x0008		/* Open directory for search only. The
+#define O_SEARCH        0x0008        /* Open directory for search only. The
                                      * result is unspecified if this flag is
                                      * applied to a non-directory file. */
 
@@ -162,12 +162,12 @@ extern "C" {
  * constants as values for the flag used by open() and openat():
  */
 
-#define O_CLOEXEC		0x00001000	/* The FD_CLOEXEC flag associated with
+#define O_CLOEXEC        0x00001000    /* The FD_CLOEXEC flag associated with
                                      * the new descriptor shall be set to
                                      * close the file descriptor upon
                                      * execution of an exec family function. */
-#define	O_DIRECTORY		0x00002000  /* Fail if not a directory. */
-#define O_NOFOLLOW		0x00004000	/* Do not follow symbolic links. */
+#define    O_DIRECTORY        0x00002000  /* Fail if not a directory. */
+#define O_NOFOLLOW        0x00004000    /* Do not follow symbolic links. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
@@ -176,7 +176,7 @@ extern "C" {
  * as a parameter.
  */
 
-#define AT_FDCWD		(-1)		/* Use the current working directory
+#define AT_FDCWD        (-1)        /* Use the current working directory
                                      * to determine the target of relative
                                      * file paths. */
 
@@ -186,28 +186,28 @@ extern "C" {
  * fchownat(), and utimensat():
  */
 
-#define AT_SYMLINK_NOFOLLOW	0x01	/* Do not follow symbolic links. */
+#define AT_SYMLINK_NOFOLLOW    0x01    /* Do not follow symbolic links. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
  * constant as a value for the flag used by linkat():
  */
 
-#define AT_SYMLINK_FOLLOW	0x02	/* Follow symbolic link. */
+#define AT_SYMLINK_FOLLOW    0x02    /* Follow symbolic link. */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
  * constant as a value for the flag used by unlinkat():
  */
 
-#define AT_REMOVEDIR		0x04	/* unlinkat() */
+#define AT_REMOVEDIR        0x04    /* unlinkat() */
 
 /*
  * The <fcntl.h> header shall define the following symbolic
  * constant as a value for the flag used by faccessat():
  */
 
-#define AT_EACCESS			0x08	/* Check access using effective user
+#define AT_EACCESS            0x08    /* Check access using effective user
                                      * and group ID. */
 
 /*
@@ -244,12 +244,12 @@ extern "C" {
  *    The application expects to access the specified data in the near future.
  */
 
-#define POSIX_FADV_DONTNEED	    0x01
-#define POSIX_FADV_NOREUSE	    0x02
-#define POSIX_FADV_NORMAL	    0x03
-#define POSIX_FADV_RANDOM	    0x04
-#define POSIX_FADV_SEQUENTIAL	0x05
-#define POSIX_FADV_WILLNEED	    0x01
+#define POSIX_FADV_DONTNEED        0x01
+#define POSIX_FADV_NOREUSE        0x02
+#define POSIX_FADV_NORMAL        0x03
+#define POSIX_FADV_RANDOM        0x04
+#define POSIX_FADV_SEQUENTIAL    0x05
+#define POSIX_FADV_WILLNEED        0x01
 
 /*
  * The <fcntl.h> header shall define the flock structure
@@ -258,12 +258,12 @@ extern "C" {
 
 typedef struct flock
     {
-	short	l_type;     /* Type of lock; F_RDLCK, F_WRLCK, F_UNLCK. */
-	short	l_whence;   /* Flag for starting offset. */
-	off_t	l_start;    /* Relative offset in bytes. */
-	off_t	l_len;      /* Size; if 0 then until EOF. */
-	pid_t	l_pid;      /* Process ID of the process holding the lock;
-	                     * returned with F_GETLK.*/
+    short    l_type;     /* Type of lock; F_RDLCK, F_WRLCK, F_UNLCK. */
+    short    l_whence;   /* Flag for starting offset. */
+    off_t    l_start;    /* Relative offset in bytes. */
+    off_t    l_len;      /* Size; if 0 then until EOF. */
+    pid_t    l_pid;      /* Process ID of the process holding the lock;
+                         * returned with F_GETLK.*/
     }flock_t;
 
 /*
@@ -283,4 +283,4 @@ int  posix_fallocate(int, off_t, off_t);
 }
 #endif
 
-#endif	/* _FCNTL_H */
+#endif    /* _FCNTL_H */

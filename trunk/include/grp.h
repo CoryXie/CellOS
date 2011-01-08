@@ -15,9 +15,9 @@
 typedef struct group
     {
     gid_t   gr_gid;     /* Numerical group ID. */
-	char	*gr_name;   /* The name of the group. */
-	char	*gr_passwd; /* The password of the group. */
-	char	**gr_mem;   /* Pointer to a null-terminated array
+    char    *gr_name;   /* The name of the group. */
+    char    *gr_passwd; /* The password of the group. */
+    char    **gr_mem;   /* Pointer to a null-terminated array
                          * of character pointers to member names.*/
     }group_t;
 
@@ -34,11 +34,11 @@ struct group *getgrnam(const char *name);
 struct group *getgrent(void);
 
 int getgrgid_r(gid_t gid, struct group *group, char *buffer,
-				size_t bufferSize, struct group **_result);
+                size_t bufferSize, struct group **_result);
 int getgrnam_r(const char *name, struct group *group, char *buffer,
-				size_t bufferSize, struct group **_result);
+                size_t bufferSize, struct group **_result);
 int getgrent_r(struct group* group, char* buffer, size_t bufferSize,
-				struct group** _result);
+                struct group** _result);
 
 #ifdef __cplusplus
 }

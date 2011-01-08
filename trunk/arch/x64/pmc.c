@@ -5,17 +5,17 @@
 
 #ifdef CONFIG_VMWARE_CLIENT
 
-struct os_time_counter time_counter_pm_counter;
+struct clockcounter clockcounter_pm_counter;
 
 status_t pm_counter_enable(void)
     {
-    time_counter_pm_counter.counter_bits = 64;
+    clockcounter_pm_counter.counter_bits = 64;
     
-    time_counter_pm_counter.counter_frequency_hz = 1000000000;
+    clockcounter_pm_counter.counter_frequency_hz = 1000000000;
 
-    time_counter_pm_counter.counter_resolution_ns = 1;
+    clockcounter_pm_counter.counter_resolution_ns = 1;
      
-    time_counter_pm_counter.counter_fixup_period = 2 * NSECS_PER_SEC;
+    clockcounter_pm_counter.counter_fixup_period = 2 * NSECS_PER_SEC;
     
     return OK;
     }
@@ -39,7 +39,7 @@ abstime_t pm_counter_counter_time_elapsed(cycle_t t1, cycle_t t2)
     return (abstime_t) (t2 - t1);
     }
 
-struct os_time_counter time_counter_pm_counter = 
+struct clockcounter clockcounter_pm_counter = 
     {
     .counter_name = "PMC",
     .counter_enable = pm_counter_enable,

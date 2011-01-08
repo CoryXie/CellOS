@@ -189,7 +189,7 @@ go_high:
 
     movq $PA2KA(0x2000), %rax
     movq %rax, %rsp
-    addq KERNEL_VIRT_MAP_BASE, %rbp
+    movq $(KERNEL_VIRT_MAP_BASE), %rbp
 
     /* fixup our GDT address to a high address */
 

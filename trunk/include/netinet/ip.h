@@ -13,22 +13,22 @@
 #define IPVERSION 4
 
 struct ip {
-#if 	BYTE_ORDER == BIG_ENDIAN
-	uint8_t			ip_v:4;
-	uint8_t			ip_hl:4;
-#elif	BYTE_ORDER == LITTLE_ENDIAN
-	uint8_t			ip_hl:4;
-	uint8_t			ip_v:4;
+#if     BYTE_ORDER == BIG_ENDIAN
+    uint8_t            ip_v:4;
+    uint8_t            ip_hl:4;
+#elif    BYTE_ORDER == LITTLE_ENDIAN
+    uint8_t            ip_hl:4;
+    uint8_t            ip_v:4;
 #endif
-	uint8_t			ip_tos;
-	uint16_t		ip_len;
-	uint16_t		ip_id;
-	int16_t			ip_off;
-	uint8_t			ip_ttl;
-	uint8_t			ip_p;
-	uint16_t		ip_sum;
-	struct in_addr	ip_src;
-	struct in_addr 	ip_dst;
+    uint8_t            ip_tos;
+    uint16_t        ip_len;
+    uint16_t        ip_id;
+    int16_t            ip_off;
+    uint8_t            ip_ttl;
+    uint8_t            ip_p;
+    uint16_t        ip_sum;
+    struct in_addr    ip_src;
+    struct in_addr     ip_dst;
 } _PACKED;
 
 #define IP_MAXPACKET   65535/* Maximum packet size */
@@ -69,23 +69,23 @@ struct ip {
 #define IPOPT_MINOFF                4/* min value of above */   
 
 struct  ip_timestamp {
-	uint8_t	ipt_code;/* IPOPT_TS */
-	uint8_t	ipt_len;/* size of structure (variable) */
-	uint8_t	ipt_ptr;/* index of current entry */
-#if 	BYTE_ORDER == BIG_ENDIAN
-	uint8_t	ipt_oflw:4,
-			ipt_flg:4;
-#elif	BYTE_ORDER == LITTLE_ENDIAN
-	uint8_t	ipt_flg:4,
-			ipt_oflw:4;
+    uint8_t    ipt_code;/* IPOPT_TS */
+    uint8_t    ipt_len;/* size of structure (variable) */
+    uint8_t    ipt_ptr;/* index of current entry */
+#if     BYTE_ORDER == BIG_ENDIAN
+    uint8_t    ipt_oflw:4,
+            ipt_flg:4;
+#elif    BYTE_ORDER == LITTLE_ENDIAN
+    uint8_t    ipt_flg:4,
+            ipt_oflw:4;
 #endif
-	union ipt_timestamp {
-		uint32_t ipt_time[1];
-		struct ipt_ta {
-			struct in_addr ipt_addr;
-			uint32_t ipt_time;
-		} ipt_ta;
-	} ipt_timestamp;
+    union ipt_timestamp {
+        uint32_t ipt_time[1];
+        struct ipt_ta {
+            struct in_addr ipt_addr;
+            uint32_t ipt_time;
+        } ipt_ta;
+    } ipt_timestamp;
 }; 
 
 /* flag bits for ipt_flg */
@@ -110,11 +110,11 @@ struct  ip_timestamp {
 #define IP_MSS                  576/* default maximum segment size */  
 
 struct ippseudo {
-	struct    in_addr ippseudo_src; /* source internet address */
-	struct    in_addr ippseudo_dst; /* destination internet address */
-	uint8_t   ippseudo_pad;/* pad, must be zero */
-	uint8_t   ippseudo_p;/* protocol */
-	uint16_t  ippseudo_len;/* protocol length */
+    struct    in_addr ippseudo_src; /* source internet address */
+    struct    in_addr ippseudo_dst; /* destination internet address */
+    uint8_t   ippseudo_pad;/* pad, must be zero */
+    uint8_t   ippseudo_p;/* protocol */
+    uint16_t  ippseudo_len;/* protocol length */
 };  
 
 /* Fragment flags */

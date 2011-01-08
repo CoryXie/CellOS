@@ -4,11 +4,14 @@
 #define _ARCH_X86_X64_DESCRIPTOR_H
 
 /* Segment selectors */
-#define KERNEL_CS   0x8
-#define KERNEL_DS   0x10
-#define USER_CS     0x18
-#define USER_DS     0x20
-#define KERNEL_TSS  0x28
+#define GDT_SEL_NULL        0x0
+#define GDT_SEL_KERNEL_CS   0x8
+#define GDT_SEL_KERNEL_DS   0x10
+#define GDT_SEL_USER_CS     0x18
+#define GDT_SEL_USER_DS     0x20
+#define GDT_SEL_PART1_TSS   0x28 /* 64-bit mode TSS descriptor is 16 bytes */
+#define GDT_SEL_PART2_TSS   0x30 /* Part2 of 16-byte, 64-bit mode TSS descriptor */
+#define GDT_SEL_ENTRIES     7
 
 #define PL_KERNEL  0   /* Ring 0 */
 #define PL_USER    3   /* Ring 3 */

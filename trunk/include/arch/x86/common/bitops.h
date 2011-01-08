@@ -22,15 +22,15 @@
 #define BITOP_ADDR(x) "+m" (*(volatile long *) (x))
 #endif
 
-#define ADDR				BITOP_ADDR(addr)
+#define ADDR                BITOP_ADDR(addr)
 
 /*
  * We do the locked ops that don't return the old value as
  * a mask operation on a byte.
  */
-#define IS_CONSTANT(nr)		(__builtin_constant_p(nr))
-#define CONST_MASK_ADDR(nr, addr)	BITOP_ADDR((void *)(addr) + ((nr)>>3))
-#define CONST_MASK(nr)			(1 << ((nr) & 7))
+#define IS_CONSTANT(nr)        (__builtin_constant_p(nr))
+#define CONST_MASK_ADDR(nr, addr)    BITOP_ADDR((void *)(addr) + ((nr)>>3))
+#define CONST_MASK(nr)            (1 << ((nr) & 7))
 
 /*
  * atomic_variable_test_bit - set a bit in memory atomically
@@ -46,18 +46,18 @@ static inline void atomic_set_bit
     volatile unsigned long *addr
     )
     {
-	if (IS_CONSTANT(nr)) 
+    if (IS_CONSTANT(nr)) 
         {
-		asm volatile(LOCK_PREFIX "orb %1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" ((uint8_t)CONST_MASK(nr))
-			: "memory");
-	    } 
+        asm volatile(LOCK_PREFIX "orb %1,%0"
+            : CONST_MASK_ADDR(nr, addr)
+            : "iq" ((uint8_t)CONST_MASK(nr))
+            : "memory");
+        } 
     else 
         {
-		asm volatile(LOCK_PREFIX "bts %1,%0"
-			: BITOP_ADDR(addr) : "Ir" (nr) : "memory");
-	    }
+        asm volatile(LOCK_PREFIX "bts %1,%0"
+            : BITOP_ADDR(addr) : "Ir" (nr) : "memory");
+        }
     }
 
 /*
@@ -76,18 +76,18 @@ static inline void atomic_clear_bit
     volatile unsigned long *addr
     )
     {
-	if (IS_CONSTANT(nr)) 
+    if (IS_CONSTANT(nr)) 
         {
-		asm volatile(LOCK_PREFIX "andb %1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" ((uint8_t)~(CONST_MASK(nr))));
-	    } 
+        asm volatile(LOCK_PREFIX "andb %1,%0"
+            : CONST_MASK_ADDR(nr, addr)
+            : "iq" ((uint8_t)~(CONST_MASK(nr))));
+        } 
     else 
         {
-		asm volatile(LOCK_PREFIX "btr %1,%0"
-			: BITOP_ADDR(addr)
-			: "Ir" (nr));
-	    }
+        asm volatile(LOCK_PREFIX "btr %1,%0"
+            : BITOP_ADDR(addr)
+            : "Ir" (nr));
+        }
     }
 
 /*
@@ -104,18 +104,18 @@ static inline void atomic_toggle_bit
     volatile unsigned long *addr
     )
     {
-	if (IS_CONSTANT(nr)) 
+    if (IS_CONSTANT(nr)) 
         {
-		asm volatile(LOCK_PREFIX "xorb %1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" ((uint8_t)CONST_MASK(nr)));
-	    } 
+        asm volatile(LOCK_PREFIX "xorb %1,%0"
+            : CONST_MASK_ADDR(nr, addr)
+            : "iq" ((uint8_t)CONST_MASK(nr)));
+        } 
     else 
-	    {
-		asm volatile(LOCK_PREFIX "btc %1,%0"
-			: BITOP_ADDR(addr)
-			: "Ir" (nr));
-	    }
+        {
+        asm volatile(LOCK_PREFIX "btc %1,%0"
+            : BITOP_ADDR(addr)
+            : "Ir" (nr));
+        }
     }
 
 /*
@@ -131,12 +131,12 @@ static inline int atomic_test_and_set_bit
     volatile unsigned long *addr
     )
     {
-	int oldbit;
+    int oldbit;
 
-	asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
-		     "sbb %0,%0" : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
+    asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
+             "sbb %0,%0" : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
 
-	return oldbit;
+    return oldbit;
     }
 
 /*
@@ -152,13 +152,13 @@ static inline int atomic_test_and_clear_bit
     volatile unsigned long *addr
     )
     {
-	int oldbit;
+    int oldbit;
 
-	asm volatile(LOCK_PREFIX "btr %2,%1\n\t"
-		     "sbb %0,%0"
-		     : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
+    asm volatile(LOCK_PREFIX "btr %2,%1\n\t"
+             "sbb %0,%0"
+             : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
 
-	return oldbit;
+    return oldbit;
     }
 
 /*
@@ -173,13 +173,13 @@ static inline int atomic_test_and_toggle_bit
     int nr, volatile unsigned long *addr
     )
     {
-	int oldbit;
+    int oldbit;
 
-	asm volatile(LOCK_PREFIX "btc %2,%1\n\t"
-		     "sbb %0,%0"
-		     : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
+    asm volatile(LOCK_PREFIX "btc %2,%1\n\t"
+             "sbb %0,%0"
+             : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
 
-	return oldbit;
+    return oldbit;
     }
 
 /*
@@ -196,13 +196,13 @@ static inline int atomic_test_bit
     volatile const unsigned long *addr
     )
     {
-	if (IS_CONSTANT(nr)) 
+    if (IS_CONSTANT(nr)) 
         {
         return ((1UL << (nr % BITS_PER_LONG)) &
             (((unsigned long *)addr)[nr / BITS_PER_LONG])) != 0;
-	    } 
+        } 
     else 
-	    {
+        {
         int oldbit;
         
         asm volatile("bt %2,%1\n\t"
@@ -211,7 +211,7 @@ static inline int atomic_test_bit
                  : "m" (*(unsigned long *)addr), "Ir" (nr));
         
         return oldbit;
-	    }
+        }
     }
 
 /*
@@ -300,13 +300,13 @@ static inline int find_first_bit_set
     int x
     )
     {
-	int r;
+    int r;
     
-	asm("bsfl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=r" (r) : "rm" (x), "r" (-1));
+    asm("bsfl %1,%0\n\t"
+        "cmovzl %2,%0"
+        : "=r" (r) : "rm" (x), "r" (-1));
     
-	return r + 1;
+    return r + 1;
     }
 
 /*
@@ -323,11 +323,11 @@ static inline int find_last_bit_set
     int x
     )
     {
-	int r;
-	asm("bsrl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r" (r) : "rm" (x), "rm" (-1));
-	return r + 1;
+    int r;
+    asm("bsrl %1,%0\n\t"
+        "cmovzl %2,%0"
+        : "=&r" (r) : "rm" (x), "rm" (-1));
+    return r + 1;
     }
 
 #endif /* _ARCH_X86_COMMON_BITOPS_H */

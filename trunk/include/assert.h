@@ -19,10 +19,10 @@ extern "C" {
 #endif
 
 extern void __assert_fail(const char *assertion, const char *file,
-				unsigned int line, const char *function);
+                unsigned int line, const char *function);
 
 extern void __assert_perror_fail(int error, const char *file,
-				unsigned int line, const char *function);
+                unsigned int line, const char *function);
 
 /*
  * The assert() macro shall be implemented as a macro, not as a function.
@@ -31,13 +31,13 @@ extern void __assert_perror_fail(int error, const char *file,
  */
  
 #define assert(assertion) \
-	((assertion) ? (void)0 : __assert_fail(#assertion, __FILE__, __LINE__, __PRETTY_FUNCTION__))
+    ((assertion) ? (void)0 : __assert_fail(#assertion, __FILE__, __LINE__, __PRETTY_FUNCTION__))
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#else	/* NDEBUG */
+#else    /* NDEBUG */
 
 /*
  * If NDEBUG is defined as a macro name before the inclusion 
@@ -48,4 +48,4 @@ extern void __assert_perror_fail(int error, const char *file,
 
 #endif /* NDEBUG */
 
-#endif	/* _POSIX_ASSERT_H_ */
+#endif    /* _POSIX_ASSERT_H_ */

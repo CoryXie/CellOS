@@ -35,8 +35,8 @@ struct sigevent;
  * However, it may be variable on other systems, and it should not be
  * that CLOCKS_PER_SEC is a compile-time constant.
  */
-#define CLOCKS_PER_SEC	1000
-#define CLK_TCK			CLOCKS_PER_SEC
+#define CLOCKS_PER_SEC    1000
+#define CLK_TCK            CLOCKS_PER_SEC
 
 /*
  * The <time.h> header shall define the following symbolic constants.
@@ -79,6 +79,7 @@ struct sigevent;
  */
 
 #define TIMER_ABSTIME               0x01
+#define TIMER_CHAINED               0x02
 
 /*
  * The <time.h> header shall provide a declaration or definition for
@@ -94,7 +95,7 @@ extern int getdate_err;
 
 /* Maximum length of a string returned by asctime(), and ctime() */
 
-#define MAX_TIMESTR		70
+#define MAX_TIMESTR        70
 
 /*
  * The tv_nsec member is only valid if greater than or equal to zero, 
@@ -118,15 +119,15 @@ extern int getdate_err;
 /* The <time.h> header shall declare the timespec structure */
 typedef struct timespec
     {
-	time_t	tv_sec;		/* Seconds */
-	long	tv_nsec;	/* Nanoseconds */
+    time_t    tv_sec;        /* Seconds */
+    long    tv_nsec;    /* Nanoseconds */
     }timespec_t;
 
 /* The <time.h> header shall also declare the itimerspec structure */
 typedef struct itimerspec
     {
-	struct timespec it_interval; /* Timer period. */
-	struct timespec it_value;    /* Timer expiration. */
+    struct timespec it_interval; /* Timer period. */
+    struct timespec it_value;    /* Timer expiration. */
     }itimerspec_t;
 
 /*
@@ -148,14 +149,14 @@ typedef struct tm
     int    tm_yday;  /* Day of year [0,365]. */
     int    tm_isdst; /* Daylight Savings flag. */
     int    tm_gmtoff;/* timezone offset to GMT */
-	char * tm_zone;	 /* timezone name */
+    char * tm_zone;  /* timezone name */
     }tm_t;
 
 
 /* Special timezone support */
 extern char *tzname[2];
-extern int 	daylight;
-extern long	timezone;
+extern int     daylight;
+extern long    timezone;
 
 
 #ifdef __cplusplus
@@ -200,4 +201,4 @@ void       tzset(void);
 #ifdef __cplusplus
 }
 #endif
-#endif	/* _POSIX_TIME_H */
+#endif    /* _POSIX_TIME_H */

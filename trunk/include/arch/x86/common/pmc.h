@@ -54,7 +54,7 @@
 #define VMWARE_PMC_ELAPSED_APPARENT_TIME    0x10001 /* Elapsed apparent time in ns */
 #endif
 
-extern struct os_time_counter time_counter_pm_counter;
+extern struct clockcounter clockcounter_pm_counter;
 
 static inline uint64_t read_pmc(uint32_t pmc)
     {

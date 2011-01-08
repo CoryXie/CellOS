@@ -142,10 +142,7 @@ typedef struct sched_cpu
 
     /* Is the CPU idle */
     BOOL                    idle;
-    
-    /* Reschedule stack */
-	uint8_t *               stack; 
-    
+        
     /* Schedule clock ID */
     clockid_t               clock;  
 
@@ -173,7 +170,7 @@ typedef struct sched_cpu_group
 
 extern sched_cpu_t* current_cpus[];
 
-void sched_cpu_init(void); 
+void cpu_early_init(void); 
 
 sched_cpu_group_t * sched_cpu_group_add 
     (

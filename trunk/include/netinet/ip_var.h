@@ -44,13 +44,13 @@
  * Overlay for ip header used by other protocols (tcp, udp).
  */
 struct ipovly {
-	char *   ih_next;
-	char *   ih_prev;
-	uint8_t   ih_x1;        /* (unused) */
-	uint8_t   ih_pr;           /* protocol */
-	uint16_t  ih_len;          /* protocol length */
-	struct    in_addr ih_src;  /* source internet address */
-	struct    in_addr ih_dst;  /* destination internet address */
+    char *   ih_next;
+    char *   ih_prev;
+    uint8_t   ih_x1;        /* (unused) */
+    uint8_t   ih_pr;           /* protocol */
+    uint16_t  ih_len;          /* protocol length */
+    struct    in_addr ih_src;  /* source internet address */
+    struct    in_addr ih_dst;  /* destination internet address */
 }; 
 
 /*
@@ -62,8 +62,8 @@ struct ipovly {
 #define MAX_IPOPTLEN    40
 
 struct ipoption {
-	struct  in_addr ipopt_dst;         /* first-hop dst if source routed */
-	int8_t  ipopt_list[MAX_IPOPTLEN];  /* options proper */
+    struct  in_addr ipopt_dst;         /* first-hop dst if source routed */
+    int8_t  ipopt_list[MAX_IPOPTLEN];  /* options proper */
 };  
 
 /*
@@ -71,38 +71,38 @@ struct ipoption {
  * passed to ip_output when IP multicast options are in use.
  */
 struct ip_moptions {
-	struct    ifnet *imo_multicast_ifp; /* ifp for outgoing multicasts */
-	uint8_t  imo_multicast_ttl;           /* TTL for outgoing multicasts */
-	uint8_t  imo_multicast_loop;          /* 1 => here sends if a member */
-	uint16_t imo_num_memberships;         /* no. memberships this socket */
-	struct    in_multi *imo_membership[IP_MAX_MEMBERSHIPS];
+    struct    ifnet *imo_multicast_ifp; /* ifp for outgoing multicasts */
+    uint8_t  imo_multicast_ttl;           /* TTL for outgoing multicasts */
+    uint8_t  imo_multicast_loop;          /* 1 => here sends if a member */
+    uint16_t imo_num_memberships;         /* no. memberships this socket */
+    struct    in_multi *imo_membership[IP_MAX_MEMBERSHIPS];
 };
 
 struct ipasfrag {
 #if B_HOST_IS_BENDIAN
-	uint8_t  ip_v:4;
-	uint8_t  ip_hl:4;
+    uint8_t  ip_v:4;
+    uint8_t  ip_hl:4;
 #else
-	uint8_t  ip_hl:4;
-	uint8_t  ip_v:4;
+    uint8_t  ip_hl:4;
+    uint8_t  ip_v:4;
 #endif
-	uint8_t  ipf_mff;
-	int16_t  ip_len;
-	uint16_t ip_id;
-	int16_t  ip_off;
-	uint8_t  ip_ttl;
-	uint8_t  ip_p;
-	struct ipasfrag *ipf_next;
-	struct ipasfrag *ipf_prev;
+    uint8_t  ipf_mff;
+    int16_t  ip_len;
+    uint16_t ip_id;
+    int16_t  ip_off;
+    uint8_t  ip_ttl;
+    uint8_t  ip_p;
+    struct ipasfrag *ipf_next;
+    struct ipasfrag *ipf_prev;
 };
 
 struct ipq {
-	struct ipq *next, *prev;
-	uint8_t  ipq_ttl;
-	uint8_t  ipq_p;
-	uint16_t ipq_id;
-	struct ipasfrag *ipq_next, *ipq_prev;
-	struct in_addr ipq_src, ipq_dst;
+    struct ipq *next, *prev;
+    uint8_t  ipq_ttl;
+    uint8_t  ipq_p;
+    uint16_t ipq_id;
+    struct ipasfrag *ipq_next, *ipq_prev;
+    struct in_addr ipq_src, ipq_dst;
 };
 
 struct  ipstat {
@@ -141,11 +141,11 @@ struct  ipstat {
 
 /* #ifdef _KERNEL_MODE */
 
-#define IP_FORWARDING			0x1				/* most of ip header exists */
-#define IP_ALLOWBROADCAST		SO_BROADCAST	/* can send broadcast packets */
-#define IP_RAWOUTPUT			0x4				/* raw ip header exists */
-#define IP_ROUTETOIF			SO_DONTROUTE	/* bypass routing tables */
-#define IP_MTUDISC				0x10			/* pmtu discovery, set DF */
+#define IP_FORWARDING            0x1                /* most of ip header exists */
+#define IP_ALLOWBROADCAST        SO_BROADCAST    /* can send broadcast packets */
+#define IP_RAWOUTPUT            0x4                /* raw ip header exists */
+#define IP_ROUTETOIF            SO_DONTROUTE    /* bypass routing tables */
+#define IP_MTUDISC                0x10            /* pmtu discovery, set DF */
 
 #if 0
 /* struct ipstat ipstat; */

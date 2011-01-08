@@ -49,12 +49,12 @@ extern "C" {
 
 typedef struct dirent
     {
-	dev_t			d_dev;		/* device */
-	dev_t			d_pdev;		/* parent device (only for queries) */
-	ino_t			d_ino;		/* inode number - File serial number. */
-	ino_t			d_pino;		/* parent inode (only for queries) */
-	unsigned short	d_reclen;	/* length of this record, not the name */
-	char			d_name[1];	/* name of the entry (null byte terminated) */
+    dev_t            d_dev;        /* device */
+    dev_t            d_pdev;        /* parent device (only for queries) */
+    ino_t            d_ino;        /* inode number - File serial number. */
+    ino_t            d_pino;        /* parent inode (only for queries) */
+    unsigned short    d_reclen;    /* length of this record, not the name */
+    char            d_name[1];    /* name of the entry (null byte terminated) */
     } dirent_t;
 
 /*
@@ -86,4 +86,4 @@ long           telldir(DIR *);
 }
 #endif
 
-#endif	/* _POSIX_DIRENT_H */
+#endif    /* _POSIX_DIRENT_H */

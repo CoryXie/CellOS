@@ -5,6 +5,8 @@
 #include <time.h>
 #include <os/timer.h>
 
+struct timerchain_head global_interval_timerchain;
+
 /*
   NAME
   
@@ -344,22 +346,34 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec * value,
   
   The which argument is not recognized.
 */
-interval_timer_t global_itimer_ITIMER_PROF;
-interval_timer_t global_itimer_ITIMER_REAL;
-interval_timer_t global_itimer_ITIMER_VIRTUAL;
 
 void itimer_callback_handler(void)
     {
-    interval_timer_t * itimer = &global_itimer_ITIMER_REAL;
+    interval_timer_t * itimer;
+    struct timeval now;
+    abstime_t cmp;
+    struct timerchain_node * timernode;
 
-    itimer->remain_intervals--;
+    timernode = timerchain_get_earliest(&global_interval_timerchain);
 
-    if (itimer->remain_intervals)
+    if (!timernode)
         return;
+       
+    gettimeofday(&now, NULL);
     
+    cmp = timeval_to_abstime(&now);
+    
+    if (cmp < timernode->expires)
+        return;
+
+    itimer = CONTAINER_OF(timernode, interval_timer_t, timer_node);
+
     if (itimer->enabled == TRUE)
         {
         itimer->handler(itimer->arg);
+        
+        timerchain_remove(&global_interval_timerchain, &itimer->timer_node);
+
         /*
          * If it_interval is non-zero, it shall specify a value to be 
          * used in reloading it_value when the timer expires. 
@@ -368,23 +382,22 @@ void itimer_callback_handler(void)
          * next expiration (assuming it_value is non-zero).
          */
         if (timeval_nz(&itimer->timerval.it_interval))
-            {
-            abstime_t expire;
-            
+            {            
             itimer->timerval.it_value = itimer->timerval.it_interval;
             
-            /* Setup expiry time */
-            expire = timeval_to_abstime(&itimer->timerval.it_value);
+            gettimeofday(&now, NULL);
+            timeval_add(&now, &itimer->timerval.it_value);
+            cmp = timeval_to_abstime(&now);
 
-            itimer->remain_intervals = 
-                (expire / global_tick_eventer->resolution) +
-                ((expire % global_tick_eventer->resolution) ? 1 : 0);
+            /* Setup expiry time */
+            itimer->timer_node.expires = cmp;
+
+            timerchain_add(&global_interval_timerchain, &itimer->timer_node);
             }
         else
             {
             itimer->enabled = FALSE;
             }
-        
         }
     }
 
@@ -401,7 +414,10 @@ int getitimer(int which, struct itimerval *value)
     if (which != ITIMER_REAL)
         return EINVAL;
     
-    *value = global_itimer_ITIMER_REAL.timerval;
+    if (kurrent->itimer_REAL == NULL)
+        return ENODEV;
+    
+    *value = kurrent->itimer_REAL->timerval;
     
     return OK;
     }
@@ -410,8 +426,7 @@ int setitimer(int which, const struct itimerval * value,
               struct itimerval * ovalue)
     {
     int mode;
-    abstime_t expire;
-    static int first = 1;
+    interval_timer_t *itimer;
     
     /* Currently only supports ITIMER_REAL */
     if (which != ITIMER_REAL)
@@ -425,24 +440,39 @@ int setitimer(int which, const struct itimerval * value,
         value->it_value.tv_sec < 0)
         return EINVAL;
 
-    if (first)
-        {
-        global_itimer_ITIMER_REAL.timer_id = ITIMER_REAL;
-        global_itimer_ITIMER_REAL.eventer = global_tick_eventer;
-        global_itimer_ITIMER_REAL.handler = itimer_expire_handler;
-        global_itimer_ITIMER_REAL.arg = &global_itimer_ITIMER_REAL;
-        first = 0;
+    itimer = kurrent->itimer_REAL;
+
+    if (itimer == NULL)
+        {        
+        itimer = kmalloc(sizeof(interval_timer_t));
+
+        if (itimer == NULL)
+            {
+            printk("No memory for ITIMER_REAL for thread %s\n", kurrent->name);
+            
+            return ENOMEM;
+            }
+        
+        kurrent->itimer_REAL = itimer;
+        
+        itimer->timer_id = ITIMER_REAL;
+        itimer->handler = itimer_expire_handler;
+        itimer->arg = itimer;
+        
+        timerchain_init_node(&itimer->timer_node);
+        
         if (ovalue) 
             *ovalue = *value;
         }
     else
         {
         if (ovalue) 
-            *ovalue = global_itimer_ITIMER_REAL.timerval;
+            *ovalue = itimer->timerval;
         }
     
-    global_itimer_ITIMER_REAL.timerval = *value;
-
+    itimer->timerval = *value;
+    itimer->pid = kurrent;
+    
     /* 
      * If it_value is non-zero, it shall indicate the time to the 
      * next timer expiration. 
@@ -452,24 +482,165 @@ int setitimer(int which, const struct itimerval * value,
      */  
     if (timeval_nz(&value->it_value))
         {
-        /* Setup expiry time */
-        expire = timeval_to_abstime(&(value->it_value));
+        struct timeval now;
+        abstime_t cmp;
+
+        gettimeofday(&now, NULL);
+        timeval_add(&now, &itimer->timerval.it_value);
+        cmp = timeval_to_abstime(&now);
+
+        /* Setup expiry time */        
+        itimer->timer_node.expires = cmp;
         
-        global_itimer_ITIMER_REAL.remain_intervals = 
-            (expire / global_tick_eventer->resolution) +
-            ((expire % global_tick_eventer->resolution) ? 1 : 0);
+        itimer->enabled = TRUE;
+        
+        timerchain_add(&global_interval_timerchain, &itimer->timer_node);
+        
+        return OK;
         }
     else
         {
         /* Disable the timer */
-        global_itimer_ITIMER_REAL.enabled = FALSE;
+        itimer->enabled = FALSE;
+        
+        timerchain_remove(&global_interval_timerchain, &itimer->timer_node);
         
         return OK;
         }
-
-    global_itimer_ITIMER_REAL.pid = kurrent;
-    global_itimer_ITIMER_REAL.enabled = TRUE;
-    
-    return OK;
     }
+
+void timerchain_subsystem_init(void)
+    {
+    timerchain_init_head(&global_interval_timerchain);
+    }
+
+int timerchain_compare(struct timerchain_node *t1, 
+    struct timerchain_node *t2)
+    {
+    return (t2->expires > t1->expires) ? 1 : 
+           ((t2->expires < t1->expires) ? -1 : 0);
+    }
+
+/**
+ * timerchain_add - Adds timer to timerchain.
+ *
+ * @head: head of timerchain
+ * @node: timer node to be added
+ *
+ * Adds the timer node to the timerchain, sorted by the node's expires value.
+ */
+void timerchain_add(struct timerchain_head *head, struct timerchain_node *node)
+    {
+    spinlock_lock(&head->lock);
+    
+    rbtree_insert_node(&head->rbtree, &node->rbnode);
+
+    /* Save the next earliest entry */
+    if (!head->earliest || node->expires < head->earliest->expires)
+        head->earliest = node;
+    
+    spinlock_unlock(&head->lock);
+    }
+
+/**
+ * timerchain_remove - Removes a timer from the timerchain.
+ *
+ * @head: head of timerchain
+ * @node: timer node to be removed
+ *
+ * Removes the timer node from the timerchain.
+ */
+void timerchain_remove(struct timerchain_head *head, struct timerchain_node *node)
+    {
+    spinlock_lock(&head->lock);
+
+    /* Update next earliest entry */
+    if (head->earliest == node) 
+        {
+        struct rbnode *rbn = rbnode_successor(&node->rbnode);
+
+        head->earliest = rbn ?
+            RB_ENTRY(rbn, struct timerchain_node, rbnode) : NULL;
+        }
+    
+    rbtree_remove_node(&head->rbtree, &node->rbnode);
+
+    spinlock_unlock(&head->lock);
+    }
+
+void timerchain_show_node (struct timerchain_node *node)
+    {
+    printk("timer expires %lld\n", node->expires);
+    }
+
+void timerchain_show_all (struct timerchain_head *head)
+    {
+    spinlock_lock(&head->lock);
+    rbtree_traverse(&head->rbtree, (rb_operation)timerchain_show_node);
+    spinlock_unlock(&head->lock);
+    }
+
+int do_timerchain (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+    {
+    struct timerchain_node timer[5];
+    struct timerchain_head timerchain;
+    struct timerchain_node * eariliest;
+    
+    printk("Showing global_interval_timerchain %d timers\n", 
+        global_interval_timerchain.rbtree.size);
+
+    timerchain_show_all(&global_interval_timerchain);
+    
+    timerchain_init_head(&timerchain);
+    
+    timer[0].expires = 1;
+    timer[1].expires = 12;
+    timer[2].expires = 23;
+    timer[3].expires = 4;
+    timer[4].expires = 4;
+
+    timerchain_init_node(&timer[0]);
+    timerchain_init_node(&timer[1]);
+    timerchain_init_node(&timer[2]);
+    timerchain_init_node(&timer[3]);
+    timerchain_init_node(&timer[4]);
+
+    eariliest = timerchain_get_earliest(&timerchain);
+    
+    printk("Showing %d timers, eariliest %lld\n", timerchain.rbtree.size, 
+        eariliest ? eariliest->expires : -1);
+    
+    timerchain_add(&timerchain, &timer[0]);
+    timerchain_add(&timerchain, &timer[1]);
+    timerchain_add(&timerchain, &timer[2]);
+    timerchain_add(&timerchain, &timer[3]);
+    timerchain_add(&timerchain, &timer[4]);
+
+    eariliest = timerchain_get_earliest(&timerchain);
+    
+    printk("Showing %d timers, eariliest %lld\n", timerchain.rbtree.size, 
+        eariliest ? eariliest->expires : -1);
+    
+    timerchain_show_all(&timerchain);
+
+    timerchain_remove(&timerchain, &timer[3]);
+    timerchain_remove(&timerchain, &timer[3]);
+    timerchain_remove(&timerchain, &timer[0]);
+    
+    eariliest = timerchain_get_earliest(&timerchain);
+    
+    printk("Showing %d timers, eariliest %lld\n", timerchain.rbtree.size, 
+        eariliest ? eariliest->expires : -1);
+    
+    timerchain_show_all(&timerchain);
+    
+    return 0;
+    }
+
+CELL_OS_CMD(
+    timerchain,   1,        1,    do_timerchain,
+    "show current timer chain",
+    "show current timer chain nodes\n"
+    );
+    
 

@@ -33,9 +33,9 @@ int iconv_close (iconv_t cd);
 
 extern size_t iconv (iconv_t cd,
                      char** inbuf,
-        		     size_t* inbytesleft,
-        		     char** outbuf,
-        		     size_t* outbytesleft);
+                     size_t* inbytesleft,
+                     char** outbuf,
+                     size_t* outbytesleft);
 
 #ifdef __cplusplus
 }

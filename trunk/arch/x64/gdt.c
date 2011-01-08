@@ -3,6 +3,7 @@
 #include <os.h>
 
 x64_desc_ptr_64_t gdtr;
+x64_tss_t tss;
 
 /* The standard GDT */
 static x64_seg_descriptor_t gdt [] =
@@ -12,7 +13,8 @@ static x64_seg_descriptor_t gdt [] =
     { 0xFFFF, 0, 0, 0x92, 0xF, 0, 0, 0, 1, 0 }, /* KERNEL DS 0x10   */
     { 0xFFFF, 0, 0, 0xF8, 0xF, 0, 1, 0, 1, 0 }, /* USER CS 0x18     */
     { 0xFFFF, 0, 0, 0xF2, 0xF, 0, 0, 1, 1, 0 }, /* USER DS 0x20     */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },           /* TSS 0x28         */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },           /* TSS (part1) 0x28 */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },           /* TSS (part2) 0x30 */
     };
 
 void x64_gdt_init(void)

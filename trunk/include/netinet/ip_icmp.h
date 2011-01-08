@@ -43,36 +43,36 @@
 #include <stdint.h>
 
 struct icmp {
-	uint8_t icmp_type;
-	uint8_t icmp_code;
-	uint16_t icmp_cksum;
-	union {
-		uint8_t ih_pptr;
-		struct in_addr ih_gwaddr;
-		struct ih_idseq {
-			uint16_t icd_id;
-			uint16_t icd_seq;
-		} ih_idseq;
-		int32_t ih_void;
-		
-		/* ICMP_UNREACH_NEEDFRAG (RFC 1191) */
-		struct ih_pmtu {
-			uint16_t ipm_void;
-			uint16_t ipm_nextmtu;
-		} ih_pmtu;
-	} icmp_hun;
-	union {
-		struct id_ts {
-			uint32_t its_otime;
-			uint32_t its_rtime;
-			uint32_t its_ttime;
-		} id_ts;
-		struct id_ip {
-			struct ip idi_ip;
-		} id_ip;
-		uint32_t id_mask;
-		char id_data[1];
-	} icmp_dun;
+    uint8_t icmp_type;
+    uint8_t icmp_code;
+    uint16_t icmp_cksum;
+    union {
+        uint8_t ih_pptr;
+        struct in_addr ih_gwaddr;
+        struct ih_idseq {
+            uint16_t icd_id;
+            uint16_t icd_seq;
+        } ih_idseq;
+        int32_t ih_void;
+        
+        /* ICMP_UNREACH_NEEDFRAG (RFC 1191) */
+        struct ih_pmtu {
+            uint16_t ipm_void;
+            uint16_t ipm_nextmtu;
+        } ih_pmtu;
+    } icmp_hun;
+    union {
+        struct id_ts {
+            uint32_t its_otime;
+            uint32_t its_rtime;
+            uint32_t its_ttime;
+        } id_ts;
+        struct id_ip {
+            struct ip idi_ip;
+        } id_ip;
+        uint32_t id_mask;
+        char id_data[1];
+    } icmp_dun;
 };
 
 #define icmp_pptr      icmp_hun.ih_pptr

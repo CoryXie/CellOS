@@ -83,7 +83,7 @@ OBJS =  arch/x64/boot.o \
 		arch/x64/pmc.o	\
 		arch/x64/sched_arch.o \
 		arch/x64/context.o \
-		arch/x64/timecounter.o
+		arch/x64/clockcounter.o
 
 OBJS += lib/string.o 	\
 		lib/printk.o 	\

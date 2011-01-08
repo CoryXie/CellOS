@@ -5,4 +5,4 @@
 typedef int __jmp_buf[_SETJMP_BUF_SZ];
 #warning ARM: fix jmpbuf size
 
-#endif	/* _ARCH_SETJMP_H_ */
+#endif    /* _ARCH_SETJMP_H_ */

@@ -173,24 +173,24 @@ acpi_MatchHid(ACPI_HANDLE h, const char *hid)
 ACPI_STATUS
 acpi_ConvertBufferToInteger(ACPI_BUFFER *bufp, UINT32 *number)
 {
-    ACPI_OBJECT	*p;
-    UINT8	*val;
-    int		i;
+    ACPI_OBJECT    *p;
+    UINT8    *val;
+    int        i;
 
     p = (ACPI_OBJECT *)bufp->Pointer;
     if (p->Type == ACPI_TYPE_INTEGER) {
-	*number = p->Integer.Value;
-	return (AE_OK);
+    *number = p->Integer.Value;
+    return (AE_OK);
     }
     if (p->Type != ACPI_TYPE_BUFFER)
-	return (AE_TYPE);
+    return (AE_TYPE);
     if (p->Buffer.Length > sizeof(int))
-	return (AE_BAD_DATA);
+    return (AE_BAD_DATA);
 
     *number = 0;
     val = p->Buffer.Pointer;
     for (i = 0; i < p->Buffer.Length; i++)
-	*number += val[i] << (i * 8);
+    *number += val[i] << (i * 8);
     return (AE_OK);
 }
 
@@ -200,12 +200,12 @@ acpi_ConvertBufferToInteger(ACPI_BUFFER *bufp, UINT32 *number)
 ACPI_STATUS
 acpi_GetInteger(ACPI_HANDLE handle, char *path, UINT32 *number)
 {
-    ACPI_STATUS	status;
-    ACPI_BUFFER	buf;
-    ACPI_OBJECT	param;
+    ACPI_STATUS    status;
+    ACPI_BUFFER    buf;
+    ACPI_OBJECT    param;
 
     if (handle == NULL)
-	handle = ACPI_ROOT_OBJECT;
+    handle = ACPI_ROOT_OBJECT;
 
     /*
      * Assume that what we've been pointed at is an Integer object, or
@@ -215,10 +215,10 @@ acpi_GetInteger(ACPI_HANDLE handle, char *path, UINT32 *number)
     buf.Length = sizeof(param);
     status = AcpiEvaluateObject(handle, path, NULL, &buf);
     if (ACPI_SUCCESS(status)) {
-	if (param.Type == ACPI_TYPE_INTEGER)
-	    *number = param.Integer.Value;
-	else
-	    status = AE_TYPE;
+    if (param.Type == ACPI_TYPE_INTEGER)
+        *number = param.Integer.Value;
+    else
+        status = AE_TYPE;
     }
 
     /* 
@@ -230,14 +230,14 @@ acpi_GetInteger(ACPI_HANDLE handle, char *path, UINT32 *number)
      * This is a hack.
      */
     if (status == AE_BUFFER_OVERFLOW) {
-	if ((buf.Pointer = AcpiOsAllocate(buf.Length)) == NULL) {
-	    status = AE_NO_MEMORY;
-	} else {
-	    status = AcpiEvaluateObject(handle, path, NULL, &buf);
-	    if (ACPI_SUCCESS(status))
-		status = acpi_ConvertBufferToInteger(&buf, number);
-	    AcpiOsFree(buf.Pointer);
-	}
+    if ((buf.Pointer = AcpiOsAllocate(buf.Length)) == NULL) {
+        status = AE_NO_MEMORY;
+    } else {
+        status = AcpiEvaluateObject(handle, path, NULL, &buf);
+        if (ACPI_SUCCESS(status))
+        status = acpi_ConvertBufferToInteger(&buf, number);
+        AcpiOsFree(buf.Pointer);
+    }
     }
     return (status);
 }

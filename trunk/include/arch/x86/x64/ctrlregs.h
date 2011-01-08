@@ -112,15 +112,15 @@ static inline ipl_t interrupts_read(void)
  */
 static inline bool interrupts_disabled(void)
     {
-	ipl_t v;
-	
-	asm volatile (
-		"pushfq\n"
-		"popq %[v]\n"
-		: [v] "=r" (v)
-	    );
-	
-	return ((v & RFLAGS_IF) == 0);
+    ipl_t v;
+    
+    asm volatile (
+        "pushfq\n"
+        "popq %[v]\n"
+        : [v] "=r" (v)
+        );
+    
+    return ((v & RFLAGS_IF) == 0);
     }
 
 /*********************System registers and bits (start)**********************/

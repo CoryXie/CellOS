@@ -1,4 +1,4 @@
-/* timecounter.c - time counter management */
+/* clockcounter.c - clock counter management */
 
 #include <sys.h>
 #include <arch.h>
@@ -6,45 +6,45 @@
 #include <os/acpi.h>
 #include <sys/time.h>
 
-static list_t os_time_counter_list;
-static spinlock_t os_time_counter_list_lock;
+static list_t clockcounter_list;
+static spinlock_t clockcounter_list_lock;
 
-#define OS_TIME_COUNTER_LIST_LOCK()    \
-    spinlock_lock(&os_time_counter_list_lock)
-#define OS_TIME_COUNTER_LIST_UNLOCK()  \
-    spinlock_unlock(&os_time_counter_list_lock)
+#define CLOCK_COUNTER_LIST_LOCK()    \
+    spinlock_lock(&clockcounter_list_lock)
+#define CLOCK_COUNTER_LIST_UNLOCK()  \
+    spinlock_unlock(&clockcounter_list_lock)
 
-struct os_time_counter * global_os_time_counter = NULL;
+struct clockcounter * global_clockcounter = NULL;
 timespec_t real_wall_time;
 
-/* Add a clock eventer to the global clock list */
-status_t time_counter_add(struct os_time_counter *counter)
+/* Add a clock counter to the global clock list */
+status_t clockcounter_add(struct clockcounter *counter)
     {
-    OS_TIME_COUNTER_LIST_LOCK();
+    CLOCK_COUNTER_LIST_LOCK();
 
-    list_append(&os_time_counter_list, &counter->node);
+    list_append(&clockcounter_list, &counter->node);
     
     if (counter->counter_enable)
         counter->counter_enable();
     
-    OS_TIME_COUNTER_LIST_UNLOCK();
+    CLOCK_COUNTER_LIST_UNLOCK();
 
     return OK;
     }
 
-/* Remove a clock eventer from the global clock list */
-status_t time_counter_remove(struct os_time_counter *counter)
+/* Remove a clock counter from the global clock list */
+status_t clockcounter_remove(struct clockcounter *counter)
     {
-    OS_TIME_COUNTER_LIST_LOCK();
+    CLOCK_COUNTER_LIST_LOCK();
 
     list_remove(&counter->node);
     
-    OS_TIME_COUNTER_LIST_UNLOCK();
+    CLOCK_COUNTER_LIST_UNLOCK();
 
     return OK;
     }
 
-struct os_time_counter time_counter_pm_timer;
+struct clockcounter clockcounter_pm_timer;
 
 status_t pm_timer_enable(void)
     {
@@ -53,12 +53,12 @@ status_t pm_timer_enable(void)
            AcpiGbl_FADT.XPmTimerBlock.Address,
            AcpiGbl_FADT.Flags & ACPI_FADT_32BIT_TIMER ? 32 : 24);
 
-    time_counter_pm_timer.counter_bits = 
+    clockcounter_pm_timer.counter_bits = 
         AcpiGbl_FADT.Flags & ACPI_FADT_32BIT_TIMER ? 32 : 24;
     
-    time_counter_pm_timer.counter_frequency_hz = PM_TIMER_FREQUENCY;
+    clockcounter_pm_timer.counter_frequency_hz = PM_TIMER_FREQUENCY;
 
-    time_counter_pm_timer.counter_resolution_ns =
+    clockcounter_pm_timer.counter_resolution_ns =
         (NSECS_PER_SEC/PM_TIMER_FREQUENCY);
     /* 
      * PM Timer will overflow depending its bits:
@@ -69,7 +69,7 @@ status_t pm_timer_enable(void)
      * We set to at least read it every 2 seconds.
      */
      
-    time_counter_pm_timer.counter_fixup_period = 2 * NSECS_PER_SEC;
+    clockcounter_pm_timer.counter_fixup_period = 2 * NSECS_PER_SEC;
     
     return OK;
     }
@@ -111,7 +111,7 @@ abstime_t pm_timer_counter_time_elapsed(cycle_t t1, cycle_t t2)
     return (abstime_t) (time_us * 1000);
     }
 
-struct os_time_counter time_counter_pm_timer = 
+struct clockcounter clockcounter_pm_timer = 
     {
     .counter_name = "PMT",
     .counter_enable = pm_timer_enable,
@@ -120,42 +120,42 @@ struct os_time_counter time_counter_pm_timer =
     .counter_time_elapsed = pm_timer_counter_time_elapsed,
     };
 
-struct os_time_counter * select_global_os_time_counter(void)
+struct clockcounter * select_global_clockcounter(void)
     {
-    struct os_time_counter * best;
-    if (global_os_time_counter && 
-        global_os_time_counter->counter_disable)
-        global_os_time_counter->counter_disable();
+    struct clockcounter * best;
+    if (global_clockcounter && 
+        global_clockcounter->counter_disable)
+        global_clockcounter->counter_disable();
 
-    OS_TIME_COUNTER_LIST_LOCK();
+    CLOCK_COUNTER_LIST_LOCK();
 
-    global_os_time_counter = &time_counter_pm_timer;
+    global_clockcounter = &clockcounter_pm_timer;
 
-    LIST_FOREACH(&os_time_counter_list, iter)
+    LIST_FOREACH(&clockcounter_list, iter)
         {
-        best = LIST_ENTRY(iter, struct os_time_counter, node);
+        best = LIST_ENTRY(iter, struct clockcounter, node);
 
         if (best && 
             (best->counter_resolution_ns < 
-            global_os_time_counter->counter_resolution_ns))
-            global_os_time_counter = best;
+            global_clockcounter->counter_resolution_ns))
+            global_clockcounter = best;
         }
     
-    OS_TIME_COUNTER_LIST_UNLOCK();
+    CLOCK_COUNTER_LIST_UNLOCK();
     
-    global_os_time_counter->counter_enable();
+    global_clockcounter->counter_enable();
     
-    return global_os_time_counter;
+    return global_clockcounter;
     }
 
-void time_counter_subsystem_init(void)
+void clockcounter_subsystem_init(void)
     {
-    list_init(&os_time_counter_list);
-    spinlock_init(&os_time_counter_list_lock);
+    list_init(&clockcounter_list);
+    spinlock_init(&clockcounter_list_lock);
     
-    time_counter_add(&time_counter_pm_timer);
-    time_counter_add(&time_counter_pm_counter);
-    select_global_os_time_counter();
+    clockcounter_add(&clockcounter_pm_timer);
+    clockcounter_add(&clockcounter_pm_counter);
+    select_global_clockcounter();
     }
 
 void real_wall_time_init(void)
@@ -169,7 +169,7 @@ void real_wall_time_regular_update(void)
     cycle_t last_read;
     abstime_t eplased;
 
-    struct os_time_counter * timecounter = global_os_time_counter;
+    struct clockcounter * timecounter = global_clockcounter;
 
     if (timecounter == NULL)
         return;
@@ -216,7 +216,7 @@ int gettimeofday(struct timeval * tp, void * tzp)
     cycle_t last;
     abstime_t eplased;
     
-    struct os_time_counter * timecounter = global_os_time_counter;
+    struct clockcounter * timecounter = global_clockcounter;
 
     if (timecounter == NULL)
         return ENODEV;
@@ -241,7 +241,7 @@ int getnstimeofday(struct timespec * tp, void * tzp)
     cycle_t last;
     abstime_t eplased;
     
-    struct os_time_counter * timecounter = global_os_time_counter;
+    struct clockcounter * timecounter = global_clockcounter;
 
     if (timecounter == NULL)
         return ENODEV;

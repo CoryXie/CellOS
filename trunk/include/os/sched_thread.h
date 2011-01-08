@@ -42,10 +42,10 @@ struct sched_thread;
 
 typedef struct sched_thread_posix_extention
     {
-	struct sched_thread *   joining_thread;
-	void *                  retval;
-	void *                  joined_thread_retval;
-	pthread_spinlock_t      exit_lock;
+    struct sched_thread *   joining_thread;
+    void *                  retval;
+    void *                  joined_thread_retval;
+    pthread_spinlock_t      exit_lock;
     }sched_thread_posix_extention_t;
 
 /* Default prameter area size */
@@ -113,7 +113,7 @@ typedef struct sched_thread
     list_t          sig_handler_list;
 
     /* Abort handler */
-	void (*abort)(void *);
+    void (*abort)(void *);
 
     /* Thread cleanup handler (user defind) */
     struct sched_thread_cleanup *cleanup;
@@ -150,6 +150,10 @@ typedef struct sched_thread
 
     /* Remianing time slice */
     int             remain_time_slice;  
+
+    interval_timer_t * itimer_PROF;
+    interval_timer_t * itimer_REAL;
+    interval_timer_t * itimer_VIRTUAL;
 
     /* Thread errno */
     int             err;
@@ -198,13 +202,13 @@ typedef struct sched_thread
     BOOL  fpu_ready;
     
     /* Context save area when the thread is scheduled */
-	sched_context_t saved_context;
+    sched_context_t saved_context;
     
-	/* Timeout context save area when the thread sleeps */
-	sched_context_t sleep_timeout_context;
+    /* Timeout context save area when the thread sleeps */
+    sched_context_t sleep_timeout_context;
     
-	/* Interruption context save area when sleep is interrupted */
-	sched_context_t sleep_interruption_context;
+    /* Interruption context save area when sleep is interrupted */
+    sched_context_t sleep_interruption_context;
     
     /* Thread ARCH information */
     thread_arch_t   arch; 
@@ -230,16 +234,16 @@ typedef struct sched_thread_attr
     int         magic;
     
     /* The CPU or CPU group for this thread */
-	cpu_set_t   cpu_set;   
+    cpu_set_t   cpu_set;   
 
     /* Thread stack base address, if allocated by user */
-	void *      stackaddr;
+    void *      stackaddr;
 
     /* Thread stack size */
-	size_t		stacksize;
+    size_t        stacksize;
 
     /* Thread detach state */
-	int32_t		detachstate;
+    int32_t        detachstate;
 
     /* Initial singal state */
     sigset_t    initial_signal;

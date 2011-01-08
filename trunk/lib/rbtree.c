@@ -6,6 +6,22 @@
 /*
  * Operations on rbnode_t struct
  */
+ 
+/*!
+ * Construct of a red-black tree node
+ *
+ * \param object The object stored in the node
+ */
+void rbnode_init
+    (
+    rbnode_t * node,
+    void * object
+    )
+    {
+    node->object = object;
+    node->color = RB_RED;
+    node->parent = node->right = node->left = NULL;
+    }
 
 /*!
  * Construct of a red-black tree node
@@ -264,7 +280,7 @@ rbnode_t * rbnode_duplicate
 void rbnode_traverse
     (
     rbnode_t * node, 
-    rb_operation * op
+    rb_operation op
     )
     {
     if (!node)
@@ -272,7 +288,7 @@ void rbnode_traverse
 
     rbnode_traverse(node->left, op);
 
-    if (op) op(node->object);
+    if (op) (op)(node->object);
 
     rbnode_traverse(node->right, op);
     }
@@ -291,7 +307,7 @@ void rbnode_traverse
 void rbtree_init
     (
     rbtree_t * tree,
-    rb_compare * comp
+    rb_compare comp
     )
     {
     tree->compare = comp;
@@ -308,7 +324,7 @@ void rbtree_init
  */
 rbtree_t * rbtree_create
     (
-    rb_compare * comp
+    rb_compare comp
     )
     {
     rbtree_t * tree = (rbtree_t *) kmalloc(sizeof(rbtree_t));
@@ -407,46 +423,44 @@ BOOL rbtree_contains
     }
 
 /*!
- * Insert an object to the tree [takes O(log n) operations]
+ * Add an node to the tree [takes O(log n) operations]
  *
  * \param tree The tree
  *
- * \param object The object to be inserted
+ * \param new_node The node to be inserted (initialized by rbnode_init)
  *
  * \return the inserted object node
  */
-rbnode_t * rbtree_insert
+rbnode_t * rbtree_insert_node
     (
     rbtree_t * tree, 
-    void * object
+    rbnode_t * new_node
     )
     {
     rbnode_t * cur_node;
-    rbnode_t * new_node;
 
+    if (new_node->tree == tree)
+        return;
+    
     if (!(tree->root))
         {
         /*
          * Assign a new root node.
          * Notice that the root is always black
          */
-        new_node = rbnode_create(object, RB_BLACK);
-
-        if (!new_node)
-            return NULL;
+         
+        new_node->color = RB_BLACK;
 
         tree->root = new_node;
         tree->size = 1;
-
+        
+        new_node->tree = tree;
+        
         return new_node;
         }
 
-    /* Find a place for the new object, and insert it as a red leaf */
+    /* Find a place for the new node, and insert it as a red leaf */
     cur_node = tree->root;
-
-    new_node = rbnode_create(object, RB_RED);
-    if (!new_node)
-        return NULL;
 
     while (cur_node)
         {
@@ -454,7 +468,7 @@ rbnode_t * rbtree_insert
          * Compare inserted object with the object stored
          * in the current node
          */
-        if ((*(tree->compare))(object, cur_node->object) > 0)
+        if ((tree->compare)(new_node->object, cur_node->object) > 0)
             {
             if (!(cur_node->left))
                 {
@@ -501,7 +515,112 @@ rbnode_t * rbtree_insert
 
     /* Fix up the tree properties */
     rbtree_insert_fixup(tree, new_node);
+    
+    new_node->tree = tree;
+    
+    return new_node;
+    }
 
+/*!
+ * Insert an object to the tree [takes O(log n) operations]
+ *
+ * \param tree The tree
+ *
+ * \param object The object to be inserted
+ *
+ * \return the inserted object node
+ */
+rbnode_t * rbtree_insert_object
+    (
+    rbtree_t * tree, 
+    void * object
+    )
+    {
+    rbnode_t * cur_node;
+    rbnode_t * new_node;
+
+    if (!(tree->root))
+        {
+        /*
+         * Assign a new root node.
+         * Notice that the root is always black
+         */
+        new_node = rbnode_create(object, RB_BLACK);
+
+        if (!new_node)
+            return NULL;
+
+        tree->root = new_node;
+        tree->size = 1;
+        
+        new_node->tree = tree;
+        
+        return new_node;
+        }
+
+    /* Find a place for the new object, and insert it as a red leaf */
+    cur_node = tree->root;
+
+    new_node = rbnode_create(object, RB_RED);
+    if (!new_node)
+        return NULL;
+
+    while (cur_node)
+        {
+        /*
+         * Compare inserted object with the object stored
+         * in the current node
+         */
+        if ((tree->compare)(object, cur_node->object) > 0)
+            {
+            if (!(cur_node->left))
+                {
+                /*
+                 * Insert the new leaf as the left
+                 * child of the current node
+                 */
+                cur_node->left = new_node;
+                new_node->parent = cur_node;
+
+                /* Terminate the while loop */
+                cur_node = NULL;
+                }
+            else
+                {
+                /* Go to the left sub-tree */
+                cur_node = cur_node->left;
+                }
+            }
+        else
+            {
+            if (!(cur_node->right))
+                {
+                /*
+                 * Insert the new leaf as the right
+                 * child of the current node
+                 */
+                cur_node->right = new_node;
+                new_node->parent = cur_node;
+
+                /* Terminate the while loop */
+                cur_node = NULL;
+                }
+            else
+                {
+                /* Go to the right sub-tree */
+                cur_node = cur_node->right;
+                }
+            }
+        }
+
+    /* Mark that a new node was added */
+    tree->size++;
+
+    /* Fix up the tree properties */
+    rbtree_insert_fixup(tree, new_node);
+    
+    new_node->tree = tree;
+    
     return new_node;
     }
 
@@ -512,7 +631,7 @@ rbnode_t * rbtree_insert
  *
  * \return The new node
  */
-rbnode_t * insert_successor_at
+rbnode_t * rbtree_insert_successor_object_at
     (
     rbtree_t * tree,
     rbnode_t * at_node, 
@@ -534,6 +653,9 @@ rbnode_t * insert_successor_at
         
         tree->root = new_node;
         tree->size = 1;
+
+        new_node->tree = tree;
+
         return new_node;
         }
 
@@ -582,6 +704,8 @@ rbnode_t * insert_successor_at
     /* Fix up the tree properties */
     rbtree_insert_fixup(tree, new_node);
 
+    new_node->tree = tree;
+
     return new_node;
     }
 
@@ -592,7 +716,7 @@ rbnode_t * insert_successor_at
  *
  * \return The new node
  */
-rbnode_t * insert_predecessor_at
+rbnode_t * rbtree_insert_predecessor_object_at
     (
     rbtree_t * tree,
     rbnode_t * at_node, 
@@ -612,6 +736,8 @@ rbnode_t * insert_predecessor_at
         
         tree->root = new_node;
         tree->size = 1;
+
+        new_node->tree = tree;
         
         return new_node;
         }
@@ -658,6 +784,8 @@ rbnode_t * insert_predecessor_at
     /* Fix up the tree properties */
     rbtree_insert_fixup(tree, new_node);
 
+    new_node->tree = tree;
+
     return new_node;
     }
 
@@ -683,17 +811,17 @@ void rbtree_remove
     /* remove the node */
 
     if (node) 
-        rbtree_remove_at(tree, node);
+        rbtree_remove_node(tree, node);
     }
 
 /*! 
- * Remove the object stored in the given tree node 
+ * Remove the node stored in the given tree 
  *
  * \param tree The tree
  *
- * \param node The node storing the object to be removed from the tree
+ * \param node The node to be removed from the tree
  */
-void rbtree_remove_at
+void rbtree_remove_node
     (
     rbtree_t * tree, 
     rbnode_t * node
@@ -701,15 +829,21 @@ void rbtree_remove_at
     {
     rbnode_t * child = NULL;
 
+    if (node->tree != tree)
+        return;
+    
     /* 
      * In case of deleting the single object stored in the tree, 
      * free the root, thus emptying the tree.
      */
     if (tree->size == 1)
         {
-        rbnode_destroy(tree->root);
-        tree->root = NULL;
-        tree->size = 0;
+        if (node == tree->root)
+            {
+            tree->root = NULL;
+            tree->size = 0;
+            node->tree = NULL;
+            }
         return;
         }
 
@@ -806,7 +940,8 @@ void rbtree_remove_at
             }
         }
 
-    /* Fix-up the red-black properties that may have been damaged: If we have
+    /* 
+     * Fix-up the red-black properties that may have been damaged: If we have
      * just removed a black node, the black-depth property is no longer valid.
      */
     if (node->color == RB_BLACK && child)
@@ -818,9 +953,8 @@ void rbtree_remove_at
      */
     node->left = NULL;
     node->right = NULL;
+    node->tree = NULL;
     
-    kfree(node);
-
     /* Descrease the number of objects in the tree */
     tree->size--;
     }
@@ -968,7 +1102,7 @@ rbnode_t * rbtree_find(rbtree_t * tree, void * object)
     while (cur_node)
         {
         /* In case of equality, we can return the current node. */
-        if ((comp_result = (*(tree->compare))(object, cur_node->object)) == 0)
+        if ((comp_result = (tree->compare)(object, cur_node->object)) == 0)
             return cur_node;
         
         /* Go down to the left or right child. */
@@ -1461,7 +1595,7 @@ void rbtree_remove_fixup(rbtree_t * tree, rbnode_t * node)
 void rbtree_traverse
     (
     rbtree_t * tree, 
-    rb_operation * op
+    rb_operation op
     )
     {
     rbnode_traverse(tree->root, op);

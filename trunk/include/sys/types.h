@@ -14,16 +14,16 @@
 #include <sys/cdefs.h>
 
 /* BSD compatibility */
-typedef unsigned long 		u_long;
-typedef unsigned int 		u_int;
-typedef unsigned short 		u_short;
-typedef unsigned char 		u_char;
+typedef unsigned long         u_long;
+typedef unsigned int         u_int;
+typedef unsigned short         u_short;
+typedef unsigned char         u_char;
 
 /* SysV compatibility */
-typedef unsigned long 		ulong;
-typedef unsigned short 		ushort;
-typedef unsigned int 		uint;
-typedef unsigned char		unchar;
+typedef unsigned long         ulong;
+typedef unsigned short         ushort;
+typedef unsigned int         uint;
+typedef unsigned char        unchar;
 
 /* 
  * id_t 
@@ -32,7 +32,7 @@ typedef unsigned char		unchar;
  * a pid_t, uid_t, or gid_t.
  */
 
-typedef long	id_t;   
+typedef long    id_t;   
 
 typedef id_t    dev_t; /* Used for device IDs. */
 typedef id_t    pid_t; /* Used for process IDs and process group IDs. */
@@ -51,24 +51,24 @@ typedef id_t    timer_t;/* Used for timer ID returned by timer_create().*/
 /* Used for clock ID type in the clock and timer functions. */
 typedef id_t   clockid_t; 
 
-typedef int32_t	            cnt_t;
+typedef int32_t                cnt_t;
 
-typedef int64_t 		    blkcnt_t;   /* Used for file block counts.*/
-typedef int32_t	            blksize_t;  /* Used for block sizes.*/
-typedef int64_t		        fsblkcnt_t; /* Used for file system block counts.*/
-typedef int64_t		        fsfilcnt_t; /* Used for file system file counts.*/
-typedef int64_t		        off_t; /* Used for file sizes.*/
-typedef int64_t		        ino_t; /* Used for file serial numbers.*/
+typedef int64_t             blkcnt_t;   /* Used for file block counts.*/
+typedef int32_t                blksize_t;  /* Used for block sizes.*/
+typedef int64_t                fsblkcnt_t; /* Used for file system block counts.*/
+typedef int64_t                fsfilcnt_t; /* Used for file system file counts.*/
+typedef int64_t                off_t; /* Used for file sizes.*/
+typedef int64_t                ino_t; /* Used for file serial numbers.*/
 
 
 typedef uint32_t            mode_t; /* Used for some file attributes.*/
-typedef uint32_t	        umode_t;/* Used for some file attributes.*/
-typedef int32_t	            nlink_t;/* Used for link counts.*/
+typedef uint32_t            umode_t;/* Used for some file attributes.*/
+typedef int32_t                nlink_t;/* Used for link counts.*/
 
-typedef off_t	            daddr_t; /* Used for disk address */	
-typedef char*				caddr_t; /* Used for char pointer address */
+typedef off_t                daddr_t; /* Used for disk address */    
+typedef char*                caddr_t; /* Used for char pointer address */
 
-typedef unsigned long		addr_t; /* Used for CPU and BUS address */
+typedef unsigned long        addr_t; /* Used for CPU and BUS address */
 
 typedef int64_t             abstime_t;  /* Absolute time type (signed 64-bit) */
 typedef int32_t             clock_t;    /* Used for system times in clock ticks or CLOCKS_PER_SEC;*/

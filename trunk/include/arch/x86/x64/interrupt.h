@@ -27,40 +27,40 @@
 #define INTR_LAPIC_RESCHEDULE   0xf3     /* Reschedule */
 
 /** Enable interrupts.
- * @return		Previous interrupt state. */
+ * @return        Previous interrupt state. */
 static inline bool intr_enable(void) {
-	unative_t flags;
+    unative_t flags;
 
-	__asm__ volatile("pushf; sti; pop %0" : "=r"(flags));
-	return (flags & (1<<9)) ? true : false;
+    __asm__ volatile("pushf; sti; pop %0" : "=r"(flags));
+    return (flags & (1<<9)) ? true : false;
 }
 
 /** Disable interrupts.
- * @return		Previous interrupt state. */
+ * @return        Previous interrupt state. */
 static inline bool intr_disable(void) {
-	unative_t flags;
+    unative_t flags;
 
-	__asm__ volatile("pushf; cli; pop %0" : "=r"(flags));
-	return (flags & (1<<9)) ? true : false;
+    __asm__ volatile("pushf; cli; pop %0" : "=r"(flags));
+    return (flags & (1<<9)) ? true : false;
 }
 
 /** Restore saved interrupt state.
- * @param state		State to restore. */
+ * @param state        State to restore. */
 static inline void intr_restore(bool state) {
-	if(state) {
-		__asm__ volatile("sti");
-	} else {
-		__asm__ volatile("cli");
-	}
+    if(state) {
+        __asm__ volatile("sti");
+    } else {
+        __asm__ volatile("cli");
+    }
 }
 
 /** Get interrupt state.
- * @return		Current interrupt state. */
+ * @return        Current interrupt state. */
 static inline bool intr_state(void) {
-	unative_t flags;
+    unative_t flags;
 
-	__asm__ volatile("pushf; pop %0" : "=r"(flags));
-	return (flags & (1<<9)) ? true : false;
+    __asm__ volatile("pushf; pop %0" : "=r"(flags));
+    return (flags & (1<<9)) ? true : false;
 }
 
 int irq_register

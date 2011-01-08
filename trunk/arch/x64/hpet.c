@@ -32,21 +32,21 @@ static ACPI_STATUS hpet_find
     void **status
     )
     {
-    char 		**ids;
-    uint32_t	id = (uint32_t)(uintptr_t)context;
-    uint32_t	uid = 0;
+    char         **ids;
+    uint32_t    id = (uint32_t)(uintptr_t)context;
+    uint32_t    uid = 0;
 
     for (ids = hpet_ids; *ids != NULL; ids++) 
         {
-    	if (acpi_MatchHid(handle, *ids))
+        if (acpi_MatchHid(handle, *ids))
             break;
         }
     
     if (*ids == NULL)
-    	return (AE_OK);
+        return (AE_OK);
     
     if (ACPI_FAILURE(acpi_GetInteger(handle, "_UID", &uid)) || id == uid)
-    	*((int *)status) = 1;
+        *((int *)status) = 1;
     
     return (AE_OK);
     }
@@ -55,8 +55,8 @@ static ACPI_STATUS hpet_find
 void hpet_identify(void)
     {
     ACPI_TABLE_HPET *hpet;
-    ACPI_STATUS	status;
-    int 		i, found;
+    ACPI_STATUS    status;
+    int         i, found;
 
     for (i = 1; ; i++) 
         {
@@ -66,7 +66,7 @@ void hpet_identify(void)
         if (ACPI_FAILURE(status))
             {
             printk("AcpiGetTable ACPI_SIG_HPET faile\n");
-        	return;
+            return;
             }
 
         /* Search for HPET device with same ID. */

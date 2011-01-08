@@ -7,8 +7,8 @@ sched_cpu_t*    current_cpus[CONFIG_NR_CPUS];
 
 static spinlock_t cpu_group_list_lock;
 static list_t cpu_group_list;
-static size_t cpu_group_cout;
-static id_t   cpu_group_id_next;
+static size_t cpu_group_cout = 0;
+static id_t   cpu_group_id_next = 0;
 
 #define SCHED_CPU_GROUP_LOCK()    \
     spinlock_lock(&cpu_group_list_lock)
@@ -22,7 +22,7 @@ static id_t   cpu_group_id_next;
  * Initialize kernel CPUs support.
  */
  
-void sched_cpu_init(void) 
+void cpu_early_init(void) 
     {
 	unsigned int i;
 	
@@ -31,14 +31,7 @@ void sched_cpu_init(void)
 	memset(cpus, 0, sizeof(sched_cpu_t) * CONFIG_NR_CPUS);
 
 	for (i = 0; i < CONFIG_NR_CPUS; i++) 
-        {
-		cpus[i].stack = (uint8_t *) kmalloc(CONFIG_KSTACK_SIZE);
-        
-        if (!cpus[i].stack)
-            {
-            panic("No memory!\n");
-            }
-        
+        {        
 		spinlock_init(&cpus[i].lock);
         
         list_init(&cpus[i].cpu_group_list);
@@ -46,11 +39,7 @@ void sched_cpu_init(void)
         current_cpus[i] = &cpus[i];
         current_cpus[i]->cpu_idx = i;
 	    }
-    
-    cpu_group_cout = 0;
-
-    cpu_group_id_next = 0;
-    
+        
     spinlock_init(&cpu_group_list_lock);
 
     list_init(&cpu_group_list);
