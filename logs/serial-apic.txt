@@ -1,0 +1,166 @@
+
+================================
+||==Welcome to CELLOS 64 bit==||
+================================
+mmap: 0x0000000000000000 - 0x000000000009f800 (638Kb) FREE
+mmap: 0x000000000009f800 - 0x00000000000a0000 (2Kb) RESERVED
+mmap: 0x00000000000dc000 - 0x00000000000e4000 (32Kb) RESERVED
+mmap: 0x00000000000e8000 - 0x0000000000100000 (96Kb) RESERVED
+mmap: 0x0000000000100000 - 0x000000000fef0000 (260032Kb) FREE
+mmap: 0x000000000fef0000 - 0x000000000feff000 (60Kb) ACPI_RECLAIM
+mmap: 0x000000000feff000 - 0x000000000ff00000 (4Kb) ACPI_NVS
+mmap: 0x000000000ff00000 - 0x0000000010000000 (1024Kb) FREE
+mmap: 0x00000000e0000000 - 0x00000000f0000000 (262144Kb) RESERVED
+mmap: 0x00000000fec00000 - 0x00000000fec10000 (64Kb) RESERVED
+mmap: 0x00000000fee00000 - 0x00000000fee01000 (4Kb) RESERVED
+mmap: 0x00000000fffe0000 - 0x0000000100000000 (128Kb) RESERVED
+Free physical area range [0x0000000000100000 - 0x000000000fef0000]
+base_pml4=256 base_pdpt=0
+lowest_addr=0x0000000000113000, highest_addr=0x00000000ffffffff
+user available physical RAM 0x0000000000118000-0x000000000fef0000
+x64_paging_map: page tables using 20 KB
+first_pdpt=0xffffffff80113000, first_pdir=0xffffffff80114000, num_pdpt = 1
+current_pdpt = 0xffffffff80113000
+pdpt #0 0x0000000000114003 -> 0xffffffff80114000
+pdpt #1 0x0000000000115003 -> 0xffffffff80115000
+pdpt #2 0x0000000000116003 -> 0xffffffff80116000
+pdpt #3 0x0000000000117003 -> 0xffffffff80117000
+just set 0x0000000000113003 0xffffffff80113000
+end address 0x0000000100000000
+num_pdirs=4
+num_pdpt=1
+new CR3 0x000000000010c000
+page_alloc_init(): pages_available=64475 lowest_addr=0x0000000000315000
+page_alloc_init(): done!mem_pool 0xffff800000319000, mem_pool_size 0x0000000000100000 done
+x64_smp_init: MP Specification rev. 1.4
+x64_smp_parse_config: LAPIC at 0x00000000fee00000
+x64_smp_parse_config:found cpu-0 enabled.
+x64_smp_parse_config:found cpu-1 enabled.
+x64_smp_init: cpu 0, apic_id = 0, BSP
+x64_smp_init: cpu 1, apic_id = 1, AP
+x64_smp_init: bsp apic id 0
+x64_smp_activiate_ap: activiate AP cpu #1......ok
+get free page 0x000000000feef000
+AP cpu-1 is now ready, lapic_base 0x00000000fee00800
+RIP = 0xffffffff801014c7
+get free page 0x000000000feee000
+ppp=0xffff80000feee000
+add free page 0x000000000feee000
+page_alloc_contig p=0xffff800000419000
+add free page 0x0000000000419000
+add free page 0x000000000041a000
+add free page 0x000000000041b000
+add free page 0x000000000041c000
+add free page 0x000000000041d000
+page_free_contig() freed 5 pages
+get free page 0x000000000feed000
+page_alloc p=0xffff80000feed000
+add free page 0x000000000feed000
+pp=0xffff800000419000 p=0xffff80000feed000
+pml4[256]=0x0000000000113023
+pml4[511]=0x000000000010d023
+Intel Specific Features:
+Type 0 - Original OEM
+Family 6 - Pentium Pro
+Model 15 - Unknown CPU model
+Brand: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
+Stepping: 6 Reserved: 0
+NO XCR!
+MSR_EFER =0x0000000000000500
+CPU in IA-32e mode
+gdtr limit 0x0000000000000000, base 0x0000000000000000
+BSP lapic_base 0x00000000fee00900, id 0, RIP=0xffffffff80106890
+stack_top 0xffff80000031ba40
+stack_ptr 0xffff80000031b980
+stack_top 0xffff80000031cb90
+stack_ptr 0xffff80000031cad0
+This cpu 0
+cpu-0 task test_task1
+cpu-0 task test_task2
+KB registered
+
+CPU does not support x2APIC
+lapic_init() base 0x00000000fee00900
+This is BSP
+lapic_init() base2 0x00000000fee00000, x64_lapic_reg_base 0xffff8000fee00000
+APIC: version 0x11, 5 LVTs
+APIC_SPURIOUS 0x000000000000017f
+APIC_SPURIOUS 0x00000000000001f1
+APIC_SPURIOUS 0x00000000000001ff
+lapic_get_freq pit timer done freq_tick_count 1
+lapic_timer_enable_one_shot APIC_LVT_TIMER 0x0000000000010000
+lapic_timer_enable_one_shot APIC_LVT_TIMER 0x00000000000100f0
+lapic_get_freq before wait apic timer APIC_TIMER_INIT_COUNT 0x00000000ffffffff
+lapic_get_freq before wait apic timer current 0x00000000fffdc92c
+lapic_get_freq apic timer done
+APIC_LVT_TIMER 0x00000000000100f0
+APIC_LVT_TIMER 0x00000000000100f0
+lapic_get_freq after wait apic timer current 0x00000000ffefa5e6, freq_tick_count 18
+lapic_freq 0x0000003595013a92
+lapic_timer_enable_periodic APIC_LVT_TIMER 0x00000000000100f0
+lapic_timer_enable_periodic APIC_LVT_TIMER 0x00000000000300f0
+reg 0xffff8000fee00000 val 0x0000000000000000
+reg 0xffff8000fee00010 val 0x0000000000000000
+reg 0xffff8000fee00020 val 0x0000000000000000 - Local APIC ID Register
+reg 0xffff8000fee00030 val 0x0000000000040011 - Local APIC Version Register
+reg 0xffff8000fee00040 val 0x0000000000000000
+reg 0xffff8000fee00050 val 0x0000000000000000
+reg 0xffff8000fee00060 val 0x0000000000000000
+reg 0xffff8000fee00070 val 0x0000000000000000
+reg 0xffff8000fee00080 val 0x0000000000000000 - Task Priority Register
+reg 0xffff8000fee00090 val 0x0000000000000000
+reg 0xffff8000fee000a0 val 0x0000000000000000 - Processor Priority Register
+reg 0xffff8000fee000b0 val 0x0000000000000000 - EOI Register
+reg 0xffff8000fee000c0 val 0x0000000001000000
+reg 0xffff8000fee000d0 val 0x0000000000000000 - Logical Destination
+reg 0xffff8000fee000e0 val 0x00000000ffffffff
+reg 0xffff8000fee000f0 val 0x00000000000001ff - Spurious Interrupt Vector Register
+reg 0xffff8000fee00100 val 0x0000000000000000 - In-Service Register (ISR); bits 0:31
+reg 0xffff8000fee00110 val 0x0000000000000000 - ISR bits 32:63
+reg 0xffff8000fee00120 val 0x0000000000000000 - ISR bits 64:95
+reg 0xffff8000fee00130 val 0x0000000000000000 - ISR bits 96:127
+reg 0xffff8000fee00140 val 0x0000000000000000 - ISR bits 128:159
+reg 0xffff8000fee00150 val 0x0000000000000000 - ISR bits 160:191
+reg 0xffff8000fee00160 val 0x0000000000000000 - ISR bits 192:223
+reg 0xffff8000fee00170 val 0x0000000000000000 - ISR bits 224:255
+reg 0xffff8000fee00180 val 0x0000000000000000 - Trigger Mode Register (TMR); bits 0:31
+reg 0xffff8000fee00190 val 0x0000000000000000 - TMR bits 32:63
+reg 0xffff8000fee001a0 val 0x0000000000000000 - TMR bits 64:95
+reg 0xffff8000fee001b0 val 0x0000000000000000 - TMR bits 96:127
+reg 0xffff8000fee001c0 val 0x0000000000000000 - TMR bits 128:159
+reg 0xffff8000fee001d0 val 0x0000000000000000 - TMR bits 160:191
+reg 0xffff8000fee001e0 val 0x0000000000000000 - TMR bits 192:223
+reg 0xffff8000fee001f0 val 0x0000000000000000 - TMR bits 224:255
+reg 0xffff8000fee00200 val 0x0000000000000000 - Interrupt Request Register (IRR); bits 0:31
+reg 0xffff8000fee00210 val 0x0000000000000000 - IRR bits 32:63
+reg 0xffff8000fee00220 val 0x0000000000000000 - IRR bits 64:95
+reg 0xffff8000fee00230 val 0x0000000000000000 - IRR bits 96:127
+reg 0xffff8000fee00240 val 0x0000000000000000 - IRR bits 128:159
+reg 0xffff8000fee00250 val 0x0000000000000000 - IRR bits 160:191
+reg 0xffff8000fee00260 val 0x0000000000000000 - IRR bits 192:223
+reg 0xffff8000fee00270 val 0x0000000000000000 - IRR bits 224:255
+reg 0xffff8000fee00280 val 0x0000000000000000 - Error Status Register
+reg 0xffff8000fee00290 val 0x0000000000000000
+reg 0xffff8000fee002a0 val 0x0000000000000000
+reg 0xffff8000fee002b0 val 0x0000000000000000
+reg 0xffff8000fee002c0 val 0x0000000000000000
+reg 0xffff8000fee002d0 val 0x0000000000000000
+reg 0xffff8000fee002e0 val 0x0000000000000000
+reg 0xffff8000fee002f0 val 0x0000000000000000
+reg 0xffff8000fee00300 val 0x0000000000004601 - Interrupt Command Register (ICR); bits 0-31
+reg 0xffff8000fee00310 val 0x0000000001000000 - ICR bits bits 32-63
+reg 0xffff8000fee00320 val 0x00000000000300f0 - LVT Timer Register
+reg 0xffff8000fee00330 val 0x0000000000010000 - LVT Thermal Sensor Register
+reg 0xffff8000fee00340 val 0x0000000000000000 - LVT Performance Monitoring Register
+reg 0xffff8000fee00350 val 0x0000000000000700 - LVT LINT0 Register
+reg 0xffff8000fee00360 val 0x0000000000000400 - LVT LINT1 Register
+reg 0xffff8000fee00370 val 0x0000000000010000 - LVT Error Register
+reg 0xffff8000fee00380 val 0x0000000000082d0c - Initial Count Register (for Timer)
+reg 0xffff8000fee00390 val 0x000000000007e2c9 - Current Count Register (for Timer)
+reg 0xffff8000fee003a0 val 0x0000000000000000
+reg 0xffff8000fee003b0 val 0x0000000000000000
+reg 0xffff8000fee003c0 val 0x0000000000000000
+reg 0xffff8000fee003d0 val 0x0000000000000000
+reg 0xffff8000fee003e0 val 0x0000000000000002 - Divide Configuration Register (for Timer)
+reg 0xffff8000fee003f0 val 0x0000000000000000 - SELF IPI4 Write only Only in x2APIC mode
+lapic_init done!

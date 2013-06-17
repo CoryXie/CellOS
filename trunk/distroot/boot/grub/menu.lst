@@ -1,7 +1,0 @@
-default 0
-timeout 1
-
-title=CellOS
-	root (cd)
-	kernel /kcell
-
