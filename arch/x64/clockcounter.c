@@ -154,7 +154,11 @@ void clockcounter_subsystem_init(void)
     spinlock_init(&clockcounter_list_lock);
     
     clockcounter_add(&clockcounter_pm_timer);
+    
+#ifdef CONFIG_VMWARE_CLIENT
     clockcounter_add(&clockcounter_pm_counter);
+#endif
+
     select_global_clockcounter();
     }
 

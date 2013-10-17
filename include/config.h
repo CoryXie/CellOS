@@ -33,7 +33,7 @@
 
 #define CONFIG_ACPICA                       1
 
-#define CONFIG_VMWARE_CLIENT                1
+//#define CONFIG_VMWARE_CLIENT                0
 
 #endif
 

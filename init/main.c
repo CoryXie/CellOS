@@ -81,6 +81,7 @@ void *sched_bsp_idle_thread (void *notused)
 #endif
 
     clockcounter_subsystem_init();
+
     timerchain_subsystem_init();
 
     real_wall_time_init();
@@ -129,7 +130,7 @@ void main (uint32_t mboot_magic, uint32_t mboot_info)
     printk("\n================================\n");
     printk("||==Welcome to CELLOS 64 bit==||");
     printk("\n================================\n");
-
+    
     /* Read mboot header */
 
     first_free = mboot_init(mboot_info, mboot_magic);

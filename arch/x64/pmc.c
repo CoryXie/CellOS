@@ -5,8 +5,6 @@
 
 #ifdef CONFIG_VMWARE_CLIENT
 
-struct clockcounter clockcounter_pm_counter;
-
 status_t pm_counter_enable(void)
     {
     clockcounter_pm_counter.counter_bits = 64;
